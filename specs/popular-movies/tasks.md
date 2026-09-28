@@ -29,19 +29,19 @@ tasks in that phase.
   - RF: RF-2
   - Done when: `images.remotePatterns` includes `image.tmdb.org`; `pnpm build` doesn't fail on the config.
 
-- [ ] **T04 [P] — .env.example**
+- [x] **T04 [P] — .env.example**
   - Depends on: —
   - Files: `.env.example`
   - RF: RF-7 (supporting doc)
   - Done when: File documents `TMDB_ACCESS_TOKEN=` with a one-line comment; no real token committed.
 
-- [ ] **T05 [P] — Movie schema + mapper**
+- [x] **T05 [P] — Movie schema + mapper**
   - Depends on: T01
   - Files: `services/schemas/movie-schema.ts`, `services/schemas/movie-schema.test.ts`
   - RF: RF-2, RF-3
   - Done when: Tests cover: valid raw movie → mapped `Movie`; `poster_path: null` → `posterUrl: null`; `release_date: ""` → `releaseYear: null`; `vote_count: 0` → `rating: null`; `vote_count > 0` → numeric `rating`. All green.
 
-- [ ] **T06 [P] — TMDB config (env validation + `server-only` guard)**
+- [x] **T06 [P] — TMDB config (env validation + `server-only` guard)**
   - Depends on: T01
   - Files: `services/tmdb-config.ts`, `services/tmdb-config.test.ts`
   - RF: RF-7
