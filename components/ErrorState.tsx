@@ -4,7 +4,7 @@ export interface ErrorStateProps {
   message?: string;
 }
 
-const DEFAULT_MESSAGE =
+export const DEFAULT_MESSAGE =
   "Couldn't load popular movies. Check your connection and try again.";
 
 // Presentation only. "Try again" is a plain link back to "/" rather

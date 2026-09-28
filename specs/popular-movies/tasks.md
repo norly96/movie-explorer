@@ -113,7 +113,7 @@ tasks in that phase.
   - RF: RF-2, RF-3
   - Done when: Renders the poster when `posterUrl` is set; renders the placeholder when `null`; renders the year when present and omits it when `null`, without breaking the layout.
 
-- [ ] **T15 — resolve-view-state.ts**
+- [x] **T15 — resolve-view-state.ts**
   - Depends on: T13
   - Files: `app/resolve-view-state.ts`, `app/resolve-view-state.test.ts`
   - RF: RF-4, RF-5
@@ -121,19 +121,19 @@ tasks in that phase.
 
 ## Phase 4 — Composition
 
-- [ ] **T16 — MovieGrid component**
+- [x] **T16 — MovieGrid component**
   - Depends on: T14
   - Files: `components/MovieGrid.tsx`, `components/MovieGrid.test.tsx`
   - RF: RF-1
   - Done when: Renders one `MovieCard` per movie for a given `movies` array (e.g. 3 movies → 3 cards).
 
-- [ ] **T17 — app/loading.tsx**
+- [x] **T17 — app/loading.tsx**
   - Depends on: T10
   - Files: `app/loading.tsx`
   - RF: RF-6
   - Done when: Renders a grid of `MovieCardSkeleton` matching the page's grid layout; verified visually in `pnpm dev`.
 
-- [ ] **T18 — app/page.tsx (integration)**
+- [x] **T18 — app/page.tsx (integration)**
   - Depends on: T13, T15, T16, T08, T09
   - Files: `app/page.tsx`
   - RF: RF-1, RF-4, RF-5, RF-6, RF-7 (composition point)
