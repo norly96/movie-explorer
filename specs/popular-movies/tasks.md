@@ -12,11 +12,14 @@ tasks in that phase.
   - RF: — (infrastructure for every later test)
   - Done when: `pnpm test` runs with zero test files, no config errors.
 
-- [ ] **T02 [P] — Playwright setup**
+- [x] **T02 [P] — Playwright setup**
   - Depends on: —
-  - Files: `package.json`, `playwright.config.ts`
+  - Files: `package.json`, `playwright.config.ts`, `e2e/smoke.spec.ts`
+    (minimal placeholder test, no app logic — Playwright has no
+    "pass with zero tests" mode like Vitest; superseded by T19's
+    `e2e/popular-movies.spec.ts`, not deleted until then)
   - RF: — (infrastructure for T19)
-  - Done when: `pnpm test:e2e` runs Playwright's own smoke check with no config errors.
+  - Done when: `pnpm test:e2e` runs the placeholder smoke test and passes, with no config errors.
 
 ## Phase 1 — Independent leaves
 
