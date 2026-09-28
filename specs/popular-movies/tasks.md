@@ -47,31 +47,45 @@ tasks in that phase.
   - RF: RF-7
   - Done when: Test asserts a clear thrown error when `TMDB_ACCESS_TOKEN` is unset, and correct values returned when set.
 
-- [ ] **T07 [P] — No-secret-leak static test**
+- [x] **T07 [P] — No-secret-leak static test**
   - Depends on: T06
   - Files: `services/no-secret-leak.test.ts`
   - RF: RF-7
   - Done when: Test fails if the string `TMDB_ACCESS_TOKEN` appears outside `services/`; currently passes.
 
-- [ ] **T08 [P] — EmptyState component**
+- [x] **T07.5 — Apply design.md tokens to globals.css**
+  - Depends on: T01
+  - Files: `app/globals.css`, `app/globals.test.ts`, `app/layout.tsx`
+  - RF: — (prerequisite for every visual component: T08-T12, T14, T16, T17)
+  - Not in the original plan/tasks breakdown — added mid-implementation
+    (user-approved) once it became clear no task applied design.md's
+    `@theme` tokens, and AGENTS.md's Hard rules forbid components from
+    using colors/sizes outside that file.
+  - Done when: `globals.css` defines the token set from `design.md`
+    (`--color-surface`, `--color-muted`, `--color-danger`, `--color-accent`,
+    `--radius-sm`, `--radius-md`, `--aspect-poster`, focus-visible outline,
+    reduced-motion override); `layout.tsx` applies dark `color-scheme` and
+    the Geist sans font. Verified by reading the generated CSS content.
+
+- [x] **T08 [P] — EmptyState component**
   - Depends on: T01
   - Files: `components/EmptyState.tsx`, `components/EmptyState.test.tsx`
   - RF: RF-4
   - Done when: Renders default "No movies found" message; renders a custom `message` prop when provided.
 
-- [ ] **T09 [P] — ErrorState component**
+- [x] **T09 [P] — ErrorState component**
   - Depends on: T01
   - Files: `components/ErrorState.tsx`, `components/ErrorState.test.tsx`
   - RF: RF-5
   - Done when: Renders default and custom messages, with a "Try again" action per `design.md`.
 
-- [ ] **T10 [P] — MovieCardSkeleton component**
+- [x] **T10 [P] — MovieCardSkeleton component**
   - Depends on: T01
   - Files: `components/MovieCardSkeleton.tsx`, `components/MovieCardSkeleton.test.tsx`
   - RF: RF-6
   - Done when: Renders placeholder blocks matching `MovieCard`'s poster/title/metadata structure.
 
-- [ ] **T11 [P] — app/error.tsx boundary**
+- [x] **T11 [P] — app/error.tsx boundary**
   - Depends on: T01
   - Files: `app/error.tsx`
   - RF: RF-5 (defense-in-depth, unexpected exceptions)
