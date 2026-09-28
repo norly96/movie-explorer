@@ -23,9 +23,9 @@ tasks in that phase.
 
 ## Phase 1 — Independent leaves
 
-- [ ] **T03 [P] — next.config.ts: allow TMDB images**
+- [x] **T03 [P] — next.config.ts: allow TMDB images**
   - Depends on: —
-  - Files: `next.config.ts`
+  - Files: `next.config.ts`, `next.config.test.ts`
   - RF: RF-2
   - Done when: `images.remotePatterns` includes `image.tmdb.org`; `pnpm build` doesn't fail on the config.
 
