@@ -52,6 +52,10 @@ Visitor (unauthenticated).
 - Search, filters, movie detail page, favorites.
 - UI/visual design (layout, breakpoints, loading/rating presentation):
   defined separately, not part of this spec.
+- Accessibility (WCAG 2.1 AA, keyboard navigation, semantic HTML):
+  constitution §7 applies to the project as a whole, but this spec
+  does not add a dedicated RF or test for it. Deferred to a later
+  spec/PR that verifies it explicitly.
 
 ## Definition of done
 - RF-1 through RF-7 each have a passing automated test (Vitest + MSW
