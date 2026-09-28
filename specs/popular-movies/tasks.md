@@ -141,7 +141,7 @@ tasks in that phase.
 
 ## Phase 5 — End to end
 
-- [ ] **T19 — E2E happy path**
+- [x] **T19 — E2E happy path**
   - Depends on: T02, T03, T18
   - Files: `e2e/popular-movies.spec.ts`
   - RF: RF-1, RF-6
