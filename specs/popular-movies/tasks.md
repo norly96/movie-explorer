@@ -6,7 +6,7 @@ tasks in that phase.
 
 ## Phase 0 — Tooling
 
-- [ ] **T01 — Testing setup (Vitest + Testing Library + MSW)**
+- [x] **T01 — Testing setup (Vitest + Testing Library + MSW)**
   - Depends on: —
   - Files: `package.json`, `vitest.config.ts`, `vitest.setup.ts`, `mocks/server.ts`
   - RF: — (infrastructure for every later test)
