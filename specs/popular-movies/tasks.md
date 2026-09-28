@@ -93,13 +93,13 @@ tasks in that phase.
 
 ## Phase 2 — First-level dependents
 
-- [ ] **T12 [P] — RatingBadge component**
+- [x] **T12 [P] — RatingBadge component**
   - Depends on: T05
   - Files: `components/RatingBadge.tsx`, `components/RatingBadge.test.tsx`
   - RF: RF-1 (card content)
   - Done when: Renders "X.X" with the a11y label from `design.md` for a numeric rating; renders "No rating" when `rating` is `null`.
 
-- [ ] **T13 — tmdb-service.ts**
+- [x] **T13 — tmdb-service.ts**
   - Depends on: T05, T06
   - Files: `services/tmdb-service.ts`, `services/tmdb-service.test.ts`
   - RF: RF-1, RF-5
@@ -107,7 +107,7 @@ tasks in that phase.
 
 ## Phase 3 — Second-level dependents
 
-- [ ] **T14 — MovieCard component**
+- [x] **T14 — MovieCard component**
   - Depends on: T05, T12
   - Files: `components/MovieCard.tsx`, `components/MovieCard.test.tsx`
   - RF: RF-2, RF-3
