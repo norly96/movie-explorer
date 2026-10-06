@@ -219,8 +219,8 @@ interface ErrorStateProps { message?: string; retryHref?: string } // retryHref 
 | RF-6 | `movie-detail-schema.ts` (null/empty mapping) + every component's conditional rendering |
 | RF-7 | `MovieCard.tsx` (modified) |
 | RF-8 | Inherent to `app/movie/[id]/page.tsx` being a Next.js route — no dedicated code; every E2E visit exercises it |
-| RF-9 | `app/movie/[id]/page.tsx` (id validation + `not_found` branch) + `not-found.tsx` |
-| RF-10 | `app/movie/[id]/page.tsx` (error branch) + `ErrorState` (modified) |
+| RF-9 | `movie-detail-service.ts` (detects the 404 → `not_found`) + `app/movie/[id]/page.tsx` (id validation + branch) + `not-found.tsx` |
+| RF-10 | `movie-detail-service.ts` (detects `http`/`network`/`invalid_response`) + `app/movie/[id]/page.tsx` (error branch) + `ErrorState` (modified) |
 | RF-11 | `app/movie/[id]/loading.tsx` + `MovieDetailSkeleton` |
 | RF-12 | `MovieHero`/`CastList` (`alt` on `next/image`) |
 | RF-13 | `TrailerEmbed` (focusable iframe, no custom overlay blocking tab) |
