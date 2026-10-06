@@ -17,4 +17,20 @@ describe("ErrorState", () => {
     render(<ErrorState message="Something else went wrong." />);
     expect(screen.getByText("Something else went wrong.")).toBeInTheDocument();
   });
+
+  it("defaults the Try again action to / (RF-10)", () => {
+    render(<ErrorState />);
+    expect(screen.getByRole("link", { name: /try again/i })).toHaveAttribute(
+      "href",
+      "/"
+    );
+  });
+
+  it("points Try again at a custom retryHref when provided (RF-10)", () => {
+    render(<ErrorState retryHref="/movie/42" />);
+    expect(screen.getByRole("link", { name: /try again/i })).toHaveAttribute(
+      "href",
+      "/movie/42"
+    );
+  });
 });

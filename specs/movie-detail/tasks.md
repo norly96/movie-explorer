@@ -32,13 +32,13 @@ tasks in that phase.
   - RF: RF-5, RF-6
   - Done when: renders one image per URL given via `next/image` (not a plain `<img>`); renders nothing when the array is empty.
 
-- [ ] **T05 [P] — MovieDetailSkeleton component**
+- [x] **T05 [P] — MovieDetailSkeleton component**
   - Depends on: —
   - Files: `components/MovieDetailSkeleton.tsx`, `components/MovieDetailSkeleton.test.tsx`
   - RF: RF-11
   - Done when: renders placeholder blocks for hero/cast/trailer/gallery, `aria-hidden="true"`.
 
-- [ ] **T06 [P] — ErrorState: add retryHref**
+- [x] **T06 [P] — ErrorState: add retryHref**
   - Depends on: —
   - Files: `components/ErrorState.tsx`, `components/ErrorState.test.tsx`
   - RF: RF-10
