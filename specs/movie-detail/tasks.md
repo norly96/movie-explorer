@@ -78,7 +78,7 @@ tasks in that phase.
 
 ## Phase 3 — Service layer
 
-- [ ] **T12 — movie-detail-service.ts**
+- [x] **T12 — movie-detail-service.ts**
   - Depends on: T02
   - Files: `services/movie-detail-service.ts`, `services/movie-detail-service.test.ts`
   - RF: RF-4, RF-9, RF-10
