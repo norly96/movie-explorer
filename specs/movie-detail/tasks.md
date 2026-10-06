@@ -64,7 +64,7 @@ tasks in that phase.
   - RF: RF-1, RF-6, RF-12
   - Done when: renders poster/backdrop/title/tagline/year/runtime/genres/rating when present, omits each gracefully when `null`/empty; poster and backdrop render via `next/image` (not a plain `<img>`) with descriptive `alt` text.
 
-- [ ] **T10 [P] — MovieInfo component**
+- [x] **T10 [P] — MovieInfo component**
   - Depends on: T02
   - Files: `components/MovieInfo.tsx`, `components/MovieInfo.test.tsx`
   - RF: RF-1, RF-6
