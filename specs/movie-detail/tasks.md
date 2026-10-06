@@ -14,19 +14,19 @@ tasks in that phase.
 
 ## Phase 1 — Independent leaves
 
-- [ ] **T02 [P] — movie-detail-schema.ts**
+- [x] **T02 [P] — movie-detail-schema.ts**
   - Depends on: T01
   - Files: `services/schemas/movie-detail-schema.ts`, `services/schemas/movie-detail-schema.test.ts`
   - RF: RF-1, RF-2, RF-3, RF-4, RF-5, RF-6
   - Done when: tests cover a full raw object mapping correctly; missing poster/backdrop/tagline/overview/homepage and `runtime: 0` all map to `null`; cast capped at 12 ordered by `order`, `[]` when none; zero/one/multiple directors map to `[]`/one name/joined names; trailer selection picks `type: "Trailer"` + `site: "YouTube"` only, official first; gallery capped at 12 backdrops.
 
-- [ ] **T03 [P] — TrailerEmbed component**
+- [x] **T03 [P] — TrailerEmbed component**
   - Depends on: —
   - Files: `components/TrailerEmbed.tsx`, `components/TrailerEmbed.test.tsx`
   - RF: RF-4, RF-6, RF-13
   - Done when: renders a `youtube-nocookie.com` iframe with the given key, a descriptive `title`, `loading="lazy"` (mitigates the third-party-performance risk in `plan.md`), and is keyboard-reachable; renders nothing when `trailerKey` is `null`.
 
-- [ ] **T04 [P] — Gallery component**
+- [x] **T04 [P] — Gallery component**
   - Depends on: —
   - Files: `components/Gallery.tsx`, `components/Gallery.test.tsx`
   - RF: RF-5, RF-6
