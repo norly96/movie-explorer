@@ -110,7 +110,7 @@ tasks in that phase.
 
 ## Phase 5 — End to end
 
-- [ ] **T15 — E2E happy path + not found**
+- [x] **T15 — E2E happy path + not found**
   - Depends on: T07, T14
   - Files: `e2e/movie-detail.spec.ts`
   - RF: RF-1, RF-2, RF-3, RF-4, RF-5, RF-7, RF-8, RF-9
