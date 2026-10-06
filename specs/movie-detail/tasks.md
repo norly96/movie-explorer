@@ -86,11 +86,14 @@ tasks in that phase.
 
 ## Phase 4 — Composition
 
-- [ ] **T13 — app/movie/[id]/loading.tsx**
+- [x] **T13 — app/movie/[id]/loading.tsx**
   - Depends on: T05
   - Files: `app/movie/[id]/loading.tsx`
   - RF: RF-11
   - Done when: renders `MovieDetailSkeleton`; verified visually in `pnpm dev` (no committed test, same pattern as Spec 1's `loading.tsx`).
+  - Note: the visual check can't happen until T14 adds `page.tsx` —
+    without a sibling page, Next doesn't register `/movie/[id]` as a
+    reachable route yet. Deferred to T14's own manual verification.
 
 - [ ] **T14 — app/movie/[id]/page.tsx (integration)**
   - Depends on: T06, T08, T09, T10, T11, T03, T04, T12
