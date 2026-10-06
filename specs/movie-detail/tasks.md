@@ -70,7 +70,7 @@ tasks in that phase.
   - RF: RF-1, RF-6
   - Done when: renders overview/status/original language/homepage link when present, omits each gracefully when `null`/empty.
 
-- [ ] **T11 [P] — CastList component**
+- [x] **T11 [P] — CastList component**
   - Depends on: T02
   - Files: `components/CastList.tsx`, `components/CastList.test.tsx`
   - RF: RF-2, RF-3, RF-6, RF-12
