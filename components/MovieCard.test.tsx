@@ -36,4 +36,9 @@ describe("MovieCard", () => {
     // Title and rating still render — the card doesn't collapse.
     expect(screen.getByText("Fight Club")).toBeInTheDocument();
   });
+
+  it("links to the movie's detail page (RF-7)", () => {
+    render(<MovieCard movie={movie({ id: 550 })} />);
+    expect(screen.getByRole("link")).toHaveAttribute("href", "/movie/550");
+  });
 });

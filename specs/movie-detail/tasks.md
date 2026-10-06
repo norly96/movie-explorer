@@ -44,13 +44,13 @@ tasks in that phase.
   - RF: RF-10
   - Done when: default `retryHref` stays `"/"` (Spec 1's existing test passes unmodified); passing `retryHref="/movie/42"` renders "Try again" pointing there instead.
 
-- [ ] **T07 [P] — MovieCard: wrap in Link**
+- [x] **T07 [P] — MovieCard: wrap in Link**
   - Depends on: —
   - Files: `components/MovieCard.tsx`, `components/MovieCard.test.tsx`
   - RF: RF-7
   - Done when: the card is wrapped in a `Link` to `/movie/{id}`; Spec 1's existing `MovieCard.test.tsx` assertions and `MovieGrid.test.tsx`'s `getAllByRole("article")` still pass unmodified.
 
-- [ ] **T08 [P] — not-found.tsx page**
+- [x] **T08 [P] — not-found.tsx page**
   - Depends on: —
   - Files: `app/movie/[id]/not-found.tsx`, `app/movie/[id]/not-found.test.tsx`
   - RF: RF-9
