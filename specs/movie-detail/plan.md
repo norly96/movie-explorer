@@ -227,4 +227,28 @@ interface ErrorStateProps { message?: string; retryHref?: string } // retryHref 
 
 ## RF not covered
 
-None — RF-1 through RF-13 all have at least one automated test. One honest caveat, same class as Spec 1's: RF-8 has no test *specifically written* for it — it's a structural guarantee of file-based routing, proven implicitly by every other test that loads the URL directly.
+None — RF-1 through RF-13 all have at least one automated test (RF-8
+ended up with its own dedicated E2E test in T15, better covered than
+originally planned here). Two honest caveats found during the
+post-implementation audit, neither blocking but both real test-gaps:
+
+- **RF-9**: covers two distinct conditions (non-existent numeric id
+  vs. syntactically invalid id). Only the first has a permanent
+  automated test (`e2e/movie-detail.spec.ts`, `/movie/999999999`).
+  The second (`/movie/abc`) was verified live exactly once during
+  T14's manual check and was never turned into a committed test — a
+  regression in the id-validation branch of `page.tsx` wouldn't be
+  caught.
+- **RF-10**: `movie-detail-service.test.ts` proves the service
+  classifies errors correctly, and `ErrorState.test.tsx` proves the
+  component accepts `retryHref` correctly — but nothing tests the
+  actual wiring in `page.tsx` (that a service failure really renders
+  `<ErrorState retryHref={\`/movie/${id}\`} />`). An attempt to verify
+  this live (forcing an invalid token) was inconclusive and was
+  abandoned rather than chased further; this rests on code review,
+  not on executed evidence.
+
+Fix ideas, not yet applied: add a second E2E case for `/movie/abc`
+(cheap); for RF-10, intercept the TMDB request with MSW inside a
+Playwright test instead of mangling the token, to verify the full
+`page.tsx` → `ErrorState` wiring end to end.
