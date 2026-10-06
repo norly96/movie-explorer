@@ -6,7 +6,7 @@ tasks in that phase.
 
 ## Phase 0 — Refactor foundation
 
-- [ ] **T01 — Extract tmdb-mappers.ts from movie-schema.ts**
+- [x] **T01 — Extract tmdb-mappers.ts from movie-schema.ts**
   - Depends on: —
   - Files: `services/schemas/tmdb-mappers.ts`, `services/schemas/tmdb-mappers.test.ts`, `services/schemas/movie-schema.ts` (modified), `services/schemas/movie-schema.test.ts` (must still pass unmodified)
   - RF: — (refactor; prerequisite for RF-1, RF-2, RF-3, RF-5, RF-6 via T02)
