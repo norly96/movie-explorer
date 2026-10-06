@@ -58,7 +58,7 @@ tasks in that phase.
 
 ## Phase 2 — Schema-dependent components
 
-- [ ] **T09 [P] — MovieHero component**
+- [x] **T09 [P] — MovieHero component**
   - Depends on: T02
   - Files: `components/MovieHero.tsx`, `components/MovieHero.test.tsx`
   - RF: RF-1, RF-6, RF-12
