@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { extractReleaseYear, toRating } from "./tmdb-mappers";
 
 // Only the fields this feature uses are picked out of TMDB's response.
 // No .strict(): TMDB adding fields later (overview, genre_ids, ...)
@@ -35,20 +36,12 @@ export interface Movie {
   rating: number | null;
 }
 
-function extractReleaseYear(releaseDate: string): number | null {
-  if (!releaseDate) return null;
-  const year = Number(releaseDate.slice(0, 4));
-  return Number.isNaN(year) ? null : year;
-}
-
 export function toMovie(raw: TmdbMovieRaw, imageBaseUrl: string): Movie {
   return {
     id: raw.id,
     title: raw.title,
     posterUrl: raw.poster_path ? `${imageBaseUrl}${raw.poster_path}` : null,
     releaseYear: extractReleaseYear(raw.release_date),
-    // vote_count === 0 means TMDB has no ratings yet: a real 0.0 vote
-    // average with actual votes must not be shown as "unrated".
-    rating: raw.vote_count > 0 ? raw.vote_average : null,
+    rating: toRating(raw.vote_average, raw.vote_count),
   };
 }

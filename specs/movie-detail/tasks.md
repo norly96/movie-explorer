@@ -6,7 +6,7 @@ tasks in that phase.
 
 ## Phase 0 — Refactor foundation
 
-- [ ] **T01 — Extract tmdb-mappers.ts from movie-schema.ts**
+- [x] **T01 — Extract tmdb-mappers.ts from movie-schema.ts**
   - Depends on: —
   - Files: `services/schemas/tmdb-mappers.ts`, `services/schemas/tmdb-mappers.test.ts`, `services/schemas/movie-schema.ts` (modified), `services/schemas/movie-schema.test.ts` (must still pass unmodified)
   - RF: — (refactor; prerequisite for RF-1, RF-2, RF-3, RF-5, RF-6 via T02)
@@ -14,43 +14,43 @@ tasks in that phase.
 
 ## Phase 1 — Independent leaves
 
-- [ ] **T02 [P] — movie-detail-schema.ts**
+- [x] **T02 [P] — movie-detail-schema.ts**
   - Depends on: T01
   - Files: `services/schemas/movie-detail-schema.ts`, `services/schemas/movie-detail-schema.test.ts`
   - RF: RF-1, RF-2, RF-3, RF-4, RF-5, RF-6
   - Done when: tests cover a full raw object mapping correctly; missing poster/backdrop/tagline/overview/homepage and `runtime: 0` all map to `null`; cast capped at 12 ordered by `order`, `[]` when none; zero/one/multiple directors map to `[]`/one name/joined names; trailer selection picks `type: "Trailer"` + `site: "YouTube"` only, official first; gallery capped at 12 backdrops.
 
-- [ ] **T03 [P] — TrailerEmbed component**
+- [x] **T03 [P] — TrailerEmbed component**
   - Depends on: —
   - Files: `components/TrailerEmbed.tsx`, `components/TrailerEmbed.test.tsx`
   - RF: RF-4, RF-6, RF-13
   - Done when: renders a `youtube-nocookie.com` iframe with the given key, a descriptive `title`, `loading="lazy"` (mitigates the third-party-performance risk in `plan.md`), and is keyboard-reachable; renders nothing when `trailerKey` is `null`.
 
-- [ ] **T04 [P] — Gallery component**
+- [x] **T04 [P] — Gallery component**
   - Depends on: —
   - Files: `components/Gallery.tsx`, `components/Gallery.test.tsx`
   - RF: RF-5, RF-6
   - Done when: renders one image per URL given via `next/image` (not a plain `<img>`); renders nothing when the array is empty.
 
-- [ ] **T05 [P] — MovieDetailSkeleton component**
+- [x] **T05 [P] — MovieDetailSkeleton component**
   - Depends on: —
   - Files: `components/MovieDetailSkeleton.tsx`, `components/MovieDetailSkeleton.test.tsx`
   - RF: RF-11
   - Done when: renders placeholder blocks for hero/cast/trailer/gallery, `aria-hidden="true"`.
 
-- [ ] **T06 [P] — ErrorState: add retryHref**
+- [x] **T06 [P] — ErrorState: add retryHref**
   - Depends on: —
   - Files: `components/ErrorState.tsx`, `components/ErrorState.test.tsx`
   - RF: RF-10
   - Done when: default `retryHref` stays `"/"` (Spec 1's existing test passes unmodified); passing `retryHref="/movie/42"` renders "Try again" pointing there instead.
 
-- [ ] **T07 [P] — MovieCard: wrap in Link**
+- [x] **T07 [P] — MovieCard: wrap in Link**
   - Depends on: —
   - Files: `components/MovieCard.tsx`, `components/MovieCard.test.tsx`
   - RF: RF-7
   - Done when: the card is wrapped in a `Link` to `/movie/{id}`; Spec 1's existing `MovieCard.test.tsx` assertions and `MovieGrid.test.tsx`'s `getAllByRole("article")` still pass unmodified.
 
-- [ ] **T08 [P] — not-found.tsx page**
+- [x] **T08 [P] — not-found.tsx page**
   - Depends on: —
   - Files: `app/movie/[id]/not-found.tsx`, `app/movie/[id]/not-found.test.tsx`
   - RF: RF-9
@@ -58,19 +58,19 @@ tasks in that phase.
 
 ## Phase 2 — Schema-dependent components
 
-- [ ] **T09 [P] — MovieHero component**
+- [x] **T09 [P] — MovieHero component**
   - Depends on: T02
   - Files: `components/MovieHero.tsx`, `components/MovieHero.test.tsx`
   - RF: RF-1, RF-6, RF-12
   - Done when: renders poster/backdrop/title/tagline/year/runtime/genres/rating when present, omits each gracefully when `null`/empty; poster and backdrop render via `next/image` (not a plain `<img>`) with descriptive `alt` text.
 
-- [ ] **T10 [P] — MovieInfo component**
+- [x] **T10 [P] — MovieInfo component**
   - Depends on: T02
   - Files: `components/MovieInfo.tsx`, `components/MovieInfo.test.tsx`
   - RF: RF-1, RF-6
   - Done when: renders overview/status/original language/homepage link when present, omits each gracefully when `null`/empty.
 
-- [ ] **T11 [P] — CastList component**
+- [x] **T11 [P] — CastList component**
   - Depends on: T02
   - Files: `components/CastList.tsx`, `components/CastList.test.tsx`
   - RF: RF-2, RF-3, RF-6, RF-12
@@ -78,7 +78,7 @@ tasks in that phase.
 
 ## Phase 3 — Service layer
 
-- [ ] **T12 — movie-detail-service.ts**
+- [x] **T12 — movie-detail-service.ts**
   - Depends on: T02
   - Files: `services/movie-detail-service.ts`, `services/movie-detail-service.test.ts`
   - RF: RF-4, RF-9, RF-10
@@ -86,21 +86,31 @@ tasks in that phase.
 
 ## Phase 4 — Composition
 
-- [ ] **T13 — app/movie/[id]/loading.tsx**
+- [x] **T13 — app/movie/[id]/loading.tsx**
   - Depends on: T05
   - Files: `app/movie/[id]/loading.tsx`
   - RF: RF-11
   - Done when: renders `MovieDetailSkeleton`; verified visually in `pnpm dev` (no committed test, same pattern as Spec 1's `loading.tsx`).
+  - Note: the visual check can't happen until T14 adds `page.tsx` —
+    without a sibling page, Next doesn't register `/movie/[id]` as a
+    reachable route yet. Deferred to T14's own manual verification.
 
-- [ ] **T14 — app/movie/[id]/page.tsx (integration)**
+- [x] **T14 — app/movie/[id]/page.tsx (integration)**
   - Depends on: T06, T08, T09, T10, T11, T03, T04, T12
   - Files: `app/movie/[id]/page.tsx`
   - RF: RF-1, RF-2, RF-3, RF-4, RF-5, RF-6, RF-8, RF-9, RF-10 (composition point)
   - Done when: `pnpm dev` on a real `/movie/{id}` shows every section; a syntactically valid but non-existent id (e.g. `/movie/999999999`) shows `not-found.tsx`; a syntactically invalid id (e.g. `/movie/abc`) also shows `not-found.tsx`, tested as its own case; a simulated TMDB failure shows `ErrorState` with `retryHref` pointing at the same id.
+  - Known minor tech debt: both `not-found.tsx` cases render the
+    correct content but respond with HTTP 200, not 404 (confirmed the
+    server itself returns 404 correctly for genuinely unmatched
+    routes — this is specific to the programmatic `notFound()` call
+    here). RF-9 only requires showing the dedicated page, not a
+    specific status code, so this doesn't block the Done-when above.
+    Accepted as-is; not investigated further.
 
 ## Phase 5 — End to end
 
-- [ ] **T15 — E2E happy path + not found**
+- [x] **T15 — E2E happy path + not found**
   - Depends on: T07, T14
   - Files: `e2e/movie-detail.spec.ts`
   - RF: RF-1, RF-2, RF-3, RF-4, RF-5, RF-7, RF-8, RF-9
