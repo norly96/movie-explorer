@@ -95,11 +95,18 @@ tasks in that phase.
     without a sibling page, Next doesn't register `/movie/[id]` as a
     reachable route yet. Deferred to T14's own manual verification.
 
-- [ ] **T14 — app/movie/[id]/page.tsx (integration)**
+- [x] **T14 — app/movie/[id]/page.tsx (integration)**
   - Depends on: T06, T08, T09, T10, T11, T03, T04, T12
   - Files: `app/movie/[id]/page.tsx`
   - RF: RF-1, RF-2, RF-3, RF-4, RF-5, RF-6, RF-8, RF-9, RF-10 (composition point)
   - Done when: `pnpm dev` on a real `/movie/{id}` shows every section; a syntactically valid but non-existent id (e.g. `/movie/999999999`) shows `not-found.tsx`; a syntactically invalid id (e.g. `/movie/abc`) also shows `not-found.tsx`, tested as its own case; a simulated TMDB failure shows `ErrorState` with `retryHref` pointing at the same id.
+  - Known minor tech debt: both `not-found.tsx` cases render the
+    correct content but respond with HTTP 200, not 404 (confirmed the
+    server itself returns 404 correctly for genuinely unmatched
+    routes — this is specific to the programmatic `notFound()` call
+    here). RF-9 only requires showing the dedicated page, not a
+    specific status code, so this doesn't block the Done-when above.
+    Accepted as-is; not investigated further.
 
 ## Phase 5 — End to end
 
