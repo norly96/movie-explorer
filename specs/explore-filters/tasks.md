@@ -32,7 +32,7 @@ tasks in that phase.
   - RF: RF-6
   - Done when: (fake timers) the returned value doesn't change before 300ms since the last input change; changes after; a new input change before 300ms elapses resets the timer instead of stacking it.
 
-- [ ] **T05 [P] — SearchIcon + SearchInput component**
+- [x] **T05 [P] — SearchIcon + SearchInput component**
   - Depends on: —
   - Files: `components/icons/SearchIcon.tsx`, `components/SearchInput.tsx`, `components/SearchInput.test.tsx`
   - RF: RF-6, RF-18
