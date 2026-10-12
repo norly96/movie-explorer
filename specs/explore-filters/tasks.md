@@ -1,6 +1,6 @@
 # Tasks — Home explorer: filters, search & infinite scroll
 
-18 tasks, ordered by dependency. `[P]` = does not depend on any pending
+20 tasks, ordered by dependency. `[P]` = does not depend on any pending
 task in its own phase and can be done in parallel with the other `[P]`
 tasks in that phase.
 
@@ -94,15 +94,27 @@ tasks in that phase.
   - Depends on: T02
   - Files: `services/explore-service.ts`, `services/explore-service.test.ts`
   - RF: RF-2, RF-3, RF-4, RF-5, RF-6, RF-13, RF-14, RF-21
-  - Done when: MSW-backed tests cover — `getGenres`: ok / network / http / invalid-shape. `getDiscoverMovies`: builds a request combining genre + `primary_release_year` + `sort_by` (plan.md D7) when all three are given; adds `vote_count.gte` when sorting by `vote_average.desc` (plan.md D8); maps `page`/`total_pages`; network/http/invalid-shape errors; an empty `results` array still resolves `ok:true` with `movies: []` (not an error — RF-13's data source); both `getDiscoverMovies` and `getSearchMovies` forward a passed-in `AbortSignal` to the underlying `fetch()` call (plan.md Risk #5) — asserted by aborting the signal and checking the request is cancelled. `getSearchMovies`: builds a `query`+`page` request; same error/empty handling.
+  - Done when: server-only (reads `TMDB_ACCESS_TOKEN` via `tmdb-config.ts`, same as `tmdb-service.ts`); MSW-backed tests cover — `getPopularMoviesPage`: page N of `movie/popular` maps to `MoviePage`, same error handling; `getGenres`: ok / network / http / invalid-shape. `getDiscoverMovies`: builds a request combining genre + `primary_release_year` + `sort_by` (plan.md D7) when all three are given; adds `vote_count.gte` when sorting by `vote_average.desc` (plan.md D8); maps `page`/`total_pages`; network/http/invalid-shape errors; an empty `results` array still resolves `ok:true` with `movies: []` (not an error — RF-13's data source); both `getDiscoverMovies` and `getSearchMovies` forward a passed-in `AbortSignal` to the underlying `fetch()` call (plan.md Risk #5) — asserted by aborting the signal and checking the request is cancelled. `getSearchMovies`: builds a `query`+`page` request; same error/empty handling.
+
+- [ ] **T14a — /api/explore Route Handler**
+  - Depends on: T03, T14
+  - Files: `app/api/explore/route.ts`, `app/api/explore/route.test.ts`
+  - RF: RF-2, RF-3, RF-4, RF-5, RF-6, RF-10, RF-14
+  - Done when: MSW-backed tests cover — `GET /api/explore` maps popular/discover/search + `page` to the matching `explore-service` call and returns `MoviePage` JSON; invalid query params fall back to popular (RF-10); a missing/invalid `page` defaults to 1; an upstream network/http/invalid-shape failure returns 502 with `{ reason, status? }`; the response never contains the access token. Plan D18.
+
+- [ ] **T14b — explore-client.ts (browser-safe fetcher)**
+  - Depends on: T03, T14a
+  - Files: `services/explore-client.ts`, `services/explore-client.test.ts`
+  - RF: RF-11, RF-14, RF-15
+  - Done when: MSW-backed tests cover — `fetchExplorePage` builds the `/api/explore` URL from `ExploreFilters` + page; a valid body resolves `ok:true` as `MoviePage`; a 502 body, network failure or malformed body resolve to the matching `ServiceResult` error; a passed-in `AbortSignal` cancels the request. File has no `server-only` import and no token reference (`no-secret-leak` keeps passing).
 
 ## Phase 4 — Hook layer
 
 - [ ] **T15 — useExploreMovies hook**
-  - Depends on: T01, T14
+  - Depends on: T01, T14b
   - Files: `hooks/useExploreMovies.ts`, `hooks/useExploreMovies.test.ts`
   - RF: RF-11, RF-12, RF-13, RF-14, RF-15, RF-16, RF-22
-  - Done when: MSW-backed tests (with React Query's test utilities) cover — first page success and failure (`firstPageError` set, `isFirstLoading` transitions); `fetchNextPage` appends a second page to `movies`; a failing additional-page request keeps the first page's movies in `movies` and sets `nextPageError` (RF-15) instead of clearing anything; `hasNextPage` becomes `false` once TMDB reports no further pages (RF-12), and `fetchNextPage` is a no-op afterwards; `retryNextPage` clears `nextPageError` and successfully appends the retried page, after which `fetchNextPage` resumes working normally (RF-22); a response reporting `total_pages` greater than the current page but returning an empty `results` array for the next page also resolves to `hasNextPage: false`, with no error (spec.md Edge cases — treated the same as RF-12, not as a failure); switching `filters` while a request for the previous filters is still in flight (two different MSW delays) ends with `movies` reflecting only the newer filters — the superseded response is discarded even if it resolves later (plan.md Risk #5).
+  - Done when: MSW-backed tests (mocking `/api/explore`, with React Query's test utilities) cover — first page success and failure (`firstPageError` set, `isFirstLoading` transitions); `fetchNextPage` appends a second page to `movies`; a failing additional-page request keeps the first page's movies in `movies` and sets `nextPageError` (RF-15) instead of clearing anything; `hasNextPage` becomes `false` once TMDB reports no further pages (RF-12), and `fetchNextPage` is a no-op afterwards; `retryNextPage` clears `nextPageError` and successfully appends the retried page, after which `fetchNextPage` resumes working normally (RF-22); a response reporting `total_pages` greater than the current page but returning an empty `results` array for the next page also resolves to `hasNextPage: false`, with no error (spec.md Edge cases — treated the same as RF-12, not as a failure); switching `filters` while a request for the previous filters is still in flight (two different MSW delays) ends with `movies` reflecting only the newer filters — the superseded response is discarded even if it resolves later (plan.md Risk #5).
 
 ## Phase 5 — Composition
 

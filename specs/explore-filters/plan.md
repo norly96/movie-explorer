@@ -13,7 +13,9 @@ No implementation code below — types and interfaces only.
 | `app/ExplorerClient.tsx` (new) | `'use client'`. Composition root: wires `useExploreMovies`, owns the URL-write side effects (filter change → replace URL → scroll to top), renders `FilterBar`, `SearchInput`, `ClearFiltersButton` and the grid/loading/empty/error states. | RF-5, RF-7, RF-11–RF-20 |
 | `services/schemas/genre-schema.ts` (new) | `TmdbGenreListRawSchema`, `Genre`. | RF-2 |
 | `services/explore-service.ts` (new) | `getGenres()`, `getDiscoverMovies()`, `getSearchMovies()` — fetch + Zod-validate, reusing `movie-schema.ts`'s `Movie`/`toMovie` (see Decision D4). | RF-2, RF-3, RF-4, RF-5, RF-6, RF-13, RF-14, RF-15, RF-21 |
-| `hooks/useExploreMovies.ts` (new) | `useInfiniteQuery`-based hook: first-page status, next-page status, retry, `hasNextPage`. | RF-11, RF-12, RF-13, RF-14, RF-15, RF-16, RF-22 |
+| `app/api/explore/route.ts` (new) | Route Handler, `GET /api/explore?genre=&year=&sort=&q=&page=`. Server-only proxy (constitution §6): parses the query with `explore-params.ts`, calls `explore-service.ts`, returns `MoviePage` as JSON, forwarding the request's `AbortSignal`. The only entry point the browser uses to reach TMDB (D18). | RF-2–RF-6, RF-11, RF-14 |
+| `services/explore-client.ts` (new) | Browser-safe (no `server-only`, no token). `fetchExplorePage(filters, page, signal)` calls `/api/explore`, Zod-validates the JSON (constitution §4) and returns `ServiceResult<MoviePage>`. This is what `useExploreMovies` calls. | RF-11, RF-14, RF-15 |
+| `hooks/useExploreMovies.ts` (new) | `useInfiniteQuery`-based hook, fetching through `explore-client.ts` (never `explore-service.ts` directly, D18): first-page status, next-page status, retry, `hasNextPage`. | RF-11, RF-12, RF-13, RF-14, RF-15, RF-16, RF-22 |
 | `hooks/useDebouncedValue.ts` (new) | Generic debounce hook, written in-house rather than a new dependency (see D17). | RF-6 |
 | `hooks/useInfiniteScrollTrigger.ts` (new) | Wraps `IntersectionObserver` behind a ref + enabled flag. | RF-11, RF-12 |
 | `components/GenreFilter.tsx` (new) | `<select>` of genres; hidden when `genres` is empty (RF-21). | RF-2, RF-21 |
@@ -115,6 +117,13 @@ export interface MoviePage {
 
 export function getGenres(): Promise<ServiceResult<Genre[]>>;
 
+// Page N of TMDB `movie/popular`, so infinite scroll also works in
+// "popular" mode (RF-1 + RF-11). Page 1 matches Spec 1's list.
+export function getPopularMoviesPage(
+  page: number,
+  signal?: AbortSignal
+): Promise<ServiceResult<MoviePage>>;
+
 export function getDiscoverMovies(
   filters: { genreId: number | null; year: number | null; sort: SortOption | null },
   page: number,
@@ -123,6 +132,21 @@ export function getDiscoverMovies(
 
 export function getSearchMovies(
   query: string,
+  page: number,
+  signal?: AbortSignal
+): Promise<ServiceResult<MoviePage>>;
+```
+
+```ts
+// app/api/explore/route.ts  (server)
+// GET /api/explore?genre=&year=&sort=&q=&page=  ->  200 MoviePage JSON
+// Upstream failures map to: network -> 502, http -> 502, invalid_response -> 502
+// (the body carries { reason, status? } so the client can rebuild the ServiceResult).
+export function GET(request: Request): Promise<Response>;
+
+// services/explore-client.ts  (browser-safe)
+export function fetchExplorePage(
+  filters: ExploreFilters,
   page: number,
   signal?: AbortSignal
 ): Promise<ServiceResult<MoviePage>>;
@@ -217,6 +241,7 @@ export interface ErrorStateProps {
 15. **RF-19's scroll-to-top targets a ref placed just above the grid**, not `window.scrollTo(0, 0)`. *Rejected*: scrolling the whole window to the very top — would also scroll the filter bar out of view, when the goal is only to stop showing a new result set at an old scroll depth.
 16. **Tie-break when a URL literally contains both `q` and a discover filter param**: `q` wins; the discover params are dropped during parsing. *Rejected*: the discover filters winning instead — RF-7's direction (typing search clears filters, not the reverse) makes search the more "intentional" signal when both are somehow present at once.
 17. **The 300ms debounce (RF-6) is a ~10-line in-house hook**, not a new dependency (e.g. `use-debounce`). *Rejected*: pulling in a package for logic this small — constitution §1's "no dependency without a concrete problem" standard isn't met by something this trivial to write and test directly.
+18. **The browser never calls TMDB or `explore-service.ts`; it calls our own Route Handler `/api/explore`** via `services/explore-client.ts`. `tmdb-config.ts` is `server-only` and reads `TMDB_ACCESS_TOKEN`, so any service built on it can't run in a Client Component, and exposing the token to the browser is forbidden (AGENTS.md hard rule). A Route Handler that only proxies TMDB is exactly what constitution §6 allows. `page.tsx` still calls `explore-service.ts` directly on the server for the first page (D1). *Rejected*: Server Actions as `queryFn` — they are serialized one at a time and don't take an `AbortSignal`, which defeats cancelling superseded requests (Risk #5). The client re-validates the proxy's JSON with Zod rather than trusting it (constitution §4).
 
 ## Risks
 
@@ -224,9 +249,10 @@ export interface ErrorStateProps {
 2. **`IntersectionObserver` isn't implemented in jsdom** (Vitest's test environment). *Mitigation*: mock/polyfill it in `vitest.setup.ts` for `useInfiniteScrollTrigger`'s tests.
 3. **TMDB's `vote_average.desc` sort surfaces low-vote-count outliers** without a floor. *Mitigation*: D8's `vote_count.gte` threshold.
 4. **Mutual-exclusion bugs leaving stale URL params** when switching between discover and search modes. *Mitigation*: D3's "always rewrite the full param set" rule.
-5. **Debounced search + infinite scroll racing with a superseded request.** *Mitigation*: TanStack Query's per-query-key cache isolation, plus wiring its `AbortSignal` through to `fetch()` in `explore-service.ts` so a genuinely stale in-flight request is cancelled, not just ignored.
+5. **Debounced search + infinite scroll racing with a superseded request.** *Mitigation*: TanStack Query's per-query-key cache isolation, plus wiring its `AbortSignal` through `explore-client.ts` → the Route Handler → `fetch()` in `explore-service.ts` so a genuinely stale in-flight request is cancelled, not just ignored.
 6. **New dependency (`@tanstack/react-query`) adds client bundle weight.** *Mitigation*: already pre-approved in `AGENTS.md`'s stack list; this is simply the first spec that exercises client interactivity heavy enough to justify installing it (constitution §1 satisfied, not bypassed).
 7. **TMDB rate limits during Playwright E2E**, now hit by four endpoints (popular/discover/search/genre-list) instead of one. *Mitigation*: same accepted precedent as Spec 1/2 — keep the E2E suite small and targeted, live API, no mocking at that layer.
+8. **Route Handler adds a hop and a new public endpoint.** *Mitigation*: it only accepts params already validated by `explore-params.ts` (invalid ones dropped, `page` clamped to a positive integer), exposes no token, and returns only the mapped `MoviePage`.
 
 ## Test strategy
 
@@ -235,6 +261,8 @@ export interface ErrorStateProps {
 | `app/explore-params.test.ts` | Parse: valid combos, invalid/malformed params dropped, empty → popular, `q` < 2 chars dropped, whitespace-only `q` dropped (spec.md Edge cases), `q`+filter tie-break (D16). Serialize: full-rewrite behavior. | RF-7, RF-8, RF-9, RF-10 |
 | `services/schemas/genre-schema.test.ts` | Valid genre list parses; malformed shape rejected. | RF-2 |
 | `services/explore-service.test.ts` (MSW) | `getDiscoverMovies` builds the right query (genre+year+sort combined, `primary_release_year`, `vote_count.gte` when sorting by rating); `getSearchMovies` builds its query; pagination fields mapped; network/HTTP/invalid-shape errors; empty `results` → `ok:true` with `movies: []` (not an error); a passed-in `AbortSignal` is forwarded to `fetch()` (Risk #5). | RF-2, RF-3, RF-4, RF-5, RF-6, RF-13, RF-14, RF-21 |
+| `app/api/explore/route.test.ts` (MSW) | Maps each mode (popular/discover/search) + `page` to the right TMDB request; invalid params fall back per RF-10; upstream failure → 502 with `{ reason }`; never includes the token in the response. | RF-2–RF-6, RF-10, RF-14 |
+| `services/explore-client.test.ts` (MSW) | Builds the `/api/explore` URL from `ExploreFilters` + page; parses a valid `MoviePage`; maps 502/network/invalid body to `ServiceResult` errors; forwards the `AbortSignal`. | RF-11, RF-14, RF-15 |
 | `hooks/useDebouncedValue.test.ts` (fake timers) | No update before 300ms; updates after; timer resets on rapid changes. | RF-6 |
 | `hooks/useExploreMovies.test.ts` (MSW + React Query test utils) | First-page success/error; next-page append; next-page failure keeps prior pages + exposes `nextPageError`; `hasNextPage` false after the last page, and also when `total_pages` overstates what `results` actually returns (spec.md Edge cases); `retryNextPage` clears the error and resumes; a response superseded by a newer filter change (while still in flight) is discarded, never applied (Risk #5). | RF-11, RF-12, RF-13, RF-14, RF-15, RF-16, RF-22 |
 | `components/GenreFilter.test.tsx`, `YearFilter.test.tsx`, `SortFilter.test.tsx` | Render options; call `onChange`; `GenreFilter` renders nothing when `genres` is `[]` (RF-21). | RF-2, RF-3, RF-4, RF-21 |
