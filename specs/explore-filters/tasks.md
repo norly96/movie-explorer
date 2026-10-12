@@ -102,7 +102,7 @@ tasks in that phase.
   - RF: RF-2, RF-3, RF-4, RF-5, RF-6, RF-10, RF-14
   - Done when: MSW-backed tests cover — `GET /api/explore` maps popular/discover/search + `page` to the matching `explore-service` call and returns `MoviePage` JSON; invalid query params fall back to popular (RF-10); a missing/invalid `page` defaults to 1; an upstream network/http/invalid-shape failure returns 502 with `{ reason, status? }`; the response never contains the access token. Plan D18.
 
-- [ ] **T14b — explore-client.ts (browser-safe fetcher)**
+- [x] **T14b — explore-client.ts (browser-safe fetcher)**
   - Depends on: T03, T14a
   - Files: `services/explore-client.ts`, `services/explore-client.test.ts`
   - RF: RF-11, RF-14, RF-15
