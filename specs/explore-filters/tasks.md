@@ -18,7 +18,7 @@ tasks in that phase.
   - RF: RF-2
   - Done when: a valid TMDB `genre/movie/list` response parses into `Genre[]`; a malformed shape is rejected by the schema.
 
-- [ ] **T03 [P] — explore-params.ts (parse + serialize)**
+- [x] **T03 [P] — explore-params.ts (parse + serialize)**
   - Depends on: —
   - Files: `app/explore-params.ts`, `app/explore-params.test.ts`
   - RF: RF-7, RF-8, RF-9, RF-10
