@@ -44,7 +44,7 @@ tasks in that phase.
   - RF: RF-17
   - Done when: renders nothing when `visible={false}`; renders a button calling `onClear` when `visible={true}`.
 
-- [ ] **T07 [P] — InlinePageError component**
+- [x] **T07 [P] — InlinePageError component**
   - Depends on: —
   - Files: `components/InlinePageError.tsx`, `components/InlinePageError.test.tsx`
   - RF: RF-15
