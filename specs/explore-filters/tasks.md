@@ -6,7 +6,7 @@ tasks in that phase.
 
 ## Phase 0 — Foundation
 
-- [ ] **T01 [P] — Install TanStack Query + wire QueryClientProvider**
+- [x] **T01 [P] — Install TanStack Query + wire QueryClientProvider**
   - Depends on: —
   - Files: `package.json`, `app/Providers.tsx`, `app/layout.tsx` (modified)
   - RF: — (infra prerequisite for RF-5, RF-11–RF-22)
