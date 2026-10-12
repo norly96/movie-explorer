@@ -38,7 +38,7 @@ tasks in that phase.
   - RF: RF-6, RF-18
   - Done when: renders a visible `<label>` (per `design.md`'s `SearchInput` spec); typing calls `onChange` on every keystroke (debouncing is `useDebouncedValue`'s job, not this component's); `SearchIcon` is `aria-hidden="true"`.
 
-- [ ] **T06 [P] — ClearFiltersButton component**
+- [x] **T06 [P] — ClearFiltersButton component**
   - Depends on: —
   - Files: `components/ClearFiltersButton.tsx`, `components/ClearFiltersButton.test.tsx`
   - RF: RF-17
