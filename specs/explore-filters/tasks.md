@@ -26,7 +26,7 @@ tasks in that phase.
 
 ## Phase 1 — Independent leaves
 
-- [ ] **T04 [P] — useDebouncedValue hook**
+- [x] **T04 [P] — useDebouncedValue hook**
   - Depends on: —
   - Files: `hooks/useDebouncedValue.ts`, `hooks/useDebouncedValue.test.ts`
   - RF: RF-6
