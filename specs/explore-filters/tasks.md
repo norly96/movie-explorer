@@ -96,7 +96,7 @@ tasks in that phase.
   - RF: RF-2, RF-3, RF-4, RF-5, RF-6, RF-13, RF-14, RF-21
   - Done when: server-only (reads `TMDB_ACCESS_TOKEN` via `tmdb-config.ts`, same as `tmdb-service.ts`); MSW-backed tests cover — `getPopularMoviesPage`: page N of `movie/popular` maps to `MoviePage`, same error handling; `getGenres`: ok / network / http / invalid-shape. `getDiscoverMovies`: builds a request combining genre + `primary_release_year` + `sort_by` (plan.md D7) when all three are given; adds `vote_count.gte` when sorting by `vote_average.desc` (plan.md D8); maps `page`/`total_pages`; network/http/invalid-shape errors; an empty `results` array still resolves `ok:true` with `movies: []` (not an error — RF-13's data source); both `getDiscoverMovies` and `getSearchMovies` forward a passed-in `AbortSignal` to the underlying `fetch()` call (plan.md Risk #5) — asserted by aborting the signal and checking the request is cancelled. `getSearchMovies`: builds a `query`+`page` request; same error/empty handling.
 
-- [ ] **T14a — /api/explore Route Handler**
+- [x] **T14a — /api/explore Route Handler**
   - Depends on: T03, T14
   - Files: `app/api/explore/route.ts`, `app/api/explore/route.test.ts`
   - RF: RF-2, RF-3, RF-4, RF-5, RF-6, RF-10, RF-14
