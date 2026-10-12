@@ -90,7 +90,7 @@ tasks in that phase.
 
 ## Phase 3 — Service layer
 
-- [ ] **T14 — explore-service.ts**
+- [x] **T14 — explore-service.ts**
   - Depends on: T02
   - Files: `services/explore-service.ts`, `services/explore-service.test.ts`
   - RF: RF-2, RF-3, RF-4, RF-5, RF-6, RF-13, RF-14, RF-21
