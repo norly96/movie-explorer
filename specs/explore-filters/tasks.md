@@ -12,7 +12,7 @@ tasks in that phase.
   - RF: — (infra prerequisite for RF-5, RF-11–RF-22)
   - Done when: `@tanstack/react-query` is a dependency; `app/Providers.tsx` (`'use client'`) wraps `children` in a `QueryClientProvider` with one `QueryClient` instance per render; `app/layout.tsx` renders it; `pnpm dev` still shows the unchanged Spec 1 popular list (regression check, no visible behavior change yet).
 
-- [ ] **T02 [P] — genre-schema.ts**
+- [x] **T02 [P] — genre-schema.ts**
   - Depends on: —
   - Files: `services/schemas/genre-schema.ts`, `services/schemas/genre-schema.test.ts`
   - RF: RF-2
