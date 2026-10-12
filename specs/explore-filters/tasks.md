@@ -50,7 +50,7 @@ tasks in that phase.
   - RF: RF-15
   - Done when: renders an inline error message and a "Try again" control; clicking it calls `onRetry`.
 
-- [ ] **T08 [P] — ErrorState: add onRetry**
+- [x] **T08 [P] — ErrorState: add onRetry**
   - Depends on: —
   - Files: `components/ErrorState.tsx` (modified), `components/ErrorState.test.tsx`
   - RF: RF-14

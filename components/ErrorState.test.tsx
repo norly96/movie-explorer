@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import userEvent from "@testing-library/user-event";
+import { describe, expect, it, vi } from "vitest";
 import { ErrorState } from "./ErrorState";
 
 describe("ErrorState", () => {
@@ -32,5 +33,55 @@ describe("ErrorState", () => {
       "href",
       "/movie/42"
     );
+  });
+
+  describe("onRetry (RF-14)", () => {
+    it("renders a button instead of the link when onRetry is passed", () => {
+      render(<ErrorState onRetry={() => {}} />);
+
+      expect(
+        screen.getByRole("button", { name: /try again/i })
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByRole("link", { name: /try again/i })
+      ).not.toBeInTheDocument();
+    });
+
+    it("calls onRetry when the button is clicked", async () => {
+      const user = userEvent.setup();
+      const onRetry = vi.fn();
+      render(<ErrorState onRetry={onRetry} />);
+
+      await user.click(screen.getByRole("button", { name: /try again/i }));
+
+      expect(onRetry).toHaveBeenCalledTimes(1);
+    });
+
+    it("takes precedence over retryHref when both are passed", () => {
+      render(<ErrorState retryHref="/movie/42" onRetry={() => {}} />);
+
+      expect(
+        screen.getByRole("button", { name: /try again/i })
+      ).toBeInTheDocument();
+      expect(screen.queryByRole("link")).not.toBeInTheDocument();
+    });
+
+    it("keeps the message and the alert role", () => {
+      render(<ErrorState message="Search failed." onRetry={() => {}} />);
+
+      expect(screen.getByRole("alert")).toHaveTextContent("Search failed.");
+    });
+
+    it("is operable with the keyboard (RF-18)", async () => {
+      const user = userEvent.setup();
+      const onRetry = vi.fn();
+      render(<ErrorState onRetry={onRetry} />);
+
+      await user.tab();
+      expect(screen.getByRole("button", { name: /try again/i })).toHaveFocus();
+
+      await user.keyboard("{Enter}");
+      expect(onRetry).toHaveBeenCalledTimes(1);
+    });
   });
 });
