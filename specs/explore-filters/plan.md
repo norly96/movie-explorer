@@ -1,6 +1,6 @@
 # Plan — Home explorer: filters, search & infinite scroll
 
-Spec: [`specs/explore-filters/spec.md`](./spec.md) (RF-1 to RF-22).
+Spec: [`specs/explore-filters/spec.md`](./spec.md) (RF-1 to RF-23).
 No implementation code below — types and interfaces only.
 
 ## Modules
@@ -16,7 +16,7 @@ No implementation code below — types and interfaces only.
 | `services/explore-service.ts` (new) | `getGenres()`, `getDiscoverMovies()`, `getSearchMovies()` — fetch + Zod-validate, reusing `movie-schema.ts`'s `Movie`/`toMovie` (see Decision D4). | RF-2, RF-3, RF-4, RF-5, RF-6, RF-13, RF-14, RF-15, RF-21 |
 | `app/api/explore/route.ts` (new) | Route Handler, `GET /api/explore?genre=&year=&sort=&q=&page=`. Server-only proxy (constitution §6): parses the query with `explore-params.ts`, calls `explore-service.ts`, returns `MoviePage` as JSON, forwarding the request's `AbortSignal`. The only entry point the browser uses to reach TMDB (D18). | RF-2–RF-6, RF-11, RF-14 |
 | `services/explore-client.ts` (new) | Browser-safe (no `server-only`, no token). `fetchExplorePage(filters, page, signal)` calls `/api/explore`, Zod-validates the JSON (constitution §4) and returns `ServiceResult<MoviePage>`. This is what `useExploreMovies` calls. | RF-11, RF-14, RF-15 |
-| `hooks/useExploreMovies.ts` (new) | `useInfiniteQuery`-based hook, fetching through `explore-client.ts` (never `explore-service.ts` directly, D18): first-page status, next-page status, retry, `hasNextPage`. | RF-11, RF-12, RF-13, RF-14, RF-15, RF-16, RF-22 |
+| `hooks/useExploreMovies.ts` (new) | `useInfiniteQuery`-based hook, fetching through `explore-client.ts` (never `explore-service.ts` directly, D18), de-duplicating movies across pages (D19): first-page status, next-page status, retry, `hasNextPage`. | RF-11, RF-12, RF-13, RF-14, RF-15, RF-16, RF-22, RF-23 |
 | `hooks/useDebouncedValue.ts` (new) | Generic debounce hook, written in-house rather than a new dependency (see D17). | RF-6 |
 | `hooks/useInfiniteScrollTrigger.ts` (new) | Wraps `IntersectionObserver` behind a ref + enabled flag. | RF-11, RF-12 |
 | `components/GenreFilter.tsx` (new) | `<select>` of genres; hidden when `genres` is empty (RF-21). | RF-2, RF-21 |
@@ -243,6 +243,7 @@ export interface ErrorStateProps {
 16. **Tie-break when a URL literally contains both `q` and a discover filter param**: `q` wins; the discover params are dropped during parsing. *Rejected*: the discover filters winning instead — RF-7's direction (typing search clears filters, not the reverse) makes search the more "intentional" signal when both are somehow present at once.
 17. **The 300ms debounce (RF-6) is a ~10-line in-house hook**, not a new dependency (e.g. `use-debounce`). *Rejected*: pulling in a package for logic this small — constitution §1's "no dependency without a concrete problem" standard isn't met by something this trivial to write and test directly.
 18. **The browser never calls TMDB or `explore-service.ts`; it calls our own Route Handler `/api/explore`** via `services/explore-client.ts`. `tmdb-config.ts` is `server-only` and reads `TMDB_ACCESS_TOKEN`, so any service built on it can't run in a Client Component, and exposing the token to the browser is forbidden (AGENTS.md hard rule). A Route Handler that only proxies TMDB is exactly what constitution §6 allows. `page.tsx` still calls `explore-service.ts` directly on the server for the first page (D1). *Rejected*: Server Actions as `queryFn` — they are serialized one at a time and don't take an `AbortSignal`, which defeats cancelling superseded requests (Risk #5). The client re-validates the proxy's JSON with Zod rather than trusting it (constitution §4).
+19. **A movie that TMDB returns on two pages is shown once, and the de-duplication lives in `useExploreMovies` when pages are joined** (RF-23). TMDB's ordering shifts between requests, so consecutive pages overlap (measured: e.g. popular ids on pages 3 and 4, 4 and 6); `MovieGrid` keys cards by `movie.id`, so a repeat triggers React's duplicate-key warning and may duplicate or drop cards. The hook is the only module that sees every page; the cache keeps each page exactly as TMDB sent it, so a later reordering corrects itself. The first appearance wins, so cards don't jump when a page loads. *Rejected*: keying cards by `id-page` in `MovieGrid` — silences the warning but leaves the same movie on screen twice; de-duplicating in `explore-service.ts` or the Route Handler — each only sees one page; filtering in `ExplorerClient` — a data rule in a composition component.
 
 ## Risks
 
@@ -265,7 +266,7 @@ export interface ErrorStateProps {
 | `app/api/explore/route.test.ts` (MSW) | Maps each mode (popular/discover/search) + `page` to the right TMDB request; invalid params fall back per RF-10; upstream failure → 502 with `{ reason }`; never includes the token in the response. | RF-2–RF-6, RF-10, RF-14 |
 | `services/explore-client.test.ts` (MSW) | Builds the `/api/explore` URL from `ExploreFilters` + page; parses a valid `MoviePage`; maps 502/network/invalid body to `ServiceResult` errors; forwards the `AbortSignal`. | RF-11, RF-14, RF-15 |
 | `hooks/useDebouncedValue.test.ts` (fake timers) | No update before 300ms; updates after; timer resets on rapid changes. | RF-6 |
-| `hooks/useExploreMovies.test.ts` (MSW + React Query test utils) | First-page success/error; next-page append; next-page failure keeps prior pages + exposes `nextPageError`; `hasNextPage` false after the last page, and also when `total_pages` overstates what `results` actually returns (spec.md Edge cases); `retryNextPage` clears the error and resumes; a response superseded by a newer filter change (while still in flight) is discarded, never applied (Risk #5). | RF-11, RF-12, RF-13, RF-14, RF-15, RF-16, RF-22 |
+| `hooks/useExploreMovies.test.ts` (MSW + React Query test utils) | First-page success/error; next-page append; next-page failure keeps prior pages + exposes `nextPageError`; `hasNextPage` false after the last page, and also when `total_pages` overstates what `results` actually returns (spec.md Edge cases); `retryNextPage` clears the error and resumes; a movie returned on two pages appears once, at its first position, with the rest in order, and a page made only of already-shown movies adds nothing and is no error (RF-23); a response superseded by a newer filter change (while still in flight) is discarded, never applied (Risk #5). | RF-11, RF-12, RF-13, RF-14, RF-15, RF-16, RF-22, RF-23 |
 | `components/GenreFilter.test.tsx`, `YearFilter.test.tsx`, `SortFilter.test.tsx` | Render options; call `onChange`; `GenreFilter` renders nothing when `genres` is `[]` (RF-21). | RF-2, RF-3, RF-4, RF-21 |
 | `components/SearchInput.test.tsx` | Visible label (design.md), calls `onChange` per keystroke (debounce is the hook's job). | RF-6, RF-18 |
 | `components/ClearFiltersButton.test.tsx` | Hidden when `visible={false}`; calls `onClear`. | RF-17 |
@@ -276,7 +277,7 @@ export interface ErrorStateProps {
 
 ## RF coverage matrix
 
-All of RF-1 through RF-22 are covered above — see the "RF" column of each table. No standalone row is needed beyond what's listed.
+All of RF-1 through RF-23 are covered above — see the "RF" column of each table. No standalone row is needed beyond what's listed.
 
 ## RF not covered
 

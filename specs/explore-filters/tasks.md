@@ -1,6 +1,6 @@
 # Tasks — Home explorer: filters, search & infinite scroll
 
-20 tasks, ordered by dependency. `[P]` = does not depend on any pending
+21 tasks, ordered by dependency. `[P]` = does not depend on any pending
 task in its own phase and can be done in parallel with the other `[P]`
 tasks in that phase.
 
@@ -137,3 +137,11 @@ tasks in that phase.
   - Files: `e2e/explore-filters.spec.ts`
   - RF: RF-1, RF-2, RF-6, RF-8, RF-9, RF-10, RF-11, RF-17, RF-20
   - Done when: `pnpm test:e2e` passes — selecting a genre narrows the grid and updates the URL; typing a known title finds it and clears any active filter; scrolling near the bottom loads another page; opening a filtered/search URL directly (no prior navigation) reproduces the same results (RF-9); opening a URL with an invalid filter param degrades gracefully to the popular list (RF-10); clicking "Clear filters" returns to the popular list (RF-17); starting from another page (`/movie/550`), navigating to `/`, applying several changes (genre, year and a search) and then using the browser's real back navigation (`page.goBack()`) once lands straight on `/movie/550`, not on any intermediate filter state — proving every change replaced the history entry instead of pushing one (RF-20's real, unmocked effect; `router.replace` leaves no unfiltered entry of `/` to go back to).
+
+## Phase 7 — Post-implementation fix
+
+- [ ] **T19 — De-duplicate movies across pages**
+  - Depends on: T15
+  - Files: `hooks/useExploreMovies.ts` (modified), `hooks/useExploreMovies.test.ts` (new cases appended; existing tests untouched)
+  - RF: RF-23
+  - Done when: tests (written first, failing before the change) cover — two pages sharing a movie yield `movies` with it only once, at its first position, and every other movie in its original relative order; a page made only of already-shown movies leaves `movies` unchanged, sets no error and leaves `hasNextPage` to TMDB's page info; a movie repeated on a later page keeps the first page's data. Plan D19: the de-duplication happens when pages are joined, not in the cache. Found while testing infinite scroll manually (React duplicate-key warning; reproduced against live TMDB on popular, genre, year and rating-sorted views).
