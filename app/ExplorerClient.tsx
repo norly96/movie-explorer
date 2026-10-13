@@ -58,11 +58,18 @@ export function ExplorerClient({ genres, initial }: ExplorerClientProps) {
   const router = useRouter();
   const pathname = usePathname();
   const paramsString = useSearchParams().toString();
-  const filters = useMemo(
+  const urlFilters = useMemo(
     () => parseExploreParams(new URLSearchParams(paramsString)),
     [paramsString]
   );
-  const urlQuery = filters.mode === "search" ? filters.query : "";
+  const urlQuery = urlFilters.mode === "search" ? urlFilters.query : "";
+
+  // router.replace only updates the URL after the server round trip. The
+  // filters just chosen are kept here until it does, so a second change
+  // made in between builds on the first instead of on the stale URL (RF-5)
+  // and the controls reflect the choice right away.
+  const [pending, setPending] = useState<ExploreFilters | null>(null);
+  const filters = pending ?? urlFilters;
 
   const [searchText, setSearchText] = useState(urlQuery);
   const resultsRef = useRef<HTMLDivElement>(null);
@@ -75,6 +82,7 @@ export function ExplorerClient({ genres, initial }: ExplorerClientProps) {
   const [seenParams, setSeenParams] = useState(paramsString);
   if (seenParams !== paramsString) {
     setSeenParams(paramsString);
+    setPending(null);
     if (writtenParams !== paramsString) setSearchText(urlQuery);
   }
 
@@ -83,6 +91,7 @@ export function ExplorerClient({ genres, initial }: ExplorerClientProps) {
     if (params === exploreFiltersToSearchParams(filters).toString()) return;
 
     setWrittenParams(params);
+    setPending(next);
     router.replace(params ? `${pathname}?${params}` : pathname, {
       scroll: false,
     });

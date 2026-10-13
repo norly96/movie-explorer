@@ -578,3 +578,61 @@ describe("ExplorerClient — degraded genres and keyboard", () => {
     expect(screen.getByLabelText("Sort by")).toHaveFocus();
   });
 });
+
+describe("ExplorerClient — asynchronous navigation", () => {
+  // Real router.replace doesn't update the URL until the server round trip
+  // finishes; the mock above is synchronous, so these tests defer it.
+  function deferReplace(delayMs: number, times: number) {
+    for (let i = 0; i < times; i++) {
+      nav.replace.mockImplementationOnce((url: string) => {
+        setTimeout(() => act(() => nav.set(url.split("?")[1] ?? "")), delayMs);
+      });
+    }
+  }
+
+  it("keeps an earlier filter when the next one is chosen before the URL catches up (RF-5)", async () => {
+    const user = userEvent.setup();
+    serve();
+    renderExplorer();
+    await screen.findByText("popular p1");
+    deferReplace(150, 2);
+
+    await user.selectOptions(screen.getByLabelText("Genre"), "Drama");
+    await user.selectOptions(screen.getByLabelText("Year"), "1999");
+
+    await waitFor(() => expect(nav.state.search).toBe("genre=18&year=1999"), {
+      timeout: 1500,
+    });
+    expect(urls()).toEqual(["/?genre=18", "/?genre=18&year=1999"]);
+    expect(screen.getByLabelText("Genre")).toHaveValue("18");
+    expect(screen.getByLabelText("Year")).toHaveValue("1999");
+  });
+
+  it("shows the chosen filter right away, before the URL has updated", async () => {
+    const user = userEvent.setup();
+    serve();
+    renderExplorer();
+    await screen.findByText("popular p1");
+    deferReplace(300, 1);
+
+    await user.selectOptions(screen.getByLabelText("Genre"), "Drama");
+
+    expect(nav.state.search).toBe("");
+    expect(screen.getByLabelText("Genre")).toHaveValue("18");
+    await waitFor(() => expect(nav.state.search).toBe("genre=18"), {
+      timeout: 1500,
+    });
+    expect(screen.getByLabelText("Genre")).toHaveValue("18");
+  });
+
+  it("still follows a URL change from outside while nothing is pending", async () => {
+    serve();
+    renderExplorer();
+    await screen.findByText("popular p1");
+
+    act(() => nav.set("genre=28"));
+
+    expect(await screen.findByText("genre=28 p1")).toBeInTheDocument();
+    expect(screen.getByLabelText("Genre")).toHaveValue("28");
+  });
+});
