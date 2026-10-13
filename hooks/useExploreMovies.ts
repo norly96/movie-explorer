@@ -46,6 +46,19 @@ function filtersKey(filters: ExploreFilters): string {
   return exploreFiltersToSearchParams(filters).toString();
 }
 
+// TMDB's ordering shifts between page requests, so consecutive pages can
+// overlap (RF-23, plan.md D19). The first appearance wins, so cards don't
+// jump when a page loads, and ids stay unique for React keys. Done when the
+// pages are joined, not in the cache, which keeps every page as TMDB sent it.
+function uniqueById(movies: Movie[]): Movie[] {
+  const seen = new Set<number>();
+  return movies.filter((movie) => {
+    if (seen.has(movie.id)) return false;
+    seen.add(movie.id);
+    return true;
+  });
+}
+
 // Past this age a cached view is refetched when revisited.
 const STALE_TIME_MS = 5 * 60 * 1000;
 
@@ -105,7 +118,7 @@ export function useExploreMovies(
   };
 
   return {
-    movies: query.data?.pages.flatMap((page) => page.movies) ?? [],
+    movies: uniqueById(query.data?.pages.flatMap((page) => page.movies) ?? []),
     isFirstLoading: query.isPending,
     firstPageError:
       query.isError && !query.data ? reasonOf(query.error) : null,

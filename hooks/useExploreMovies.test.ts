@@ -351,3 +351,104 @@ describe("useExploreMovies", () => {
     expect(calls).toHaveLength(1);
   });
 });
+
+describe("useExploreMovies — movies repeated across pages (RF-23)", () => {
+  // TMDB's ordering shifts between requests, so consecutive pages overlap.
+  function servePages(byPage: Record<number, number[]>, totalPages = 3) {
+    return serve((url) => {
+      const n = pageOf(url);
+      return HttpResponse.json(page(n, totalPages, byPage[n] ?? []));
+    });
+  }
+
+  async function scrollTo(
+    result: { current: ReturnType<typeof useExploreMovies> },
+    expectedPages: number
+  ) {
+    for (let i = 1; i < expectedPages; i++) {
+      act(() => result.current.fetchNextPage());
+      await waitFor(() => expect(result.current.isFetchingNextPage).toBe(false));
+    }
+  }
+
+  it("shows a movie returned on two pages only once, at its first position", async () => {
+    servePages({ 1: [11, 12, 13], 2: [13, 21, 22] });
+
+    const { result } = setup(POPULAR);
+    await loadFirstPage(result);
+    await scrollTo(result, 2);
+
+    expect(ids(result.current.movies)).toEqual([11, 12, 13, 21, 22]);
+  });
+
+  it("keeps the relative order of every other movie across several overlapping pages", async () => {
+    servePages({ 1: [1, 2, 3], 2: [3, 4, 2], 3: [5, 1, 6] });
+
+    const { result } = setup(POPULAR);
+    await loadFirstPage(result);
+    await scrollTo(result, 3);
+
+    expect(ids(result.current.movies)).toEqual([1, 2, 3, 4, 5, 6]);
+  });
+
+  it("keeps the data of the first appearance", async () => {
+    serve((url) =>
+      HttpResponse.json(
+        pageOf(url) === 1
+          ? { movies: [{ ...movie(12), title: "First sighting" }], page: 1, totalPages: 2 }
+          : { movies: [{ ...movie(12), title: "Second sighting" }, movie(21)], page: 2, totalPages: 2 }
+      )
+    );
+
+    const { result } = setup(POPULAR);
+    await loadFirstPage(result);
+    await scrollTo(result, 2);
+
+    expect(result.current.movies.map((m) => m.title)).toEqual([
+      "First sighting",
+      "Movie 21",
+    ]);
+  });
+
+  it("treats a page made only of already-shown movies as no change and no error", async () => {
+    servePages({ 1: [11, 12], 2: [11, 12], 3: [31, 32] });
+
+    const { result } = setup(POPULAR);
+    await loadFirstPage(result);
+    await scrollTo(result, 2);
+
+    expect(ids(result.current.movies)).toEqual([11, 12]);
+    expect(result.current.nextPageError).toBeNull();
+    expect(result.current.firstPageError).toBeNull();
+    // TMDB still reports a page 3, so loading goes on as usual (RF-11/RF-12).
+    expect(result.current.hasNextPage).toBe(true);
+
+    act(() => result.current.fetchNextPage());
+    await waitFor(() =>
+      expect(ids(result.current.movies)).toEqual([11, 12, 31, 32])
+    );
+  });
+
+  it("leaves hasNextPage to TMDB's page info when the last page only repeats movies", async () => {
+    servePages({ 1: [11, 12], 2: [11, 12] }, 2);
+
+    const { result } = setup(POPULAR);
+    await loadFirstPage(result);
+    await scrollTo(result, 2);
+
+    expect(ids(result.current.movies)).toEqual([11, 12]);
+    expect(result.current.hasNextPage).toBe(false);
+  });
+
+  it("returns a list without repeated ids, which is what unique React keys need", async () => {
+    servePages({ 1: [1, 2, 3], 2: [2, 3, 4], 3: [4, 5, 1] });
+
+    const { result } = setup(POPULAR);
+    await loadFirstPage(result);
+    await scrollTo(result, 3);
+
+    const all = ids(result.current.movies);
+    expect(new Set(all).size).toBe(all.length);
+  });
+});
+

@@ -140,7 +140,7 @@ tasks in that phase.
 
 ## Phase 7 — Post-implementation fix
 
-- [ ] **T19 — De-duplicate movies across pages**
+- [x] **T19 — De-duplicate movies across pages**
   - Depends on: T15
   - Files: `hooks/useExploreMovies.ts` (modified), `hooks/useExploreMovies.test.ts` (new cases appended; existing tests untouched)
   - RF: RF-23
