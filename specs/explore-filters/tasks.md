@@ -82,7 +82,7 @@ tasks in that phase.
   - RF: RF-4
   - Done when: renders all `SortOption` values as options; calls `onChange` with the selected one.
 
-- [ ] **T13 — FilterBar component**
+- [x] **T13 — FilterBar component**
   - Depends on: T06, T10, T11, T12
   - Files: `components/FilterBar.tsx`, `components/FilterBar.test.tsx`
   - RF: RF-2, RF-3, RF-4, RF-17
