@@ -70,7 +70,7 @@ tasks in that phase.
   - RF: RF-2, RF-21
   - Done when: renders nothing when `genres` is `[]` (RF-21/plan.md D14); renders a `<select>` with one option per genre when non-empty; calls `onChange` with the selected genre id.
 
-- [ ] **T11 [P] — YearFilter component**
+- [x] **T11 [P] — YearFilter component**
   - Depends on: —
   - Files: `components/YearFilter.tsx`, `components/YearFilter.test.tsx`
   - RF: RF-3
