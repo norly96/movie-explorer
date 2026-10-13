@@ -1,3 +1,57 @@
+# movie-explorer
+
+A [Next.js](https://nextjs.org) (App Router) app that consumes the
+[TMDB](https://www.themoviedb.org) API: browse popular movies, filter by
+genre, year and sort order, search by title, scroll infinitely and open a
+detail page. Built as a portfolio project.
+
+**Stack:** Next.js 16, React 19, TypeScript (strict), Tailwind CSS v4,
+TanStack Query, Zod, Vitest, Testing Library, MSW, Playwright.
+
+## How this project is built
+
+This project is built with **spec-driven development**, using
+[Claude Code](https://claude.com/claude-code) as an AI pair programmer. The
+division of work is explicit and documented in the repo:
+
+- **Spec before code.** Every feature has `spec.md` (EARS requirements),
+  `plan.md` and `tasks.md` under [`specs/`](./specs), and none of them is
+  implemented until the author has approved them:
+  [popular movies](./specs/popular-movies),
+  [movie detail](./specs/movie-detail),
+  [explore filters](./specs/explore-filters).
+- **One task at a time, tests first.** For each task the agent writes a
+  failing test, implements until it passes, runs the full suite, marks the
+  task done in `tasks.md` and stops for review. A test is never edited to
+  make it pass.
+- **Rules the agent must follow** live in version control:
+  [`AGENTS.md`](./AGENTS.md) (imported by `CLAUDE.md`),
+  [`docs/constitution.md`](./docs/constitution.md) and
+  [`docs/design.md`](./docs/design.md). If a rule or the spec doesn't fit a
+  real need, the agent stops and asks instead of working around it.
+- **Decisions are recorded.** Architecture choices and the alternatives
+  that were rejected are listed in each `plan.md`. Changes made during
+  implementation went back into the spec first, for example RF-23 and the
+  `/api/explore` proxy route in `explore-filters`.
+- **Attribution.** Commits written with Claude carry a `Co-Authored-By`
+  trailer, which is why Claude shows up as a co-author on GitHub.
+
+### Commands
+
+```bash
+pnpm dev            # local server
+pnpm test           # unit and integration tests (Vitest)
+pnpm test:e2e       # Playwright, against the live TMDB API
+pnpm lint
+pnpm tsc --noEmit   # type check
+```
+
+Copy `.env.example` to `.env.local` and set `TMDB_ACCESS_TOKEN` (a TMDB v4
+read access token). It is only read on the server and never reaches the
+browser.
+
+---
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
