@@ -76,7 +76,7 @@ tasks in that phase.
   - RF: RF-3
   - Done when: renders a bounded `<select>` of years (current year down to a fixed floor); calls `onChange` with the selected year.
 
-- [ ] **T12 [P] — SortFilter component**
+- [x] **T12 [P] — SortFilter component**
   - Depends on: T03 (uses the `SortOption` type)
   - Files: `components/SortFilter.tsx`, `components/SortFilter.test.tsx`
   - RF: RF-4
