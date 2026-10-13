@@ -132,8 +132,8 @@ tasks in that phase.
 
 ## Phase 6 — End to end
 
-- [ ] **T18 — E2E suite**
+- [x] **T18 — E2E suite**
   - Depends on: T16, T17
   - Files: `e2e/explore-filters.spec.ts`
   - RF: RF-1, RF-2, RF-6, RF-8, RF-9, RF-10, RF-11, RF-17, RF-20
-  - Done when: `pnpm test:e2e` passes — selecting a genre narrows the grid and updates the URL; typing a known title finds it and clears any active filter; scrolling near the bottom loads another page; opening a filtered/search URL directly (no prior navigation) reproduces the same results (RF-9); opening a URL with an invalid filter param degrades gracefully to the popular list (RF-10); clicking "Clear filters" returns to the popular list (RF-17); starting at `/` with no filters, applying a genre filter and then using the browser's real back navigation (`page.goBack()`) returns straight to the unfiltered popular list in one step, not through an intermediate state (RF-20's real, unmocked effect).
+  - Done when: `pnpm test:e2e` passes — selecting a genre narrows the grid and updates the URL; typing a known title finds it and clears any active filter; scrolling near the bottom loads another page; opening a filtered/search URL directly (no prior navigation) reproduces the same results (RF-9); opening a URL with an invalid filter param degrades gracefully to the popular list (RF-10); clicking "Clear filters" returns to the popular list (RF-17); starting from another page (`/movie/550`), navigating to `/`, applying several changes (genre, year and a search) and then using the browser's real back navigation (`page.goBack()`) once lands straight on `/movie/550`, not on any intermediate filter state — proving every change replaced the history entry instead of pushing one (RF-20's real, unmocked effect; `router.replace` leaves no unfiltered entry of `/` to go back to).
