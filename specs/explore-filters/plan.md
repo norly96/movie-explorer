@@ -8,6 +8,7 @@ No implementation code below — types and interfaces only.
 | Module | Responsibility | RF |
 |---|---|---|
 | `app/page.tsx` (modified) | Server Component. Reads `searchParams`, parses them via `explore-params.ts`, fetches the genre list + the first page of movies in parallel, renders `ExplorerClient` with that as initial data. Passes `genres: []` down if the genre fetch fails, instead of failing the page. | RF-1, RF-9, RF-21 |
+| `app/resolve-explore-page.ts` (new) | Pure async function used by `page.tsx`: `searchParams` → `ExploreFilters` → first page + genres (genre failure degrades to `[]`, RF-21). Exists so the server-side decisions are unit-testable (decision #6 of Spec 1: async Server Components can't be rendered with Testing Library). | RF-9, RF-10, RF-21 |
 | `app/explore-params.ts` (new) | Pure, shared by server and client: `ExploreFilters` ↔ URL query params. The single place that parses an incoming URL and the single place that serializes filters back into one. | RF-7, RF-8, RF-9, RF-10 |
 | `app/Providers.tsx` (new) | `'use client'`. Wraps the app in `QueryClientProvider` with one stable `QueryClient` per request. Rendered from `app/layout.tsx`. | — (infra for RF-2–RF-22) |
 | `app/ExplorerClient.tsx` (new) | `'use client'`. Composition root: wires `useExploreMovies`, owns the URL-write side effects (filter change → replace URL → scroll to top), renders `FilterBar`, `SearchInput`, `ClearFiltersButton` and the grid/loading/empty/error states. | RF-5, RF-7, RF-11–RF-20 |
