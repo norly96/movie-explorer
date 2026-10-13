@@ -124,7 +124,7 @@ tasks in that phase.
   - RF: RF-1, RF-9, RF-21
   - Done when: the server-side decisions live in a pure `resolveExplorePage` (next to `resolve-view-state.ts`, plan.md decision #6: async Server Components can't be rendered with Testing Library) and are unit-tested with MSW — `searchParams` → filters via `parseExploreParams` (RF-9, RF-10), the matching first page fetched with `explore-service`, and a failed `getGenres()` degrading to `genres: []` while the page still resolves (RF-21). Manual checks on top of that: `pnpm dev` on `/` with no query params still shows the exact Spec 1 popular list (regression); a URL with valid discover or search params server-renders the matching first page of results, visible with JavaScript disabled (manual check, satisfies the Data-flow NFR); typechecks against `PageProps<"/">`; when `getGenres()` fails, `page.tsx` passes `genres: []` to `ExplorerClient` instead of propagating the failure as a page-level error (RF-21) — verified by simulating a failed genre fetch and checking the page still renders normally.
 
-- [ ] **T17 — app/ExplorerClient.tsx (integration)**
+- [x] **T17 — app/ExplorerClient.tsx (integration)**
   - Depends on: T04, T05, T06, T07, T08, T09, T13, T15 (no longer T16 — see T16)
   - Files: `app/ExplorerClient.tsx`, `app/ExplorerClient.test.tsx`
   - RF: RF-5, RF-7, RF-13, RF-14, RF-16, RF-17, RF-18, RF-19, RF-20, RF-21

@@ -19,6 +19,7 @@ export interface UseExploreMoviesResult {
   hasNextPage: boolean; // RF-12
   fetchNextPage: () => void; // RF-11
   retryNextPage: () => void; // RF-22
+  retryFirstPage: () => void; // RF-14
 }
 
 // The first page the server already rendered (plan.md D1, Risk #1), so
@@ -99,6 +100,10 @@ export function useExploreMovies(
     void query.fetchNextPage();
   };
 
+  const retryFirstPage = () => {
+    void query.refetch();
+  };
+
   return {
     movies: query.data?.pages.flatMap((page) => page.movies) ?? [],
     isFirstLoading: query.isPending,
@@ -109,5 +114,6 @@ export function useExploreMovies(
     hasNextPage: query.hasNextPage,
     fetchNextPage,
     retryNextPage,
+    retryFirstPage,
   };
 }
