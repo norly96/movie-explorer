@@ -115,6 +115,10 @@ Visitor (unauthenticated) — same actor as Spec 1 and Spec 2.
 - RF-22: WHEN a failed additional-page request (RF-15) is retried
   successfully, THE SYSTEM clears the inline error and resumes normal
   infinite-scroll behavior for subsequent pages.
+- RF-23: IF a page loaded during infinite scroll contains a movie that is
+  already rendered for the active filter/search state, THEN THE SYSTEM
+  shows that movie only once, at the position where it first appeared,
+  and keeps the relative order of every other movie.
 
 ## Non-functional requirements
 - **Data flow**: the initial, unfiltered view (RF-1) renders
@@ -169,6 +173,12 @@ Visitor (unauthenticated) — same actor as Spec 1 and Spec 2.
 - TMDB reports more pages are available (`total_pages`) but the next
   page actually returns an empty `results` array: treated the same as
   RF-12 (exhausted), not as an error.
+- TMDB's ordering can shift between two page requests (popularity and
+  rating change over time), so consecutive pages may overlap and return
+  the same movie twice: handled by RF-23, neither an error nor
+  "exhausted". A page whose movies are all already rendered simply adds
+  nothing visible; loading continues as usual while TMDB reports more
+  pages (RF-11/RF-12).
 
 ## Out of scope
 - Selecting more than one genre at a time.
@@ -184,7 +194,7 @@ Visitor (unauthenticated) — same actor as Spec 1 and Spec 2.
   not a full audit.
 
 ## Definition of done
-- RF-1 through RF-22 each have a passing automated test.
+- RF-1 through RF-23 each have a passing automated test.
 - Manual demo: filtering by genre/year/sort together narrows the
   grid; search finds a known title; scrolling loads further pages and
   stops cleanly once exhausted; the resulting URL reopened in a fresh
