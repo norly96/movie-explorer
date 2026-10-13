@@ -110,7 +110,7 @@ tasks in that phase.
 
 ## Phase 4 — Hook layer
 
-- [ ] **T15 — useExploreMovies hook**
+- [x] **T15 — useExploreMovies hook**
   - Depends on: T01, T14b
   - Files: `hooks/useExploreMovies.ts`, `hooks/useExploreMovies.test.ts`
   - RF: RF-11, RF-12, RF-13, RF-14, RF-15, RF-16, RF-22
