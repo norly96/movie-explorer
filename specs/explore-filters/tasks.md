@@ -56,7 +56,7 @@ tasks in that phase.
   - RF: RF-14
   - Done when: Spec 1/2's existing `retryHref`-only tests pass unmodified; when `onRetry` is passed, renders a `<button onClick={onRetry}>` instead of the `<Link retryHref>`.
 
-- [ ] **T09 [P] — useInfiniteScrollTrigger hook**
+- [x] **T09 [P] — useInfiniteScrollTrigger hook**
   - Depends on: —
   - Files: `hooks/useInfiniteScrollTrigger.ts`, `hooks/useInfiniteScrollTrigger.test.ts`, `vitest.setup.ts` (modified)
   - RF: RF-11, RF-12
