@@ -118,7 +118,7 @@ tasks in that phase.
 
 ## Phase 5 — Composition
 
-- [ ] **T16 — app/page.tsx (server rewrite)**
+- [x] **T16 — app/page.tsx (server rewrite)**
   - Depends on: T03, T14, T17 (done *before* T16: `page.tsx` renders `ExplorerClient`, so it can't exist first; `ExplorerClient` takes `genres` and the server-fetched first page as props and doesn't care where they come from)
   - Files: `app/page.tsx` (modified), `app/resolve-explore-page.ts`, `app/resolve-explore-page.test.ts`
   - RF: RF-1, RF-9, RF-21
