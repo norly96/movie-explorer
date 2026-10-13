@@ -64,7 +64,7 @@ tasks in that phase.
 
 ## Phase 2 — Filter components
 
-- [ ] **T10 [P] — GenreFilter component**
+- [x] **T10 [P] — GenreFilter component**
   - Depends on: T02
   - Files: `components/GenreFilter.tsx`, `components/GenreFilter.test.tsx`
   - RF: RF-2, RF-21
