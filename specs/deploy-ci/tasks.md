@@ -38,7 +38,7 @@ Dependencies at a glance:
 
 ## Phase 1 — Entry point and workflows
 
-- [ ] **T03 [P] — Verification entry point**
+- [x] **T03 [P] — Verification entry point**
   - Depends on: T01, T02
   - Files: `scripts/verify-deployment-cli.ts`, `scripts/verify-deployment-cli.test.ts`, `tsconfig.json` (modified)
   - RF: RF-14, RF-15 (and RF-3: it runs on the declared Node.js version)
