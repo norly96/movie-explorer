@@ -30,7 +30,7 @@ Dependencies at a glance:
   - RF: RF-1 (a lint warning fails), RF-3 (Node.js declared once), RF-5
   - Done when: a `package.json` block in `ci-config.test.ts` (written first, failing) asserts that `scripts.typecheck` runs the compiler without emitting, that `engines.node` is declared as a major-version range (`24.x`), and that `scripts.lint` fails on any warning; the test passes; `pnpm typecheck` and `pnpm lint` both exit 0 on the current code; the full suite still passes; no dependency added.
 
-- [ ] **T02 [P] — Verification library**
+- [x] **T02 [P] — Verification library**
   - Depends on: —
   - Files: `scripts/verify-deployment.ts`, `scripts/verify-deployment.test.ts`
   - RF: RF-13, RF-14
