@@ -16,14 +16,17 @@ and the "data model" is the script's types and the configuration shapes.
 | Module | Kind | Responsibility | RF |
 |---|---|---|---|
 | `.github/workflows/ci.yml` (new) | Workflow | Four independent jobs — `lint`, `typecheck`, `test`, `build` — on pull requests to `main` and on pushes to `main`; read-only token; install from the frozen lockfile; no secrets; cancels superseded pull-request runs | RF-1, 2, 3, 4, 6, 20 |
-| `.github/workflows/verify-deployment.yml` (new) | Workflow | Runs the verification when Vercel reports a successful **Production** deployment, or manually with an optional address; writes the commit status `deployment-health` on the deployed commit | RF-13, 14, 15, 16 |
+| `.github/workflows/verify-deployment.yml` (new) | Workflow | Runs the verification when Vercel reports a successful **Production** deployment, or manually with an optional address (default: the production address, held in the repository variable `PRODUCTION_URL`, never in a file); writes the commit status `deployment-health` on the deployed commit | RF-13, 14, 15, 16, 18 |
 | `scripts/verify-deployment.ts` (new) | Script (library) | Pure decision logic: probe the home page and `/api/explore`, return a structured result. Dependency-free (Node built-ins only) | RF-13, 14 |
 | `scripts/verify-deployment-cli.ts` (new) | Script (entry) | Parses the address, calls the library, prints a readable report, sets the exit code (0 healthy, 1 unhealthy, 2 bad usage) | RF-14, 15 |
 | `package.json` (modified) | Config | `typecheck` script; `engines.node` as the single declaration of the Node.js version; `lint` made to fail on warnings | RF-1, 3, 5 |
+| `tsconfig.json` (modified) | Config | `allowImportingTsExtensions`, so the entry point can import the library with the `.ts` extension that Node's type stripping requires; compatible with `noEmit` | RF-13, 14, 15 |
+| `AGENTS.md` (modified) | Docs | Stack (GitHub Actions, Vercel) and folder structure (`.github/`, `scripts/`, `docs/deployment/`), as `AGENTS.md` itself requires when the stack changes | — (housekeeping, no RF) |
 | `docs/deployment/ruleset-main-gate.json` (new) | Config (reference) | Definition of the ruleset that blocks merging while checks fail, requires an up-to-date branch, no review approvals, owner bypass | RF-7, 8, 19 |
 | `docs/deployment/ruleset-main-history.json` (new) | Config (reference) | Definition of the ruleset that forbids force-push and deletion of `main`, **no bypass** | RF-21 |
 | `README.md` (modified) | Docs | "Deployment" guide: connect the platform, environment variable for production **and** preview, apply the rulesets, run the verification manually, roll back manually; replaces the generic "Deploy on Vercel" boilerplate; contains no deployment address | RF-16, 17, 18 |
 | GitHub repository rulesets (settings) | Platform | The two rulesets above, applied from the JSON files with the `gh` CLI (a manual step, approved at that moment) | RF-7, 8, 19, 21 |
+| GitHub repository variable `PRODUCTION_URL` (settings) | Platform | Holds the production address for the manual verification; not a secret, and kept outside the files of the repository | RF-15, 18 |
 | Vercel project (settings) | Platform | Git integration with `main` as the production branch; preview deployments for pull requests; `TMDB_ACCESS_TOKEN` as a sensitive server-side variable for Production and Preview | RF-9, 10, 11, 12 |
 | `ci-config.test.ts` (new, project root) | Test | Reads workflows, `package.json`, rulesets and docs as text/JSON and asserts the essentials | RF-1–8, 11, 13–21 (see matrix) |
 | `scripts/verify-deployment.test.ts`, `scripts/verify-deployment-cli.test.ts` (new) | Tests | Decision logic with mocked responses; the entry point on the declared Node.js version | RF-13, 14, 15 |
@@ -58,6 +61,7 @@ Vercel (Git integration)
           .github/workflows/verify-deployment.yml (name: "Verify deployment")
             ├─ trigger A: deployment_status  → target = that deployment's own address
             ├─ trigger B: workflow_dispatch  → target = given address, else the production address
+            │                                   (repository variable PRODUCTION_URL, never a file)
             └─ job "verify": checkout → Node → run scripts/verify-deployment-cli.ts <target>
                               → commit status "deployment-health" on the deployed commit
 ```
@@ -123,7 +127,8 @@ export function verifyDeployment(
 
 ```ts
 // scripts/verify-deployment-cli.ts — contract only
-// usage:  node scripts/verify-deployment-cli.ts <address> [--timeout <ms>]
+// usage:  node scripts/verify-deployment-cli.ts <address> [--timeout <ms>] [--attempts <n>] [--delay <ms>]
+// retries live here (default 3 attempts); the library stays single-shot
 // exit codes: 0 = healthy · 1 = unhealthy (report printed) · 2 = bad usage
 ```
 
@@ -138,7 +143,11 @@ export interface RulesetDefinition {
   target: "branch";
   enforcement: "active";
   conditions: { ref_name: { include: string[]; exclude: string[] } };
-  bypass_actors: { actor_type: string; bypass_mode: "always" | "pull_request" }[];
+  bypass_actors: {
+    actor_type: string;
+    actor_id: number | "__ADMIN_ROLE_ID__"; // placeholder, replaced with the looked-up value when applied
+    bypass_mode: "always" | "pull_request";
+  }[];
   rules: { type: string; parameters?: unknown }[];
 }
 
@@ -152,7 +161,8 @@ export interface DeploymentHealthStatus {
 ```
 
 `package.json` gains: `scripts.typecheck`, `engines.node`, and a `lint` script
-that fails on warnings. No dependency is added.
+that fails on warnings. `tsconfig.json` gains `allowImportingTsExtensions`. No
+dependency is added.
 
 ## Decisions
 
@@ -245,24 +255,46 @@ that fails on warnings. No dependency is added.
 17. **End-to-end tests stay out of the workflows** (spec, out of scope).
     Unit tests use MSW and never touch the network, so the required checks are
     deterministic.
+18. **`tsconfig.json` allows importing `.ts` paths** (`allowImportingTsExtensions`).
+    Node's type stripping only resolves imports that name the `.ts` file, and
+    with `moduleResolution: "bundler"` the compiler rejects those imports
+    unless this option is on; it is valid because the project already sets
+    `noEmit`. *Rejected*: dropping the extension — Node would not find the file.
+    *Rejected*: one file for library and entry point — it brings back the side
+    effects on import that decision 8 avoids. (RF-13, 14, 15)
+19. **The production address for the manual verification is a repository
+    variable (`PRODUCTION_URL`), not a file and not a secret.** A workflow
+    definition is tracked in a public repository, so a literal address there
+    would break RF-18; a secret is unnecessary (the address is not sensitive)
+    and would be masked in logs, making failures unreadable. *Rejected*:
+    discovering the address through the hosting platform's API — it needs a
+    platform token stored in GitHub, against RF-6's spirit and the security
+    requirement. The automatic path never needs the variable: it uses the
+    address carried by the event. (RF-15, 18)
 
 ## Rollout order (the order matters)
 
-1. **Repository files first, through a normal pull request** (workflows,
-   script, `package.json`, rulesets JSON, README). The pull request that adds
-   the CI runs the CI on itself, because pull-request workflows use the
-   definition in the branch.
-2. **Connect Vercel and set the variable** for Production and Preview. Until
-   then nothing is deployed and nothing breaks.
-3. **Apply the rulesets only after the checks have run at least once.** A
-   required check that has never reported blocks every merge, including the one
-   that would fix it. The bypass exists for this case, but it is not the plan.
-4. **The verification workflow must already be on `main` before the first
-   production deployment it should judge:** `deployment_status` workflows run
-   with the default branch's definition, so a definition that exists only in a
-   branch is ignored.
+1. **Repository files first, on the feature branch, then open the pull
+   request.** The pull request that adds the CI runs the CI on itself, because
+   pull-request workflows use the definition in the branch.
+2. **Connect Vercel while that pull request is open**, set the token for
+   Production and Preview, and create the `PRODUCTION_URL` repository variable.
+   The open pull request then gets its own preview (RF-10 seen on the pull
+   request itself) and problems with Node.js or the token surface before
+   merging. The first production deployment that Vercel makes when it is
+   connected happens before the verification workflow exists on `main`, so it is
+   not judged; that is accepted.
+3. **Merge.** Merging puts the verification workflow on `main` and triggers the
+   first production deployment that it judges. `deployment_status` workflows
+   run with the default branch's definition, so a definition that exists only in
+   a branch would be ignored — which is why the merge comes before judging
+   anything.
+4. **Apply the rulesets only after the checks have run on `main` at least
+   once.** A required check that has never reported blocks every merge,
+   including the one that would fix it. The bypass exists for this case, but it
+   is not the plan.
 5. **Run the demonstrations** of the spec's Definition of done and record them
-   in the pull request description.
+   in the description of the pull request, which is edited after the merge.
 
 ## Risks
 
@@ -286,8 +318,9 @@ that fails on warnings. No dependency is added.
    triggered by a deployment event is attributed to the integration, not to
    the maintainer, so GitHub's usual failure email may not be sent. Mitigation:
    the red `deployment-health` status is on the commit itself, and the README
-   tells the maintainer where to look. The spec accepts the platform's normal
-   notifications and builds none of its own. (RF-14)
+   tells the maintainer where to look. The spec promises a notification only
+   where the platform provides one and builds none of its own; the
+   demonstration records whether one actually arrived. (RF-14)
 5. **Flaky timing-based tests would block merges.** Several tests wait on real
    timers (the debounce, infinite-scroll and query tests). Slower runners can
    expose races. Mitigation: the Definition of done requires five consecutive
@@ -324,20 +357,26 @@ that fails on warnings. No dependency is added.
     Preview-scoped variable temporarily, opening a pull request, running the
     manual verification against its address, and restoring the variable. The
     README lists the steps so the order is not improvised. (RF-15)
+14. **The `PRODUCTION_URL` variable might be missing.** A manual run with no
+    address and no variable gives the entry point an empty target; it exits with
+    a usage error (code 2) and says what is missing instead of probing
+    something else. The automatic path is unaffected. (RF-15)
 
 ## Test strategy
 
 | File | Covers | RF |
 |---|---|---|
-| `ci-config.test.ts` | `ci.yml`: triggers (pull request to `main`, push to `main`), four job names, `contents: read`, frozen-lockfile install, Node version taken from `package.json`, pnpm via Corepack, concurrency that cancels only pull-request runs, **no secret references**, every outside step pinned to a 40-character identifier and published by GitHub, no end-to-end step | RF-1, 2, 3, 4, 6, 20 |
+| `ci-config.test.ts` | `ci.yml`: triggers (pull request to `main`, push to `main`), four job names, `contents: read`, frozen-lockfile install, Node version taken from `package.json`, pnpm via Corepack, concurrency that cancels only pull-request runs, **no secret references**, every outside step pinned to a 40-character identifier and published by GitHub, no end-to-end step, **each job runs its own command** (`pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`), no `paths`/`paths-ignore` filter | RF-1, 2, 3, 4, 5, 6, 20 |
 | `ci-config.test.ts` | `package.json`: `typecheck` script runs the compiler without emitting, `engines.node` present, `lint` fails on warnings | RF-1, 3, 5 |
-| `ci-config.test.ts` | `verify-deployment.yml`: triggers (`deployment_status` for Production, `workflow_dispatch` with an optional address), `statuses: write` only on the job that needs it, status context `deployment-health`, uses the event's own address, **contains no step that rolls anything back** | RF-13, 14, 15, 16 |
+| `ci-config.test.ts` | `verify-deployment.yml`: triggers (`deployment_status` for Production, `workflow_dispatch` with an optional address), `statuses: write` only on the job that needs it, status context `deployment-health`, uses the event's own address (manual run: the input, then the `PRODUCTION_URL` variable), contains **no literal deployment address**, **contains no step that rolls anything back** | RF-13, 14, 15, 16, 18 |
 | `ci-config.test.ts` | `docs/deployment/*.json`: valid JSON; the gate lists exactly the four job names, strict up-to-date policy, **no review rule**, a bypass actor; the history ruleset forbids force-push and deletion and has **no bypass** | RF-7, 8, 19, 21 |
-| `ci-config.test.ts` | README: deployment section names the environment variable and both environments, the rulesets, the manual verification and the manual rollback; no address on the platform's default domain in README, `docs/`, `specs/`; the existing `no-secret-leak` test keeps passing | RF-11, 16, 17, 18 |
+| `ci-config.test.ts` | README: deployment section names the environment variable and both environments, the rulesets, the manual verification and the manual rollback; the README also explains the `PRODUCTION_URL` variable (its name and how to create it, never its value), the steps to verify a preview deployed without the token and where to look for failures; no address on the platform's default domain in README, `docs/`, `specs/` or `.github/`; the existing `no-secret-leak` test keeps passing | RF-11, 16, 17, 18 |
 | `scripts/verify-deployment.test.ts` (MSW) | Both probes healthy → healthy; home 5xx; API 5xx; API with an empty `movies` array; API with a body that is not the expected shape; network error; timeout; trailing slash in the target; both probes always reported | RF-13, 14 |
 | `scripts/verify-deployment-cli.test.ts` | Runs the entry point as a child process on the declared Node.js version: no argument → exit 2; unreachable address → exit 1 with a readable report | RF-14, 15 |
-| Recorded demonstrations (PR description) | The six items of the spec's Definition of done: red check blocks and green merges; stale branch blocked and force-push rejected; merge deploys, checks run on `main`, preview URL appears; verification green on a healthy deployment and red on a preview without the token; repository description and website field free of any address; a deliberately broken build fails on a preview while production keeps serving the previous version | RF-7, 8, 9, 10, 12, 15, 19, 20, 21 (and 14) |
-| Five consecutive green runs | Stability of the required checks on the platform's runners | NFR Stable checks |
+| Recorded demonstrations (PR description) | The six items of the spec's Definition of done: red check blocks and green merges; stale branch blocked and force-push rejected; merge deploys, checks run on `main`, preview URL appears; verification green on a healthy deployment and red on a preview without the token (noting whether a failure notification reached the maintainer); repository description and website field free of any address; a deliberately broken build fails on a preview while production keeps serving the previous version | RF-7, 8, 9, 10, 12, 15, 19, 20, 21 (and 14) |
+| Five consecutive green runs | Stability of the required checks on the platform's runners; each run's duration noted against the 10-minute target | NFR Stable checks, Speed |
+| `pnpm typecheck` (the CI job) | `tsconfig.json` accepts the entry point's `.ts` import | RF-13, 14, 15 (infrastructure) |
+| `AGENTS.md` | Housekeeping, no automated test: it documents existing conventions and has no RF | — |
 
 ## RF coverage matrix
 
@@ -347,7 +386,7 @@ that fails on warnings. No dependency is added.
 | RF-2 | `ci.yml` concurrency rule | `ci-config.test.ts` |
 | RF-3 | `engines.node`; Node setup and Corepack in both workflows; Vercel reads the same field | `ci-config.test.ts`; entry-point test on the declared version |
 | RF-4 | frozen-lockfile install in `ci.yml` | `ci-config.test.ts` |
-| RF-5 | `typecheck` script | `ci-config.test.ts`; the job runs it |
+| RF-5 | `typecheck` script; CI job `typecheck` | `ci-config.test.ts` (the script and the job's command) |
 | RF-6 | `ci.yml` has no secret references; build verified without a token | `ci-config.test.ts`; risk 1 evidence |
 | RF-7 | `ruleset-main-gate.json` (applied by hand) | `ci-config.test.ts` (definition); demonstration 1 (applied) |
 | RF-8 | same ruleset, no review rule | `ci-config.test.ts`; demonstration 1 |
@@ -356,11 +395,11 @@ that fails on warnings. No dependency is added.
 | RF-11 | Vercel sensitive variable for both environments | existing `no-secret-leak` test; demonstration 4 (the preview works with it, fails without) |
 | RF-12 | Vercel behavior | demonstration 6 (on a preview, see "RF not covered") |
 | RF-13 | script library + `verify-deployment.yml` | `verify-deployment.test.ts`; `ci-config.test.ts`; demonstration 4 |
-| RF-14 | script exit code + commit status | `verify-deployment.test.ts`; entry-point test; demonstration 4 |
-| RF-15 | `workflow_dispatch` input + entry-point argument | `ci-config.test.ts`; entry-point test; demonstration 4 |
+| RF-14 | script exit code + commit status | `verify-deployment.test.ts`; entry-point test; demonstration 4 (also records whether a notification arrived) |
+| RF-15 | `workflow_dispatch` input, `PRODUCTION_URL` variable + entry-point argument | `ci-config.test.ts`; entry-point test; demonstration 4 |
 | RF-16 | absence of any rollback step; README | `ci-config.test.ts`; README test |
 | RF-17 | README "Deployment" section | README test |
-| RF-18 | no address in docs; repository fields checked by hand | README/docs test; demonstration 5 |
+| RF-18 | no address in docs or workflow definitions; repository fields checked by hand | README/docs/workflows test; demonstration 5 |
 | RF-19 | `ruleset-main-gate.json` (strict policy) | `ci-config.test.ts`; demonstration 2 |
 | RF-20 | `ci.yml` `push` trigger on `main` | `ci-config.test.ts`; demonstration 3 |
 | RF-21 | `ruleset-main-history.json` | `ci-config.test.ts`; demonstration 2 |

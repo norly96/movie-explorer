@@ -104,12 +104,13 @@ by number.
   least one movie.
 - RF-14: IF either request in RF-13 fails (an unsuccessful response, a network
   error, a timeout, or no movie returned), THEN THE SYSTEM marks the
-  verification as failed on that commit, and the maintainer is notified
-  through the platform's normal failure notifications; no custom notification
-  mechanism is built.
+  verification as failed, visibly on that commit, and, where the platform
+  sends failure notifications for that run, the maintainer is notified through
+  them; no custom notification mechanism is built.
 - RF-15: WHEN the maintainer triggers it manually, optionally giving a
   deployment address, THE SYSTEM runs the verification of RF-13 against that
-  address, or against the production address if none is given.
+  address, or against the production address if none is given; that address
+  is held as a repository variable, outside the files of the repository.
 - RF-16: THE SYSTEM does not roll back a deployment automatically; reverting
   to a previous deployment is a manual action.
 
@@ -119,8 +120,9 @@ by number.
   — production and preview —, how to enable the merge gate) and how to roll
   back manually to a previous deployment.
 - RF-18: THE SYSTEM does not publish the production URL during this iteration:
-  neither in any documentation file tracked in the repository (README, docs,
-  specs) nor in the repository's description or website field.
+  neither in any documentation or automation file tracked in the repository
+  (README, docs, specs, workflow definitions) nor in the repository's
+  description or website field.
 
 ## Non-functional requirements
 - **Minimal stack** (constitution §1): no dependency is added to the
@@ -243,12 +245,15 @@ maintainer sees on a pull request or commit.
   Non-functional requirements). Where the requirement lives in the
   repository (the checks' definition, the declared Node.js version, the
   `typecheck` command, the README guide, the absence of the production URL from
-  documentation files), a passing automated test that reads the configuration
-  files as text and asserts the essentials (commands present, check names,
-  read-only permissions, pinned steps, no address on the platform's default
-  domain in the documentation); the real run is the proof of the behavior.
-  Where it depends on the platforms (RF-7, RF-9, RF-10, RF-12 to RF-16, RF-19
-  to RF-21), a recorded demonstration, listed in the pull request description:
+  documentation files and workflow definitions), a passing automated test that
+  reads the configuration files as text and asserts the essentials (commands
+  present, check names, read-only permissions, pinned steps, no address on the
+  platform's default domain in the documentation and the workflow definitions);
+  the real run is the proof of the behavior. Where it depends on the platforms
+  (RF-7, RF-9, RF-10, RF-12 to RF-16, RF-19 to RF-21), a recorded
+  demonstration, listed in the pull request description (which may be edited
+  after the merge, because the demonstrations need the workflows already
+  merged):
   1. A pull request with a deliberately failing test shows a red status and
      cannot be merged; a pull request with everything green can.
   2. A green pull request that is behind `main` cannot be merged until it is
@@ -267,7 +272,8 @@ maintainer sees on a pull request or commit.
      describes, obtained on a preview; it is not a broken production build,
      which the merge gate exists to prevent.
 - The checks pass on five consecutive runs of the same commit on the
-  platform, without any re-run.
+  platform, started on purpose to measure stability, all green on the first
+  attempt.
 - `pnpm typecheck` works locally and the existing test suite still passes.
 - No dependency was added to the project.
 - The README guide is present and the production URL is not published.
