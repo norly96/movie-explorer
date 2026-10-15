@@ -24,7 +24,7 @@ Dependencies at a glance:
 
 ## Phase 0 — Foundation
 
-- [ ] **T01 — package.json: `typecheck`, Node.js version, strict lint**
+- [x] **T01 — package.json: `typecheck`, Node.js version, strict lint**
   - Depends on: —
   - Files: `package.json` (modified), `ci-config.test.ts` (new, root; first block only)
   - RF: RF-1 (a lint warning fails), RF-3 (Node.js declared once), RF-5
