@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 // Reads the repository's automation and configuration files as text (there is
@@ -302,5 +302,93 @@ describe("ruleset-main-history.json", () => {
 
   it("is a separate ruleset from the gate, with a different name", () => {
     expect(history.name).not.toBe(readRuleset("ruleset-main-gate.json").name);
+  });
+});
+
+// --- README "Deployment" guide -----------------------------------------------
+
+function readDeploymentGuide(): string {
+  const readme = readFileSync("README.md", "utf-8");
+  const section = readme.split(/^## Deployment\s*$/m)[1];
+  return (section ?? "").split(/^## /m)[0];
+}
+
+function trackedTextFiles(directory: string): string[] {
+  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const path = `${directory}/${entry.name}`;
+    return entry.isDirectory() ? trackedTextFiles(path) : [path];
+  });
+}
+
+describe("README deployment guide", () => {
+  const guide = readDeploymentGuide();
+
+  it("replaces the generic Deploy on Vercel boilerplate (RF-17)", () => {
+    expect(guide.length).toBeGreaterThan(0);
+    expect(readFileSync("README.md", "utf-8")).not.toMatch(/^## Deploy on Vercel/m);
+  });
+
+  it("names the token variable and both environments it is needed in (RF-11, RF-17)", () => {
+    expect(guide).toContain("TMDB_ACCESS_TOKEN");
+    expect(guide).toMatch(/\bProduction\b/);
+    expect(guide).toMatch(/\bPreview\b/);
+    expect(guide).toMatch(/sensitive/i);
+  });
+
+  it("explains how to connect the platform (RF-17)", () => {
+    expect(guide).toMatch(/connect/i);
+    expect(guide).toMatch(/Vercel/);
+    expect(guide).toMatch(/GitHub repository/i);
+  });
+
+  it("explains how to apply both rulesets, including the administrator role placeholder (RF-7, RF-17, RF-19, RF-21)", () => {
+    expect(guide).toContain("docs/deployment/ruleset-main-gate.json");
+    expect(guide).toContain("docs/deployment/ruleset-main-history.json");
+    expect(guide).toContain("__ADMIN_ROLE_ID__");
+    expect(guide).toMatch(/gh api/);
+    expect(guide).toMatch(/administrator role/i);
+    expect(guide).toMatch(/after .*(checks|CI).* (ran|run) on `?main`?/i);
+  });
+
+  it("explains the manual verification and the PRODUCTION_URL variable without giving its value (RF-15)", () => {
+    expect(guide).toContain("PRODUCTION_URL");
+    expect(guide).toMatch(/repository variable/i);
+    expect(guide).toMatch(/gh variable set PRODUCTION_URL/);
+    expect(guide).toMatch(/gh workflow run/);
+    expect(guide).toMatch(/Verify deployment/);
+    expect(guide).toMatch(/address/i);
+  });
+
+  it("explains how to verify a preview deployed without the token (RF-15)", () => {
+    expect(guide).toMatch(/Preview[- ]scoped/i);
+    expect(guide).toMatch(/remove/i);
+    expect(guide).toMatch(/restore/i);
+  });
+
+  it("says where to look for a failure, since a notification may not arrive (RF-14)", () => {
+    expect(guide).toContain("deployment-health");
+    expect(guide).toMatch(/Actions tab/i);
+    expect(guide).toMatch(/notification/i);
+  });
+
+  it("explains how to roll back manually (RF-16, RF-17)", () => {
+    expect(guide).toMatch(/roll back/i);
+    expect(guide).toMatch(/previous deployment/i);
+  });
+
+  it("publishes no address on the platform's default domain anywhere tracked (RF-18)", () => {
+    const files = [
+      "README.md",
+      ...trackedTextFiles("docs"),
+      ...trackedTextFiles("specs"),
+      ...trackedTextFiles(".github"),
+    ].filter((file) => /\.(md|json|ya?ml)$/.test(file));
+
+    expect(files.length).toBeGreaterThan(5);
+    for (const file of files) {
+      expect(readFileSync(file, "utf-8"), file).not.toMatch(
+        /[\w-]+\.vercel\.app/i
+      );
+    }
   });
 });

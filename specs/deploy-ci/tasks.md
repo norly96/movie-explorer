@@ -64,7 +64,7 @@ Dependencies at a glance:
 
 ## Phase 2 — Documentation
 
-- [ ] **T07 [P] — README "Deployment" guide**
+- [x] **T07 [P] — README "Deployment" guide**
   - Depends on: T05, T06
   - Files: `README.md` (modified), `ci-config.test.ts` (modified)
   - RF: RF-11, RF-16, RF-17, RF-18
