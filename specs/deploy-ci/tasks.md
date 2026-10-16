@@ -56,7 +56,7 @@ Dependencies at a glance:
   - RF: RF-13, RF-14, RF-15, RF-16, RF-18
   - Done when: a `verify-deployment.yml` block in `ci-config.test.ts` (written first) asserts — triggers are `deployment_status` and `workflow_dispatch` with an optional address input; the automatic path runs only for a successful **Production** deployment and reads the environment name from the event; the target is the event's own deployment address, and for a manual run the given address or, if none, the repository variable `PRODUCTION_URL` (an empty target makes the entry point exit with a usage error); the workflow contains no literal deployment address; the status context is `deployment-health` and is written for the deployed commit's identifier; `statuses: write` appears only on the job that needs it and the rest is read-only; steps from outside the repository follow the same pinning rule as T04; **no step rolls anything back**. The test passes.
 
-- [ ] **T06 [P] — Ruleset definitions**
+- [x] **T06 [P] — Ruleset definitions**
   - Depends on: T04
   - Files: `docs/deployment/ruleset-main-gate.json`, `docs/deployment/ruleset-main-history.json`, `ci-config.test.ts` (modified)
   - RF: RF-7, RF-8, RF-19, RF-21

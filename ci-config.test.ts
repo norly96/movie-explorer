@@ -209,3 +209,98 @@ describe("verify-deployment.yml", () => {
     expect(workflow).not.toMatch(/\/deployments\b/);
   });
 });
+
+// --- docs/deployment/ruleset-*.json ------------------------------------------
+
+// Subset of GitHub's ruleset API (specs/deploy-ci/plan.md → Data model).
+interface RulesetDefinition {
+  name: string;
+  target: "branch";
+  enforcement: "active";
+  conditions: { ref_name: { include: string[]; exclude: string[] } };
+  bypass_actors: {
+    actor_type: string;
+    actor_id: number | "__ADMIN_ROLE_ID__";
+    bypass_mode: "always" | "pull_request";
+  }[];
+  rules: { type: string; parameters?: unknown }[];
+}
+
+function readRuleset(file: string): RulesetDefinition {
+  return JSON.parse(
+    readFileSync(`docs/deployment/${file}`, "utf-8")
+  ) as RulesetDefinition;
+}
+
+function ruleTypes(ruleset: RulesetDefinition): string[] {
+  return ruleset.rules.map((rule) => rule.type);
+}
+
+describe("ruleset-main-gate.json", () => {
+  const gate = readRuleset("ruleset-main-gate.json");
+  type StatusChecks = {
+    strict_required_status_checks_policy: boolean;
+    required_status_checks: { context: string }[];
+  };
+  const checks = gate.rules.find((rule) => rule.type === "required_status_checks")
+    ?.parameters as StatusChecks | undefined;
+
+  it("is an active branch ruleset for main only", () => {
+    expect(gate.target).toBe("branch");
+    expect(gate.enforcement).toBe("active");
+    expect(gate.conditions.ref_name.include).toEqual(["refs/heads/main"]);
+    expect(gate.conditions.ref_name.exclude).toEqual([]);
+  });
+
+  it("requires exactly the four job names found in ci.yml (RF-7)", () => {
+    const workflow = readWorkflow("ci.yml");
+    const jobNames = [
+      ...(workflow.split(/^jobs:\s*$/m)[1] ?? "").matchAll(/^ {4}name: (.+?)\s*$/gm),
+    ].map((match) => match[1]);
+
+    expect(jobNames).toEqual([...JOBS]);
+    expect(checks?.required_status_checks.map((check) => check.context)).toEqual(
+      jobNames
+    );
+  });
+
+  it("requires the branch to be up to date with main (RF-19)", () => {
+    expect(checks?.strict_required_status_checks_policy).toBe(true);
+  });
+
+  it("requires only the checks: no review rule (RF-8)", () => {
+    expect(ruleTypes(gate)).toEqual(["required_status_checks"]);
+    expect(ruleTypes(gate)).not.toContain("pull_request");
+  });
+
+  it("has one owner bypass whose role is a placeholder to look up, never a guess (RF-7)", () => {
+    expect(gate.bypass_actors).toHaveLength(1);
+    expect(gate.bypass_actors[0]).toEqual({
+      actor_type: "RepositoryRole",
+      actor_id: "__ADMIN_ROLE_ID__",
+      bypass_mode: "always",
+    });
+  });
+});
+
+describe("ruleset-main-history.json", () => {
+  const history = readRuleset("ruleset-main-history.json");
+
+  it("is an active branch ruleset for main only", () => {
+    expect(history.target).toBe("branch");
+    expect(history.enforcement).toBe("active");
+    expect(history.conditions.ref_name.include).toEqual(["refs/heads/main"]);
+  });
+
+  it("forbids force-pushes and deletion of main (RF-21)", () => {
+    expect(ruleTypes(history).sort()).toEqual(["deletion", "non_fast_forward"]);
+  });
+
+  it("has no bypass entry, so nobody can rewrite main (RF-21)", () => {
+    expect(history.bypass_actors).toEqual([]);
+  });
+
+  it("is a separate ruleset from the gate, with a different name", () => {
+    expect(history.name).not.toBe(readRuleset("ruleset-main-gate.json").name);
+  });
+});
