@@ -24,6 +24,13 @@ describe("package.json", () => {
     expect(scripts?.typecheck).toMatch(/--noEmit\b/);
   });
 
+  it("generates Next.js route types before type checking, so a clean checkout passes (RF-5)", () => {
+    const { scripts } = readPackageJson();
+
+    // PageProps and LayoutProps are generated into .next/types, which git ignores.
+    expect(scripts?.typecheck).toMatch(/\bnext typegen\b.*&&.*\btsc\b/);
+  });
+
   it("declares the supported Node.js version once, as a major-version range (RF-3)", () => {
     const { engines } = readPackageJson();
 

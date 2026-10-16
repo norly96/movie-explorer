@@ -262,6 +262,12 @@ dependency is added.
     `noEmit`. *Rejected*: dropping the extension — Node would not find the file.
     *Rejected*: one file for library and entry point — it brings back the side
     effects on import that decision 8 avoids. (RF-13, 14, 15)
+    *Found on the first real run (PR #5):* the `typecheck` script is
+    `next typegen && tsc --noEmit`, not plain `tsc --noEmit`. Next.js 16 generates
+    the global `PageProps` and `LayoutProps` types into `.next/types`, which git
+    ignores, so a clean checkout failed the type check. *Rejected*: running
+    `pnpm build` first in the `typecheck` job — as slow as the `build` job and it
+    hides the dependency. (RF-5)
 19. **The production address for the manual verification is a repository
     variable (`PRODUCTION_URL`), not a file and not a secret.** A workflow
     definition is tracked in a public repository, so a literal address there
