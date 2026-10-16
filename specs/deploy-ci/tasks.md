@@ -50,7 +50,7 @@ Dependencies at a glance:
   - RF: RF-1, RF-2, RF-3, RF-4, RF-5, RF-6, RF-20
   - Done when: a `ci.yml` block in `ci-config.test.ts` (written first) asserts — triggers are pull requests to `main` and pushes to `main`; four jobs named exactly `lint`, `typecheck`, `test`, `build`; `permissions` is read-only on contents; the install uses the frozen lockfile; the Node.js version is read from `package.json`; pnpm is activated through Corepack; concurrency cancels runs for pull requests but **not** for pushes to `main`; **no reference to any secret**; every step from outside the repository comes from GitHub and is pinned to a 40-character commit identifier (looked up from the release with the `gh` CLI at implementation time and recorded with its version in a comment, never typed from memory); each job runs its own command (`pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`); no `paths` or `paths-ignore` filter, so documentation-only pull requests also run every check; no end-to-end step. The test passes and the full suite still passes.
 
-- [ ] **T05 [P] — Verification workflow**
+- [x] **T05 [P] — Verification workflow**
   - Depends on: T03
   - Files: `.github/workflows/verify-deployment.yml`, `ci-config.test.ts` (modified)
   - RF: RF-13, RF-14, RF-15, RF-16, RF-18

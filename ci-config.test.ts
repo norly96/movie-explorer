@@ -134,3 +134,78 @@ describe("ci.yml", () => {
     expect(workflow).not.toMatch(/playwright|test:e2e|\be2e\b/i);
   });
 });
+
+// --- .github/workflows/verify-deployment.yml ---------------------------------
+
+describe("verify-deployment.yml", () => {
+  const workflow = readWorkflow("verify-deployment.yml");
+  const job = jobBlock(workflow, "verify");
+
+  it("runs on deployment status events and manually with an optional address (RF-13, RF-15)", () => {
+    expect(workflow).toMatch(/^on:\s*$/m);
+    expect(workflow).toMatch(/^ {2}deployment_status:/m);
+    expect(workflow).toMatch(/^ {2}workflow_dispatch:\s*\n {4}inputs:\s*\n {6}address:/m);
+    const input = workflow.match(/^ {6}address:\s*\n((?: {8}.*\n)+)/m)?.[1] ?? "";
+    expect(input).toMatch(/required: false/);
+    expect(workflow).not.toMatch(/^ {2}(push|pull_request):/m);
+  });
+
+  it("verifies automatically only a successful deployment of the production environment (RF-13)", () => {
+    expect(job).toMatch(/^ {4}if: .*github\.event_name == 'workflow_dispatch'/m);
+    expect(job).toMatch(/github\.event\.deployment_status\.state == 'success'/);
+    // The environment name comes from the event, compared with the platform's own name.
+    expect(job).toMatch(/github\.event\.deployment\.environment == 'Production'/);
+  });
+
+  it("probes the event's own deployment address, or the given one, or PRODUCTION_URL (RF-13, RF-15)", () => {
+    expect(workflow).toMatch(/github\.event\.deployment_status\.(environment_url|target_url)/);
+    expect(workflow).toMatch(/inputs\.address/);
+    expect(workflow).toMatch(/vars\.PRODUCTION_URL/);
+    expect(job).toMatch(/node [^\n]*scripts\/verify-deployment-cli\.ts "\$TARGET"/);
+  });
+
+  it("contains no literal deployment address (RF-18)", () => {
+    expect(workflow).not.toMatch(/https?:\/\/[^\s"']*[\w-]+\.[\w-]+/);
+    expect(workflow).not.toMatch(/vercel\.app/i);
+  });
+
+  it("runs the script directly on the declared Node.js version, with no install step", () => {
+    expect(job).toMatch(/node-version-file: package\.json/);
+    expect(job).toMatch(/--disable-warning=MODULE_TYPELESS_PACKAGE_JSON/);
+    expect(job).not.toMatch(/pnpm|npm |corepack/);
+  });
+
+  it("writes the deployment-health status on the deployed commit (RF-14)", () => {
+    expect(job).toMatch(/context=deployment-health/);
+    expect(job).toMatch(/statuses\/\$SHA/);
+    expect(job).toMatch(/SHA: \$\{\{ github\.event\.deployment\.sha \|\| github\.sha \}\}/);
+    // The final status is written even when the verification fails.
+    expect(job).toMatch(/if: always\(\)/);
+    for (const state of ["pending", "success", "failure"]) {
+      expect(job).toMatch(new RegExp(`\\b${state}\\b`));
+    }
+  });
+
+  it("grants statuses: write to the verifying job only, everything else read-only", () => {
+    expect(workflow).toMatch(/^permissions:\s*\n {2}contents: read\s*$/m);
+    expect(workflow.match(/statuses: write/g)).toHaveLength(1);
+    expect(job).toMatch(/^ {4}permissions:\s*\n {6}contents: read\s*\n {6}statuses: write\s*$/m);
+    expect(workflow).not.toMatch(/(contents|deployments|actions|id-token): write/);
+  });
+
+  it("pins every outside step to a 40-character GitHub commit, like ci.yml", () => {
+    const uses = [...workflow.matchAll(/^\s*-?\s*uses:\s*(\S+)(.*)$/gm)];
+
+    expect(uses.length).toBeGreaterThan(0);
+    for (const [, reference, rest] of uses) {
+      expect(reference).toMatch(/^actions\/[\w.-]+@[0-9a-f]{40}$/);
+      expect(rest).toMatch(/#\s*v\d+\.\d+\.\d+/);
+    }
+  });
+
+  it("does not roll anything back or change the deployment (RF-14)", () => {
+    expect(workflow).not.toMatch(/rollback|promote|revert|redeploy|vercel /i);
+    expect(workflow).not.toMatch(/gh api [^\n]*(-X|--method)[ =](DELETE|PUT|PATCH)/i);
+    expect(workflow).not.toMatch(/\/deployments\b/);
+  });
+});
