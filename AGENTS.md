@@ -23,6 +23,8 @@ Do not duplicate rules from these files here.
 ## Stack
 - Current: Next.js 16 (App Router), React 19, TypeScript, TailwindCSS v4,
   TanStack Query, Zustand, Zod, Vitest, Testing Library, MSW, Playwright.
+- CI: GitHub Actions. Hosting: Vercel (production from `main`, a preview
+  per pull request).
 - Explicitly rejected (do not re-suggest without new justification):
   Supabase, React Router, Framer Motion, custom backend.
 
@@ -35,6 +37,10 @@ Do not duplicate rules from these files here.
 - `mocks/` — MSW handlers.
 - `e2e/` — Playwright tests.
 - `specs/<feature>/` — `spec.md`, `plan.md`, `tasks.md`.
+- `.github/` — GitHub Actions workflows (CI and post-deployment verification).
+- `scripts/` — dependency-free TypeScript run directly by Node (deployment
+  verification).
+- `docs/deployment/` — GitHub ruleset definitions, applied by hand with `gh`.
 - Unit tests live next to their file as `*.test.ts(x)`.
 
 

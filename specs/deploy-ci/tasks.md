@@ -70,7 +70,7 @@ Dependencies at a glance:
   - RF: RF-11, RF-16, RF-17, RF-18
   - Done when: a documentation block in `ci-config.test.ts` (written first) asserts that the README's deployment section — replacing the generic "Deploy on Vercel" boilerplate — names `TMDB_ACCESS_TOKEN` and **both** environments (production and preview), explains how to connect the platform, how to apply the two rulesets (including looking up the administrator role identifier and substituting the placeholder), how to run the verification manually with an optional address and the `PRODUCTION_URL` repository variable (its name and how to create it, never its value), how to verify a preview deployed without the token (remove the Preview-scoped variable, run, restore it), where to look for a failure (the commit status and the Actions tab, because a notification may not arrive), and how to roll back manually; and that no address on the platform's default domain appears in `README.md`, `docs/`, `specs/` or `.github/`. The existing `no-secret-leak` test and the whole suite still pass.
 
-- [ ] **T07b [P] — Update `AGENTS.md`**
+- [x] **T07b [P] — Update `AGENTS.md`**
   - Depends on: T05, T06
   - Files: `AGENTS.md` (modified)
   - RF: — (housekeeping: `AGENTS.md` asks to be updated whenever the stack changes)
