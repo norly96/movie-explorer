@@ -44,7 +44,7 @@ Dependencies at a glance:
   - RF: RF-14, RF-15 (and RF-3: it runs on the declared Node.js version)
   - Done when: tests (written first) run the script as a **child process** with `node` against a tiny local HTTP server created in the test — healthy server → exit 0 with a readable report; server answering 5xx or no movies → exit 1; no argument → exit 2; unreachable address with `--attempts 1` → exit 1 within a bounded time. The script retries a bounded number of times before declaring a failure (`--attempts`, default 3, and `--delay`), and the library stays single-shot. It runs without a build step on the repository's declared Node.js version. `tsconfig.json` allows importing a `.ts` path (`allowImportingTsExtensions`, compatible with `noEmit`): the red state is `pnpm typecheck` failing on the entry point's import of the library, and it passes afterwards, as does `next build`.
 
-- [ ] **T04 [P] — CI workflow**
+- [x] **T04 [P] — CI workflow**
   - Depends on: T01
   - Files: `.github/workflows/ci.yml`, `ci-config.test.ts` (modified)
   - RF: RF-1, RF-2, RF-3, RF-4, RF-5, RF-6, RF-20
