@@ -17,7 +17,7 @@ Dependencies at a glance:
 | Phase | Tasks | Needs |
 |---|---|---|
 | 0 Foundation | T01, T02 | — |
-| 1 Entry point and workflows | T03, T04, T05, T05b, T06 | T03 ← T01, T02 · T04 ← T01 · T05 ← T03 · T05b ← T03, T05 · T06 ← T04 |
+| 1 Entry point and workflows | T03, T04, T05, T05b, T05c, T06 | T03 ← T01, T02 · T04 ← T01 · T05 ← T03 · T05b ← T03, T05 · T05c ← T05 · T06 ← T04 |
 | 2 Documentation | T07, T07b | T05, T06 |
 | 3 Pull request and platform | T08 → T09 → T10 → T11 | T07, T07b (then each one the previous) |
 | 4 Demonstrations and close | T12, T13, T14, T15, T16 | T12 ← T11 · T13 ← T11, T12 · T14 ← T10 · T15 ← T08 · T16 ← T12–T15 |
@@ -61,6 +61,12 @@ Dependencies at a glance:
   - Files: `scripts/verify-deployment.ts`, `scripts/verify-deployment-cli.ts`, `scripts/verify-deployment.test.ts`, `scripts/verify-deployment-cli.test.ts`, `.github/workflows/verify-deployment.yml`, `ci-config.test.ts` (modified)
   - RF: RF-22 (and RF-13, RF-14, RF-15)
   - Done when: tests (written first, failing) show — the library sends the header `x-vercel-protection-bypass` with the credential on both probes when `VerifyOptions` carries it, and sends no such header otherwise; the entry point reads the credential only from the environment variable `VERCEL_AUTOMATION_BYPASS_SECRET` (there is no command-line option for it), and the credential never appears in its output, not even when a probe fails; a stub server that answers 302 without the header and 200 with it is `unhealthy` without the credential and `healthy` with it; `verify-deployment.yml` maps `secrets.VERCEL_AUTOMATION_BYPASS_SECRET` to that variable on the verifying step only, `ci.yml` still contains no reference to any secret; the tests pass and the full suite still passes. The real proof is the next verification of a production deployment, which must be healthy.
+
+- [x] **T05c — Manual runs do not write the commit status**
+  - Depends on: T05
+  - Files: `.github/workflows/verify-deployment.yml`, `ci-config.test.ts` (modified)
+  - RF: RF-15 (and RF-13, RF-14)
+  - Done when: a test (written first, failing) asserts that every step of `verify-deployment.yml` that writes `context=deployment-health` runs only for the `deployment_status` event; the existing assertions about the status (context, deployed commit, final write even on failure) still hold; the tests pass and the full suite still passes. A manual run still ends red or green in the run itself, so the real proof is a manual run that leaves the statuses of the head of `main` untouched.
 
 - [x] **T06 [P] — Ruleset definitions**
   - Depends on: T04

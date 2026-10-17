@@ -222,6 +222,12 @@ dependency is added.
     when two deployments overlap. The job gets `statuses: write` and nothing
     more. *Rejected*: relying on the run result alone — the status could land
     on the wrong commit. (RF-13, 14; NFR Security)
+    *Found on the first manual runs:* a manual run has no deployed commit, so
+    its status would land on the head of `main` and a red check of a preview
+    would mark production red. Only runs started by the deployment event write
+    the status; a manual run reports in the run itself. *Rejected*: a second
+    status context for manual runs — it clutters the commit's statuses.
+    (RF-15)
 11. **Merge gate and history protection are two separate rulesets.** RF-7
     needs an owner bypass; RF-21 needs none (nobody should be able to
     force-push or delete `main`). A ruleset's bypass list applies to all its

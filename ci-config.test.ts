@@ -218,6 +218,19 @@ describe("verify-deployment.yml", () => {
     expect(workflow).not.toMatch(/--bypass|bypass-secret/);
   });
 
+  it("writes the commit status only for runs started by the deployment event (RF-15)", () => {
+    // A manual run has no deployed commit: its status would land on the head
+    // of main and a red preview would mark production red.
+    const writers = job
+      .split(/^ {6}- /m)
+      .filter((text) => /context=deployment-health/.test(text));
+
+    expect(writers).toHaveLength(2);
+    for (const step of writers) {
+      expect(step).toMatch(/^ {8}if: .*github\.event_name == 'deployment_status'/m);
+    }
+  });
+
   it("grants statuses: write to the verifying job only, everything else read-only", () => {
     expect(workflow).toMatch(/^permissions:\s*\n {2}contents: read\s*$/m);
     expect(workflow.match(/statuses: write/g)).toHaveLength(1);
