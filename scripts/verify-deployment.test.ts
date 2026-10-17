@@ -89,6 +89,46 @@ describe("verifyDeployment", () => {
     expect(result.probes[1]).toMatchObject({ probe: "movie-list-api", ok: true });
   });
 
+  it("treats a redirect as a failure instead of following it to another page (RF-13, RF-14)", async () => {
+    // A protected deployment redirects every request to a login page that
+    // answers 200: following it would report a healthy home page.
+    serveHome(
+      () =>
+        new HttpResponse(null, {
+          status: 302,
+          headers: { Location: "https://login.example.test/" },
+        })
+    );
+    serveApi(
+      () =>
+        new HttpResponse(null, {
+          status: 302,
+          headers: { Location: "https://login.example.test/" },
+        })
+    );
+    server.use(
+      http.get("https://login.example.test/", () => new HttpResponse("login"))
+    );
+
+    const result = await verifyDeployment(TARGET, OPTIONS);
+
+    expect(result.healthy).toBe(false);
+    for (const probe of result.probes) {
+      expect(probe).toMatchObject({ ok: false, status: 302 });
+      expect(probe.detail).toContain("302");
+    }
+  });
+
+  it("asks fetch not to follow redirects", async () => {
+    const fetchFn = vi.fn<typeof fetch>(async () => new Response("ok"));
+
+    await verifyDeployment(TARGET, { timeoutMs: 1000, fetchFn });
+
+    for (const [, init] of fetchFn.mock.calls) {
+      expect(init?.redirect).toBe("manual");
+    }
+  });
+
   it("is unhealthy when the movie-list API answers 5xx (RF-14)", async () => {
     serveHome(() => new HttpResponse("ok"));
     serveApi(() =>

@@ -45,6 +45,9 @@ jobs:
           node-version-file: package.json
       - name: Verify the deployment
         id: verify
+        # An explicit shell turns on pipefail, so the script's exit code is not
+        # lost behind tee.
+        shell: bash
         # Node runs the TypeScript directly: no install and no build step.
         run: node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verify-deployment-cli.ts "$TARGET" | tee verify.log
       - name: Record the result on the commit
