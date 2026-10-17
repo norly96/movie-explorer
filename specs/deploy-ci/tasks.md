@@ -96,23 +96,26 @@ Dependencies at a glance:
   - RF: RF-1, RF-2, RF-4, RF-6 (first real run)
   - Done when: the branch is pushed and a pull request that references `specs/deploy-ci/` is open against `main`; the four jobs run **on the pull request itself** and are green; the run used no secret; a second push to the branch cancels the first run's still-running jobs (RF-2 seen once on the platform).
 
-- [ ] **T09 — Connect the hosting platform** `[manual]`
+- [x] **T09 — Connect the hosting platform** `[manual]`
   - Depends on: T08 (so the open pull request gets its own preview)
   - Files: — (platform settings)
   - RF: RF-3 (preview build), RF-9, RF-10, RF-11, RF-12, RF-15 (the repository variable), RF-18
   - Done when: the repository is connected with `main` as the production branch; the **preview build of the open pull request** uses the Node.js version declared in `engines.node` (read in its build log); `TMDB_ACCESS_TOKEN` exists as a sensitive server-side variable for **Production and Preview**; the open pull request shows a preview address and the preview loads the home page and `/api/explore?page=1` with movies; production has a deployment of the current `main`; the repository variable `PRODUCTION_URL` exists (its value is not written in any file of the repository); no "ignored build step" is configured, so documentation-only merges also deploy; and three observations are noted — the platform plan in use is the free one (Cost), opening a preview in a private window asks for the platform's login (Privacy), and the production address appears nowhere in the repository.
+  - Evidence (2026-10-17): the project is connected with `main` as the production branch; `TMDB_ACCESS_TOKEN` is a sensitive variable for Production and Preview; the preview of the open pull request and its manual verification came out healthy (home and `/api/explore?page=1` with movies); `PRODUCTION_URL` exists; the plan is the free one (Cost); a preview opened in a private window asks for the platform's login (Privacy); the production address appears nowhere in the repository. The build log does not print the Node.js version, so it is read from the project setting (24.x) together with a successful build. Two blockers were found and fixed on the way: the broken `pnpm@11.12.0` pin (moved to 11.28.6) and the platform's protection of deployment addresses (bypass credential, RF-22).
 
-- [ ] **T10 — Merge the pull request (no rulesets yet)** `⚠️ approval` `[manual]`
+- [x] **T10 — Merge the pull request (no rulesets yet)** `⚠️ approval` `[manual]`
   - Depends on: T09
   - Files: — (no repository files)
   - RF: RF-3 (production build), RF-9, RF-13, RF-20
   - Done when: the maintainer merges; the same four checks run on the merge commit on `main` and report four statuses on it; a production deployment of that commit completes; the verification workflow (now on `main`) runs for it and writes `deployment-health` on that commit, and it is green; the production build of that commit used the Node.js version declared in `engines.node` (read in its build log).
+  - Evidence (2026-10-17): pull request #5 was merged by the maintainer and its four checks ran on the merge commit. The production deployment of that first merge commit failed on the pnpm pin, so the green `deployment-health` on `main` comes from the commits after the fixes (#6 to #10). As with T09, the Node.js version is taken from the project setting, not from a build-log line.
 
-- [ ] **T11 — Apply the rulesets** `⚠️ approval`
+- [x] **T11 — Apply the rulesets** `⚠️ approval`
   - Depends on: T10 (the checks must have reported at least once, or every merge would be blocked)
   - Files: — (repository settings; the two JSON files are read, not changed)
   - RF: RF-7, RF-8, RF-19, RF-21
   - Done when: the administrator role identifier is **looked up through the API**, substituted for the placeholder, and both rulesets are created with the `gh` CLI exactly as the README describes; listing the repository's rulesets shows both as active, the gate requiring the four checks with the strict policy and the owner bypass, and the history ruleset with no bypass.
+  - Evidence (2026-10-17): the administrator role identifier (5, type `RepositoryRole`, bypass mode `always`) was read back from the API after the maintainer created a throwaway disabled ruleset with the Repository admin role in the settings; the throwaway was then deleted. `main-gate` (id 25306153) and `main-history` (id 25306154) were created with `gh api … --method POST --input`, the first from a temporary copy with the placeholder substituted outside the repository. Both are `active` on `refs/heads/main`; the gate requires `lint`, `typecheck`, `test` and `build` with the strict policy and has the owner bypass and no review rule; the history ruleset forbids force-pushes and deletion and has no bypass. `gh api repos/<owner>/<repo>/rules/branches/main` lists `required_status_checks`, `non_fast_forward` and `deletion`.
 
 ## Phase 4 — Demonstrations and close
 
