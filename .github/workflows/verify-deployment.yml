@@ -13,8 +13,9 @@ permissions:
   contents: read
 
 # Probes the home page and the movie-list API of a deployment and records the
-# result as the commit status "deployment-health" on the deployed commit. It
-# only reports: nothing is changed on the platform when the result is red.
+# result as the commit status "deployment-health" on the deployed commit. A
+# manual run has no deployed commit, so it reports in the run only. Either way
+# it only reports: nothing is changed on the platform when the result is red.
 jobs:
   verify:
     name: verify
@@ -35,6 +36,7 @@ jobs:
       RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
     steps:
       - name: Mark the commit as being verified
+        if: github.event_name == 'deployment_status'
         run: >
           gh api "repos/${{ github.repository }}/statuses/$SHA"
           -f state=pending -f context=deployment-health
@@ -53,7 +55,7 @@ jobs:
         # Node runs the TypeScript directly: no install and no build step.
         run: node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verify-deployment-cli.ts "$TARGET" | tee verify.log
       - name: Record the result on the commit
-        if: always()
+        if: always() && github.event_name == 'deployment_status'
         env:
           OUTCOME: ${{ steps.verify.outcome }}
         run: |

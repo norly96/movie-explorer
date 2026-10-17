@@ -110,7 +110,10 @@ by number.
 - RF-15: WHEN the maintainer triggers it manually, optionally giving a
   deployment address, THE SYSTEM runs the verification of RF-13 against that
   address, or against the production address if none is given; that address
-  is held as a repository variable, outside the files of the repository.
+  is held as a repository variable, outside the files of the repository. A
+  manual run reports its result in the run itself and does not write the
+  commit status of RF-13, which describes the commit that was deployed, not
+  the address that was probed by hand.
 - RF-16: THE SYSTEM does not roll back a deployment automatically; reverting
   to a previous deployment is a manual action.
 - RF-22: WHERE the platform protects deployments behind its own
