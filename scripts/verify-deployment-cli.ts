@@ -5,6 +5,10 @@
 //
 // Exit codes: 0 = healthy · 1 = unhealthy (report printed) · 2 = bad usage.
 //
+// The platform's bypass credential for protected deployments (RF-22) is read
+// only from the environment variable VERCEL_AUTOMATION_BYPASS_SECRET, never
+// from an argument, which would show in process listings. It is never printed.
+//
 // Retrying lives here, not in the library: a deployment can be reported as
 // ready a moment before its address answers, so an unhealthy result is
 // repeated a bounded number of times before it counts as a failure.
@@ -127,6 +131,7 @@ async function main(argv: string[]): Promise<number> {
   for (let attempt = 1; attempt <= options.attempts; attempt++) {
     result = await verifyDeployment(options.target, {
       timeoutMs: options.timeoutMs,
+      bypassSecret: process.env.VERCEL_AUTOMATION_BYPASS_SECRET || undefined,
     });
     console.log(describeAttempt(result, attempt, options.attempts));
     if (result.healthy) break;

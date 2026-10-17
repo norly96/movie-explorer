@@ -48,6 +48,8 @@ jobs:
         # An explicit shell turns on pipefail, so the script's exit code is not
         # lost behind tee.
         shell: bash
+        env:
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
         # Node runs the TypeScript directly: no install and no build step.
         run: node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verify-deployment-cli.ts "$TARGET" | tee verify.log
       - name: Record the result on the commit

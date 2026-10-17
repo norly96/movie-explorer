@@ -129,6 +129,65 @@ describe("verifyDeployment", () => {
     }
   });
 
+  describe("bypass credential for protected deployments (RF-22)", () => {
+    const HEADER = "x-vercel-protection-bypass";
+
+    function serveProtected(seen: (string | null)[]) {
+      const guard = ({ request }: { request: Request }) => {
+        seen.push(request.headers.get(HEADER));
+        return request.headers.get(HEADER) === "s3cret"
+          ? undefined
+          : new HttpResponse(null, {
+              status: 302,
+              headers: { Location: "https://login.example.test/" },
+            });
+      };
+      server.use(
+        http.get(HOME_URL, (info) => guard(info) ?? new HttpResponse("ok")),
+        http.get(
+          API_URL,
+          (info) => guard(info) ?? HttpResponse.json(HEALTHY_PAGE)
+        )
+      );
+    }
+
+    it("sends the credential on both probes when it is given", async () => {
+      const seen: (string | null)[] = [];
+      serveProtected(seen);
+
+      const result = await verifyDeployment(TARGET, {
+        ...OPTIONS,
+        bypassSecret: "s3cret",
+      });
+
+      expect(result.healthy).toBe(true);
+      expect(seen).toEqual(["s3cret", "s3cret"]);
+    });
+
+    it("sends no such header when no credential is given, and a protected deployment is unhealthy", async () => {
+      const seen: (string | null)[] = [];
+      serveProtected(seen);
+
+      const result = await verifyDeployment(TARGET, OPTIONS);
+
+      expect(result.healthy).toBe(false);
+      expect(seen).toEqual([null, null]);
+      expect(result.probes[0]).toMatchObject({ ok: false, status: 302 });
+    });
+
+    it("is unhealthy when the credential is rejected, without printing it", async () => {
+      serveProtected([]);
+
+      const result = await verifyDeployment(TARGET, {
+        ...OPTIONS,
+        bypassSecret: "wrong-value",
+      });
+
+      expect(result.healthy).toBe(false);
+      expect(JSON.stringify(result)).not.toContain("wrong-value");
+    });
+  });
+
   it("is unhealthy when the movie-list API answers 5xx (RF-14)", async () => {
     serveHome(() => new HttpResponse("ok"));
     serveApi(() =>
