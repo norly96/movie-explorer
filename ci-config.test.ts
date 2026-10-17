@@ -203,6 +203,21 @@ describe("verify-deployment.yml", () => {
     expect(step).toMatch(/^ {8}shell: bash\s*$/m);
   });
 
+  it("hands the bypass credential to the verifying step only, as an environment variable (RF-22)", () => {
+    const secretLines = workflow.match(/secrets\.[A-Z_]+/g) ?? [];
+    expect(secretLines).toEqual(["secrets.VERCEL_AUTOMATION_BYPASS_SECRET"]);
+
+    const steps = job.split(/^ {6}- /m);
+    const holders = steps.filter((text) => /secrets\./.test(text));
+    expect(holders).toHaveLength(1);
+    expect(holders[0]).toMatch(/^name: Verify the deployment/);
+    expect(holders[0]).toMatch(
+      /^ {10}VERCEL_AUTOMATION_BYPASS_SECRET: \$\{\{ secrets\.VERCEL_AUTOMATION_BYPASS_SECRET \}\}\s*$/m
+    );
+    // Never on the command line, where it would show in process listings.
+    expect(workflow).not.toMatch(/--bypass|bypass-secret/);
+  });
+
   it("grants statuses: write to the verifying job only, everything else read-only", () => {
     expect(workflow).toMatch(/^permissions:\s*\n {2}contents: read\s*$/m);
     expect(workflow.match(/statuses: write/g)).toHaveLength(1);

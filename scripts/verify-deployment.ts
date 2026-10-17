@@ -26,7 +26,12 @@ export interface VerificationResult {
 export interface VerifyOptions {
   timeoutMs: number; // applied to each request separately
   fetchFn?: typeof fetch; // injectable, defaults to the global fetch
+  // The platform's bypass credential for automation, for deployments protected
+  // behind its authentication (RF-22). Sent as a header and never reported.
+  bypassSecret?: string;
 }
+
+const BYPASS_HEADER = "x-vercel-protection-bypass";
 
 function isSuccess(status: number): boolean {
   return status >= 200 && status < 300;
@@ -62,6 +67,9 @@ async function request(
     // page that answers 200, which must not pass for a healthy page.
     const response = await fetchFn(url, {
       signal: controller.signal,
+      headers: options.bypassSecret
+        ? { [BYPASS_HEADER]: options.bypassSecret }
+        : undefined,
       redirect: "manual",
     });
     return { response };

@@ -1,6 +1,6 @@
 import { spawn } from "node:child_process";
 import { readFileSync } from "node:fs";
-import { createServer, type Server } from "node:http";
+import { createServer, type IncomingMessage, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
 import { afterEach, describe, expect, it } from "vitest";
 
@@ -22,10 +22,19 @@ interface RunResult {
   stderr: string;
 }
 
-function run(args: string[]): Promise<RunResult> {
+const BYPASS_VARIABLE = "VERCEL_AUTOMATION_BYPASS_SECRET";
+
+function run(
+  args: string[],
+  env: Record<string, string> = {}
+): Promise<RunResult> {
   return new Promise((resolve, reject) => {
+    // The credential is only ever what the test passes in, never the host's.
+    const inherited = { ...process.env };
+    delete inherited[BYPASS_VARIABLE];
     const child = spawn(process.execPath, [CLI, ...args], {
       cwd: process.cwd(),
+      env: { ...inherited, ...env },
     });
     let stdout = "";
     let stderr = "";
@@ -48,10 +57,17 @@ const servers: Server[] = [];
 
 function startServer(
   home: Responder,
-  api: Responder
+  api: Responder,
+  // When given and false for a request, the request is redirected to a login page.
+  allow: (request: IncomingMessage) => boolean = () => true
 ): Promise<StubServer> {
   const hits = { home: 0, api: 0 };
   const server = createServer((request, response) => {
+    if (!allow(request)) {
+      response.writeHead(302, { Location: "https://login.example.test/" });
+      response.end();
+      return;
+    }
     const isApi = (request.url ?? "").startsWith("/api/explore");
     const answer = isApi ? api(++hits.api) : home(++hits.home);
     response.writeHead(answer.status, { "Content-Type": "application/json" });
@@ -216,6 +232,65 @@ describe("verify-deployment-cli", () => {
     it("an unknown option or more than one address", async () => {
       expect((await run(["http://127.0.0.1:9", "--nope"])).code).toBe(2);
       expect((await run(["http://127.0.0.1:9", "http://127.0.0.1:9"])).code).toBe(2);
+    });
+  });
+
+  describe("bypass credential for protected deployments (RF-22)", () => {
+    const SECRET = "s3cret-value-123";
+
+    // Answers 302 to a login page unless the credential header is present.
+    function startProtectedServer() {
+      return startServer(
+        () => ({ status: 200, body: "ok" }),
+        () => ({ status: 200, body: HEALTHY_BODY }),
+        (request) =>
+          request.headers["x-vercel-protection-bypass"] === SECRET
+      );
+    }
+
+    it("is healthy with the credential in the environment and unhealthy without it", async () => {
+      const stub = await startProtectedServer();
+
+      const without = await run([stub.url, "--attempts", "1"]);
+      const withSecret = await run([stub.url, "--attempts", "1"], {
+        [BYPASS_VARIABLE]: SECRET,
+      });
+
+      expect(without.code).toBe(1);
+      expect(without.stdout).toContain("HTTP 302");
+      expect(withSecret.code).toBe(0);
+    });
+
+    it("is unhealthy when the credential is wrong", async () => {
+      const stub = await startProtectedServer();
+
+      const result = await run([stub.url, "--attempts", "1"], {
+        [BYPASS_VARIABLE]: "not-the-secret",
+      });
+
+      expect(result.code).toBe(1);
+    });
+
+    it("never prints the credential, even when the verification fails", async () => {
+      const stub = await startProtectedServer();
+      const failing = await startServer(fail(), fail());
+
+      for (const url of [stub.url, failing.url, "http://127.0.0.1:9"]) {
+        const result = await run([url, "--attempts", "1", "--timeout", "1000"], {
+          [BYPASS_VARIABLE]: "not-the-secret-but-secret-too",
+        });
+
+        expect(result.stdout + result.stderr).not.toContain(
+          "not-the-secret-but-secret-too"
+        );
+      }
+    });
+
+    it("has no command-line option for the credential", async () => {
+      const result = await run(["http://127.0.0.1:9", "--bypass-secret", SECRET]);
+
+      expect(result.code).toBe(2);
+      expect(result.stderr).not.toContain(SECRET);
     });
   });
 
