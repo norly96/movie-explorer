@@ -131,11 +131,12 @@ Dependencies at a glance:
   - RF: RF-9, RF-10, RF-12, RF-13, RF-14, RF-15, RF-20
   - Done when: (3) merging a green pull request produces a production deployment, the same checks on the resulting commit, and a preview address on pull requests; (4) the verification is green on a healthy deployment and **red** when run manually against a preview deployed with the Preview-scoped token removed (never against production), after which the variable is **restored**; (6) a pull request with a deliberately broken build shows a failed preview deployment while production keeps serving the previous version. Each result is noted; the variable is confirmed restored for Production and Preview. It also records whether a failure notification actually reached the maintainer for the red verification (evidence, not a requirement) and where the maintainer should look.
 
-- [ ] **T14 [P] — Demonstration 5: repository fields**
+- [x] **T14 [P] — Demonstration 5: repository fields**
   - Depends on: T10
   - Files: — (read-only check)
   - RF: RF-18
   - Done when: the repository's description and website field, read with the `gh` CLI, contain no deployment address, and the output is noted.
+  - Evidence (2026-10-17): read with `gh repo view --json description,homepageUrl`, the website field held the production address (the check found a violation of RF-18). The maintainer approved clearing it; `gh repo edit --homepage ""` emptied it and a second read returned an empty description and an empty website field. No tracked file contains a deployment address (`git grep` for the platform's default domain and for the production host: 0 matches).
 
 - [ ] **T15 [P] — Stability of the required checks**
   - Depends on: T08
