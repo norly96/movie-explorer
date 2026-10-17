@@ -58,7 +58,12 @@ async function request(
   const timer = setTimeout(() => controller.abort(), options.timeoutMs);
 
   try {
-    const response = await fetchFn(url, { signal: controller.signal });
+    // A redirect is not a success: a protected deployment redirects to a login
+    // page that answers 200, which must not pass for a healthy page.
+    const response = await fetchFn(url, {
+      signal: controller.signal,
+      redirect: "manual",
+    });
     return { response };
   } catch (error) {
     return controller.signal.aborted

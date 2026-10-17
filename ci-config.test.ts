@@ -193,6 +193,16 @@ describe("verify-deployment.yml", () => {
     }
   });
 
+  it("makes a failing verification fail the step, even though its output is piped to tee (RF-14)", () => {
+    // Without an explicit shell GitHub runs bash without pipefail, so the
+    // script's exit code would be lost behind `tee` and a red result would
+    // be recorded as success.
+    const step = job.split(/^ {6}- name: /m).find((text) => text.startsWith("Verify the deployment")) ?? "";
+
+    expect(step).toMatch(/\| tee verify\.log/);
+    expect(step).toMatch(/^ {8}shell: bash\s*$/m);
+  });
+
   it("grants statuses: write to the verifying job only, everything else read-only", () => {
     expect(workflow).toMatch(/^permissions:\s*\n {2}contents: read\s*$/m);
     expect(workflow.match(/statuses: write/g)).toHaveLength(1);
