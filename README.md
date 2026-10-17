@@ -83,8 +83,93 @@ To learn more about Next.js, take a look at the following resources:
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-## Deploy on Vercel
+## Deployment
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Every pull request runs four checks on GitHub Actions (`lint`, `typecheck`,
+`test`, `build`, defined in [`.github/workflows/ci.yml`](./.github/workflows/ci.yml)).
+`main` is deployed to production on Vercel, and every pull request gets a
+preview deployment. After each production deployment a second workflow,
+[`verify-deployment.yml`](./.github/workflows/verify-deployment.yml),
+checks the home page and `/api/explore?page=1` and records the result as the
+commit status `deployment-health`. The production address is deliberately not
+written anywhere in this repository.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### 1. Connect Vercel
+
+1. In Vercel, import the GitHub repository (Add New → Project). Vercel reads
+   the Node.js version from `engines.node` in `package.json`; no build setting
+   needs changing.
+2. Add the environment variable `TMDB_ACCESS_TOKEN` (a TMDB v4 read access
+   token) for **both** the **Production** and the **Preview** environments,
+   marked as *sensitive*. A preview without it cannot load any movie.
+3. Do this while the first pull request is open, so that it gets its own
+   preview and a problem with the token shows up before merging.
+
+The token is only read on the server and never reaches the browser or the
+repository. The CI jobs need no secret: `pnpm build` works without it.
+
+### 2. Create the `PRODUCTION_URL` repository variable
+
+The manual verification needs the production address when none is given. It is
+not a secret, but it must not be committed, so it lives in a repository
+variable:
+
+```bash
+gh variable set PRODUCTION_URL --body "<production address>"
+```
+
+### 3. Apply the rulesets
+
+Two rulesets live in [`docs/deployment/`](./docs/deployment): `ruleset-main-gate.json`
+(the four checks must pass and the branch must be up to date, no review
+required, with a bypass for the repository owner) and
+`ruleset-main-history.json` (no force-push and no deletion of `main`, no
+bypass).
+
+Apply them **after the checks have run on `main` at least once**. A required
+check that has never reported blocks every merge.
+
+1. Look up the identifier of the administrator role for the bypass; do not
+   guess it. For example, create a throwaway ruleset in Settings → Rules with
+   the Admin role as bypass, read it back with
+   `gh api repos/<owner>/<repo>/rulesets/<id> --jq .bypass_actors`, then delete
+   the throwaway ruleset.
+2. Replace `__ADMIN_ROLE_ID__` in `ruleset-main-gate.json` with that number
+   (without committing the change), then create both rulesets:
+
+```bash
+gh api repos/<owner>/<repo>/rulesets --method POST --input docs/deployment/ruleset-main-gate.json
+gh api repos/<owner>/<repo>/rulesets --method POST --input docs/deployment/ruleset-main-history.json
+```
+
+Inspect what is applied with `gh api repos/<owner>/<repo>/rulesets`; the JSON
+files describe the intended rules and cannot show drift.
+
+### 4. Verify a deployment by hand
+
+The workflow *Verify deployment* can be run from the Actions tab, or with
+`gh workflow run`. The address is optional; without it the `PRODUCTION_URL`
+variable is used, and with neither the run fails and says what is missing:
+
+```bash
+gh workflow run "Verify deployment"                       # production address
+gh workflow run "Verify deployment" -f address=<address>  # any deployment
+```
+
+To check that a **preview** really fails without the token: remove the
+Preview-scoped `TMDB_ACCESS_TOKEN` in Vercel, open a pull request, run the
+verification against its preview address (expect `deployment-health` to fail),
+then restore the variable and run it again (expect it to pass).
+
+### 5. When something fails
+
+- **Where to look.** A failed verification is a red `deployment-health` status
+  on the deployed commit and a failed run in the Actions tab. A notification may
+  not arrive, because runs triggered by a deployment event are attributed to
+  the integration, so check those two places after merging.
+- **A failed production build** leaves the previous deployment serving; the
+  failure is reported on the commit.
+- **Roll back manually.** Nothing rolls back automatically. In Vercel, open the
+  project's Deployments, pick the last good previous deployment and use
+  Instant Rollback (or promote it to production). Then fix `main` with a normal
+  pull request.

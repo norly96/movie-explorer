@@ -1,0 +1,60 @@
+name: Verify deployment
+
+on:
+  deployment_status:
+  workflow_dispatch:
+    inputs:
+      address:
+        description: Address to verify; defaults to the PRODUCTION_URL repository variable
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+# Probes the home page and the movie-list API of a deployment and records the
+# result as the commit status "deployment-health" on the deployed commit. It
+# only reports: nothing is changed on the platform when the result is red.
+jobs:
+  verify:
+    name: verify
+    # Automatic runs: only a successful deployment of the production
+    # environment, named by the event itself. Previews are checked by hand.
+    if: github.event_name == 'workflow_dispatch' || (github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'Production')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      statuses: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      # The deployment's own address, else the given one, else the variable.
+      # An empty target makes the script exit with a usage error.
+      TARGET: ${{ github.event_name == 'workflow_dispatch' && (inputs.address || vars.PRODUCTION_URL) || (github.event.deployment_status.environment_url || github.event.deployment_status.target_url) }}
+      # The status goes on the deployed commit, not on the default branch's latest.
+      SHA: ${{ github.event.deployment.sha || github.sha }}
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    steps:
+      - name: Mark the commit as being verified
+        run: >
+          gh api "repos/${{ github.repository }}/statuses/$SHA"
+          -f state=pending -f context=deployment-health
+          -f description="Verifying the deployment" -f target_url="$RUN_URL"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: package.json
+      - name: Verify the deployment
+        id: verify
+        # Node runs the TypeScript directly: no install and no build step.
+        run: node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verify-deployment-cli.ts "$TARGET" | tee verify.log
+      - name: Record the result on the commit
+        if: always()
+        env:
+          OUTCOME: ${{ steps.verify.outcome }}
+        run: |
+          if [ "$OUTCOME" = "success" ]; then state=success; else state=failure; fi
+          summary=$(grep '^summary:' verify.log 2>/dev/null | tail -n 1 || true)
+          gh api "repos/${{ github.repository }}/statuses/$SHA" \
+            -f state="$state" -f context=deployment-health \
+            -f description="${summary:-The verification did not complete}" \
+            -f target_url="$RUN_URL"
