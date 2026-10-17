@@ -138,7 +138,7 @@ Dependencies at a glance:
   - Files: — (read-only check)
   - RF: RF-18
   - Done when: the repository's description and website field, read with the `gh` CLI, contain no deployment address, and the output is noted.
-  - Evidence (2026-10-17): read with `gh repo view --json description,homepageUrl`, the website field held the production address (the check found a violation of RF-18). The maintainer approved clearing it; `gh repo edit --homepage ""` emptied it and a second read returned an empty description and an empty website field. No tracked file contains a deployment address (`git grep` for the platform's default domain and for the production host: 0 matches).
+  - Evidence (2026-10-17): read with `gh repo view --json description,homepageUrl`, the website field held the production address (the check found a violation of RF-18). The maintainer approved clearing it; `gh repo edit --homepage ""` emptied it and a second read returned an empty description and an empty website field. No tracked file contains a deployment address (`git grep` for the platform's default domain and for the production host: 0 matches). Found later: the platform's integration refills an empty website field after every production deployment (a redeploy refilled it within seconds); there is no setting to stop it. The field now holds the repository's own address, a neutral value that the integration is expected to leave alone; this is confirmed after the next production deployment.
 
 - [x] **T15 [P] — Stability of the required checks**
   - Depends on: T08
@@ -147,8 +147,10 @@ Dependencies at a glance:
   - Done when: the CI of one commit has run **five times in a row** on the platform (re-runs started on purpose as a measurement, not to recover from a failure) and all five runs are green on the first attempt, each finishing in under 10 minutes (durations noted). If any run fails intermittently, the cause is recorded as a defect and fixed — with the maintainer's approval whenever it means editing an existing test — and the count restarts.
   - Evidence (2026-10-17): the CI of the head of `main` at the time (`416f919`, run 39043693990) ran six times in a row, the original run plus five re-runs started on purpose. All six were green on the first attempt; the five re-runs took 50, 48, 50, 50 and 49 seconds each, far under the 10-minute limit.
 
-- [ ] **T16 — Record and close**
+- [x] **T16 — Record and close**
   - Depends on: T12, T13, T14, T15
   - Files: — (the merged pull request's description)
   - RF: all (Definition of done)
   - Done when: the pull request description lists the six demonstrations and the stability result, each with its evidence; `pnpm typecheck`, `pnpm lint`, the full suite and `pnpm build` pass on `main`; the dependency sections of `package.json` are identical to those of the branch's base commit (recorded in the pull request); the production address appears nowhere in the repository; every checkbox in this file is ticked.
+
+  - Evidence (2026-10-17): the description of pull request #5 lists the six demonstrations and the stability result with their evidence. On `main`: 411 tests passing across 45 files; `pnpm typecheck`, `pnpm lint` (no warnings) and `pnpm build` pass; the dependency sections of `package.json` are identical to those of the base commit `f93334d` (`dependencies`, `devDependencies`, `peerDependencies` and `optionalDependencies` compared). The production host and the platform's default domain appear in no tracked file (`git grep`: 0 matches). Every other checkbox in this file is ticked.
