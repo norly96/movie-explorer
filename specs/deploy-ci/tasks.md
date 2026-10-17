@@ -119,11 +119,12 @@ Dependencies at a glance:
 
 ## Phase 4 — Demonstrations and close
 
-- [ ] **T12 [P] — Demonstrations 1 and 2: the merge gate** `⚠️ approval`
+- [x] **T12 [P] — Demonstrations 1 and 2: the merge gate** `⚠️ approval`
   - Depends on: T11
   - Files: — (throwaway branches and pull requests)
   - RF: RF-7, RF-8, RF-19, RF-21
   - Done when: (1) a pull request with a deliberately failing test shows a red check and **cannot be merged**, while a green one can be merged without any approval; (2) a green pull request that is behind `main` cannot be merged until it is updated, and a force-push to `main` is rejected. Each result is noted with the pull-request number or the rejection message.
+  - Evidence (2026-10-17): (1) pull request #12 added a test that fails on purpose; its `test` check was red and GitHub reported the merge state as `BLOCKED` (the other three checks were green). It was closed without merging, because the maintainer can bypass the gate by design (RF-7). Pull request #11 was merged green with no reviewer approval at all (RF-8). (2) Pull request #13, green, became `behind` after #14 reached `main` and was not mergeable; updating its branch re-ran the four checks (`blocked` while they ran) and it ended `clean`; it was closed without merging. A force-push of `main` to its parent commit was rejected by the platform: `GH013: Repository rule violations found for refs/heads/main. - Cannot force-push to this branch`; `main` stayed at `c41a049`. The throwaway branches were deleted.
 
 - [ ] **T13 — Demonstrations 3, 4 and 6: deployment and verification** `⚠️ approval` `[manual]`
   - Depends on: T11, T12
@@ -138,11 +139,12 @@ Dependencies at a glance:
   - Done when: the repository's description and website field, read with the `gh` CLI, contain no deployment address, and the output is noted.
   - Evidence (2026-10-17): read with `gh repo view --json description,homepageUrl`, the website field held the production address (the check found a violation of RF-18). The maintainer approved clearing it; `gh repo edit --homepage ""` emptied it and a second read returned an empty description and an empty website field. No tracked file contains a deployment address (`git grep` for the platform's default domain and for the production host: 0 matches).
 
-- [ ] **T15 [P] — Stability of the required checks**
+- [x] **T15 [P] — Stability of the required checks**
   - Depends on: T08
   - Files: — (platform runs)
   - RF: non-functional "Stable checks"
   - Done when: the CI of one commit has run **five times in a row** on the platform (re-runs started on purpose as a measurement, not to recover from a failure) and all five runs are green on the first attempt, each finishing in under 10 minutes (durations noted). If any run fails intermittently, the cause is recorded as a defect and fixed — with the maintainer's approval whenever it means editing an existing test — and the count restarts.
+  - Evidence (2026-10-17): the CI of the head of `main` at the time (`416f919`, run 39043693990) ran six times in a row, the original run plus five re-runs started on purpose. All six were green on the first attempt; the five re-runs took 50, 48, 50, 50 and 49 seconds each, far under the 10-minute limit.
 
 - [ ] **T16 — Record and close**
   - Depends on: T12, T13, T14, T15
