@@ -110,11 +110,12 @@ Dependencies at a glance:
   - Done when: the maintainer merges; the same four checks run on the merge commit on `main` and report four statuses on it; a production deployment of that commit completes; the verification workflow (now on `main`) runs for it and writes `deployment-health` on that commit, and it is green; the production build of that commit used the Node.js version declared in `engines.node` (read in its build log).
   - Evidence (2026-10-17): pull request #5 was merged by the maintainer and its four checks ran on the merge commit. The production deployment of that first merge commit failed on the pnpm pin, so the green `deployment-health` on `main` comes from the commits after the fixes (#6 to #10). As with T09, the Node.js version is taken from the project setting, not from a build-log line.
 
-- [ ] **T11 — Apply the rulesets** `⚠️ approval`
+- [x] **T11 — Apply the rulesets** `⚠️ approval`
   - Depends on: T10 (the checks must have reported at least once, or every merge would be blocked)
   - Files: — (repository settings; the two JSON files are read, not changed)
   - RF: RF-7, RF-8, RF-19, RF-21
   - Done when: the administrator role identifier is **looked up through the API**, substituted for the placeholder, and both rulesets are created with the `gh` CLI exactly as the README describes; listing the repository's rulesets shows both as active, the gate requiring the four checks with the strict policy and the owner bypass, and the history ruleset with no bypass.
+  - Evidence (2026-10-17): the administrator role identifier (5, type `RepositoryRole`, bypass mode `always`) was read back from the API after the maintainer created a throwaway disabled ruleset with the Repository admin role in the settings; the throwaway was then deleted. `main-gate` (id 25306153) and `main-history` (id 25306154) were created with `gh api … --method POST --input`, the first from a temporary copy with the placeholder substituted outside the repository. Both are `active` on `refs/heads/main`; the gate requires `lint`, `typecheck`, `test` and `build` with the strict policy and has the owner bypass and no review rule; the history ruleset forbids force-pushes and deletion and has no bypass. `gh api repos/<owner>/<repo>/rules/branches/main` lists `required_status_checks`, `non_fast_forward` and `deletion`.
 
 ## Phase 4 — Demonstrations and close
 
