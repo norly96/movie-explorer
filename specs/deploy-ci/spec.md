@@ -113,6 +113,14 @@ by number.
   is held as a repository variable, outside the files of the repository.
 - RF-16: THE SYSTEM does not roll back a deployment automatically; reverting
   to a previous deployment is a manual action.
+- RF-22: WHERE the platform protects deployments behind its own
+  authentication, THE SYSTEM presents the platform's bypass credential for
+  automation when it runs the verification of RF-13 or RF-15, so that the
+  deployment's own address can be reached; the credential is held as a
+  repository secret, is used only by the verification, and is never printed in
+  logs nor written in the repository. IF the credential is missing or rejected,
+  THEN the verification fails as in RF-14; a redirect to a login page is never
+  taken for a healthy page.
 
 **Documentation and visibility**
 - RF-17: THE SYSTEM documents in the README how to set up the deployment (what

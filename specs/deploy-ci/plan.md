@@ -278,6 +278,22 @@ dependency is added.
     requirement. The automatic path never needs the variable: it uses the
     address carried by the event. (RF-15, 18)
 
+20. **Deployments are protected by the platform's authentication, so the
+    verification presents the platform's bypass-for-automation credential.**
+    Found on the first real run: the deployment's own address answered with a
+    redirect to a login page. The credential lives in the repository secret
+    `VERCEL_AUTOMATION_BYPASS_SECRET`, reaches the entry point only through an
+    environment variable (never as an argument, which would show in process
+    listings) and is sent as the header `x-vercel-protection-bypass`. The
+    library never follows redirects, so the credential cannot be forwarded to
+    another host. Only `verify-deployment.yml` uses the secret; `ci.yml` stays
+    secret-free (RF-6). *Rejected*: probing the production domain
+    (`PRODUCTION_URL`) automatically — it reopens the race between two close
+    merges that decision 9 rejected and cannot reach previews, which
+    demonstration 4 needs. *Rejected*: turning the protection off — previews
+    would be public and the privacy observation of T09 would stop being true.
+    (RF-13, 15, 22)
+
 ## Rollout order (the order matters)
 
 1. **Repository files first, on the feature branch, then open the pull
@@ -368,6 +384,11 @@ dependency is added.
     a usage error (code 2) and says what is missing instead of probing
     something else. The automatic path is unaffected. (RF-15)
 
+15. **The bypass credential could be sent to the wrong host.** A manual run
+    accepts any address, and the header goes with every request. Mitigation:
+    only maintainers with write access can start a manual run, and redirects are
+    never followed. Accepted. (RF-22)
+
 ## Test strategy
 
 | File | Covers | RF |
@@ -404,6 +425,7 @@ dependency is added.
 | RF-14 | script exit code + commit status | `verify-deployment.test.ts`; entry-point test; demonstration 4 (also records whether a notification arrived) |
 | RF-15 | `workflow_dispatch` input, `PRODUCTION_URL` variable + entry-point argument | `ci-config.test.ts`; entry-point test; demonstration 4 |
 | RF-16 | absence of any rollback step; README | `ci-config.test.ts`; README test |
+| RF-22 | library `headers` option, entry point reading the credential from the environment, secret mapped only in `verify-deployment.yml` | `scripts/*.test.ts`; `ci-config.test.ts`; demonstration 4 |
 | RF-17 | README "Deployment" section | README test |
 | RF-18 | no address in docs or workflow definitions; repository fields checked by hand | README/docs/workflows test; demonstration 5 |
 | RF-19 | `ruleset-main-gate.json` (strict policy) | `ci-config.test.ts`; demonstration 2 |
