@@ -17,7 +17,7 @@ Dependencies at a glance:
 | Phase | Tasks | Needs |
 |---|---|---|
 | 0 Foundation | T01, T02 | — |
-| 1 Entry point and workflows | T03, T04, T05, T06 | T03 ← T01, T02 · T04 ← T01 · T05 ← T03 · T06 ← T04 |
+| 1 Entry point and workflows | T03, T04, T05, T05b, T06 | T03 ← T01, T02 · T04 ← T01 · T05 ← T03 · T05b ← T03, T05 · T06 ← T04 |
 | 2 Documentation | T07, T07b | T05, T06 |
 | 3 Pull request and platform | T08 → T09 → T10 → T11 | T07, T07b (then each one the previous) |
 | 4 Demonstrations and close | T12, T13, T14, T15, T16 | T12 ← T11 · T13 ← T11, T12 · T14 ← T10 · T15 ← T08 · T16 ← T12–T15 |
@@ -55,6 +55,12 @@ Dependencies at a glance:
   - Files: `.github/workflows/verify-deployment.yml`, `ci-config.test.ts` (modified)
   - RF: RF-13, RF-14, RF-15, RF-16, RF-18
   - Done when: a `verify-deployment.yml` block in `ci-config.test.ts` (written first) asserts — triggers are `deployment_status` and `workflow_dispatch` with an optional address input; the automatic path runs only for a successful **Production** deployment and reads the environment name from the event; the target is the event's own deployment address, and for a manual run the given address or, if none, the repository variable `PRODUCTION_URL` (an empty target makes the entry point exit with a usage error); the workflow contains no literal deployment address; the status context is `deployment-health` and is written for the deployed commit's identifier; `statuses: write` appears only on the job that needs it and the rest is read-only; steps from outside the repository follow the same pinning rule as T04; **no step rolls anything back**. The test passes.
+
+- [ ] **T05b — Bypass credential for protected deployments**
+  - Depends on: T03, T05
+  - Files: `scripts/verify-deployment.ts`, `scripts/verify-deployment-cli.ts`, `scripts/verify-deployment.test.ts`, `scripts/verify-deployment-cli.test.ts`, `.github/workflows/verify-deployment.yml`, `ci-config.test.ts` (modified)
+  - RF: RF-22 (and RF-13, RF-14, RF-15)
+  - Done when: tests (written first, failing) show — the library sends the header `x-vercel-protection-bypass` with the credential on both probes when `VerifyOptions` carries it, and sends no such header otherwise; the entry point reads the credential only from the environment variable `VERCEL_AUTOMATION_BYPASS_SECRET` (there is no command-line option for it), and the credential never appears in its output, not even when a probe fails; a stub server that answers 302 without the header and 200 with it is `unhealthy` without the credential and `healthy` with it; `verify-deployment.yml` maps `secrets.VERCEL_AUTOMATION_BYPASS_SECRET` to that variable on the verifying step only, `ci.yml` still contains no reference to any secret; the tests pass and the full suite still passes. The real proof is the next verification of a production deployment, which must be healthy.
 
 - [x] **T06 [P] — Ruleset definitions**
   - Depends on: T04
