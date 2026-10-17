@@ -78,7 +78,7 @@ Dependencies at a glance:
 
 ## Phase 3 — Pull request and platform setup
 
-- [ ] **T08 — Open the pull request** `⚠️ approval`
+- [x] **T08 — Open the pull request** `⚠️ approval`
   - Depends on: T07, T07b
   - Files: — (no repository files)
   - RF: RF-1, RF-2, RF-4, RF-6 (first real run)
