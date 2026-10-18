@@ -18,7 +18,7 @@ changed; where the plan touches it, it only adds.
 
 | Module | Kind | Responsibility | RF |
 |---|---|---|---|
-| `services/schemas/movie-schema.ts` (modified) | Schema + mapper | Raw movie gains three **optional** fields (`backdrop_path`, `overview`, `genre_ids`); new domain type `FeaturedMovie` and a pure mapper `toFeaturedMovie`; a pure `pickFeatured` that returns the first movie with a backdrop. `Movie` itself is **not** widened | RF-6, 7, 16, 33 |
+| `services/schemas/movie-schema.ts` (modified) | Schema + mapper | Raw movie gains three **optional** fields (`backdrop_path`, `overview`, `genre_ids`); new domain type `FeaturedMovie` and a pure mapper `toFeaturedMovie`; a pure `pickFeatured` that returns the first movie with a backdrop. The `original`-size address is built by a helper and a constant in `services/schemas/tmdb-mappers.ts` (no change to `tmdb-config.ts`). `Movie` itself is **not** widened | RF-6, 7, 16, 33 |
 | `services/explore-service.ts` (modified) | Service (server) | The popular page 1 response gets an optional `featured`, computed from that same response; no other mode and no later page carries it | RF-6, 7, 9 |
 | `services/explore-client.ts` (modified) | Service (browser) | The client-side Zod schema of `/api/explore` accepts the optional `featured` (constitution §4) | RF-7 |
 | `app/api/explore/route.ts` | Route | Unchanged: it forwards the service's JSON, so `featured` travels to the browser when the popular list is requested | RF-7 |
@@ -34,6 +34,7 @@ changed; where the plan touches it, it only adds.
 | `components/HeaderNav.tsx` (new, client) | Component | The only client part of the header: marks the current page (`usePathname`) | RF-2 |
 | `components/SkipLink.tsx` (new) | Component | First focusable element of every page; targets the main area | RF-5 |
 | `app/layout.tsx` (modified) | Layout | Skip link, header, the **single** `<main id=…>` for every page, the fixed background layer, the metadata template and default | RF-1, 5, 27, 34 |
+| `app/site-metadata.ts` (new) | Pure data | The default title and description, the title template and the entries of the home and the About page, so they can be tested without rendering the layout | RF-34 |
 | `app/page.tsx`, `app/movie/[id]/page.tsx` (modified) | Pages | Stop declaring their own `<main>` (the layout provides it); nothing else changes in the detail page; the home exports its own metadata | RF-5, 34 |
 | `app/about/page.tsx` (new, server) | Page | Page heading and the TMDB attribution (statement + logo); its own metadata | RF-30, 34 |
 | `components/TmdbAttribution.tsx` (new) | Component | The statement and the logo, shared by the About page | RF-30 |
@@ -51,7 +52,7 @@ changed; where the plan touches it, it only adds.
 | `components/HeroCurtain.tsx` (new) | Component | Open/closed wrapper: the curtain, `inert` + `aria-hidden` while closed, focus rescue, mount-collapsed-then-open for late data, a callback when the curtain settles | RF-9, 12, 13 |
 | `components/SearchFiltersBar.tsx` (new) | Component | Layout of the search field plus the filter group (one row wide, two columns narrow); the scroll anchor of the back-to-top button | RF-18 |
 | `components/FilterBar.tsx` (modified) | Component | Layout of the three selectors; **reserves the room** of "Clear filters" with a placeholder when it is not shown | RF-18, 19 |
-| `components/SearchInput.tsx`, `GenreFilter.tsx`, `YearFilter.tsx`, `SortFilter.tsx` (modified) | Components | Restyled (heights, text size); labels become visually hidden but remain real `<label>`s; no change of props, options or behavior | RF-18, 20 |
+| `components/SearchInput.tsx`, `GenreFilter.tsx`, `YearFilter.tsx`, `SortFilter.tsx` (modified) | Components | Restyled (heights, text size); labels become visually hidden but remain real `<label>`s; the search field also accepts a reference to its input, so the hero can send focus there; no other change of props, options or behavior | RF-18, 20 |
 | `components/ClearFiltersButton.tsx` | Component | **Unchanged** (it still renders nothing when not visible) | RF-19 |
 | `app/results-heading.ts` (new) | Pure helper | `resultsHeading(filters, genres)`: the text of RF-21 | RF-21, 22 |
 | `components/ResultsAnnouncer.tsx` (new) | Component | A visually hidden polite live region with the heading's text once results load | RF-22 |
@@ -79,8 +80,7 @@ asset provided by the maintainer. `SearchIcon` already exists.
 
 ### Tests and verification
 `*.test.ts(x)` next to each file; end-to-end specs in `e2e/` (a new
-`home-redesign.spec.ts`); root-level text tests where a test spans files (the
-README attribution, like `env-example.test.ts`); recorded demonstrations for the
+`home-redesign.spec.ts`); root-level or `app/` text tests where a test spans files (the README attribution, the single `main`, the background and the hero's contrast, like `env-example.test.ts`); recorded demonstrations for the
 four aspects of the spec's scoped exception.
 
 ## Component tree
@@ -168,7 +168,7 @@ export interface FeaturedMovie {
   rating: number | null;       // same rule as the card: null → "No rating"
 }
 
-export function pickFeatured(raw: TmdbMovieRaw[], backdropBaseUrl: string): FeaturedMovie | undefined;
+export function pickFeatured(raw: TmdbMovieRaw[]): FeaturedMovie | undefined;   // the "original"-size base is a constant in tmdb-mappers.ts
 
 // services/explore-service.ts  and  services/explore-client.ts (browser schema)
 export interface MoviePage {
@@ -202,6 +202,7 @@ export interface FeaturedHeroProps { movie: FeaturedMovie; genreName: string | n
 export interface HeroCurtainProps {
   open: boolean;
   onSettled?: () => void;               // curtain finished (or no animation)
+  focusOnClose?: RefObject<HTMLElement | null>;   // where focus goes if it was inside when closing (the search field)
   children: ReactNode;
 }
 export interface BackToTopButtonProps { visible: boolean; onActivate: () => void }
@@ -244,10 +245,13 @@ have no backdrop, so the shapes they expect stay exactly the same.
    the same animation instead of popping in. *Rejected*: mounting it open — it
    would push the grid with no transition. (RF-7, 12)
 7. **Scroll settling keeps the existing call and adds one.** The `scrollIntoView`
-   of explore-filters RF-19 stays exactly as it is; when a filter change closes
-   the hero, `ExplorerClient` calls it once more when the curtain settles (at once
-   with reduced motion). It is the same call, so the existing test is untouched,
-   and with no hero the extra call never happens. *Rejected*: relying on the
+   of explore-filters RF-19 stays exactly as it is; when a change closes the hero
+   (a filter, or a search that becomes active), `ExplorerClient` calls it once more
+   after both the navigation and the curtain have finished, whichever is later (at
+   once with reduced motion). A search needs this most: the hero closes on the
+   first character, and the debounced scroll arrives while the curtain still
+   moves. It is the same call, so the existing test is untouched, and with no hero
+   the extra call never happens. *Rejected*: relying on the
    browser's scroll anchoring alone — unreliable during a height animation.
    *Rejected*: replacing the original call — it would alter RF-19's test. (RF-12)
 8. **One `<main>` in the layout; the pages drop theirs.** The skip link then
@@ -402,7 +406,8 @@ deployment verification of the previous spec cover every step.
     checked on a real device (recorded demonstration).
 11. **Maintainer-supplied assets block two tasks** (the three addresses and icons
     for the header; the TMDB logo for the About page). Mitigation: those tasks are
-    marked manual and ordered after the rest; temporary canvas glyphs stand in.
+    marked manual and placed **before** the tasks that need them; the temporary
+    canvas glyphs only stand in if the maintainer approves shipping without them.
 12. **Lighthouse noise.** Scores move by about ±5. Mitigation: the median of five
     runs, the same method before and after.
 13. **Heading order.** A new `h1` and several `h2`s on the home. Mitigation: a test
@@ -491,7 +496,7 @@ text and 400 % zoom, 320 px, reduced motion and forced colors.
 | RF-14 | `FeaturedHero` styles | e2e (computed `text-transform`, accessible name as written) |
 | RF-15 | home `h1`, hero `h2` | component; e2e (one `h1`, no skipped levels) |
 | RF-16 | `FeaturedHero`, `pickFeatured` | unit/component (omitted genre, empty synopsis, "No rating") |
-| RF-17 | scrim properties, `FeaturedHero` | computed contrast test at 1280/1440/1920 px; **demonstration** on real images; component (empty alt) |
+| RF-17 | scrim properties, `FeaturedHero` | computed contrast test at 1280/1440/1920 px (the contrast of the hero text over real images is part of RF-29's demonstration); component (empty alt) |
 | RF-18 | `SearchFiltersBar`, `FilterBar` | component; e2e at both widths |
 | RF-19 | `FilterBar` placeholder | component (placeholder present, button absent); e2e (no movement) |
 | RF-20 | bar components, tokens | e2e (computed heights and font size) |
@@ -502,7 +507,7 @@ text and 400 % zoom, 320 px, reduced motion and forced colors.
 | RF-25 | `ExplorerClient` handler | component/e2e (scroll target, focus on the heading, reduced motion) |
 | RF-26 | button position, scroll padding | e2e (does not cover the focused element); **demonstration** on a real phone |
 | RF-27 | fixed layer in `globals.css` | `globals.test.ts`; e2e (stays while scrolling); **demonstration** on iOS Safari |
-| RF-28 | tints, mask, no borders | e2e (computed borders); `globals.test.ts` |
+| RF-28 | tints, mask, no borders, `FeaturedHero` fade container | e2e (computed borders); `globals.test.ts`; component (the image's fade container) |
 | RF-29 | tokens, tints, glow | contrast test over the token pairs and pure white; **demonstration** on real images; manual check of the detail page |
 | RF-30 | `/about`, `TmdbAttribution` | component; e2e |
 | RF-31 | `README.md` | root-level text test (statement and logo reference) |
@@ -532,6 +537,25 @@ covered by `globals.test.ts` and the review of the class names against
 | §7 Accessible by default | The audit checklist per change; keyboard order, names, landmarks, reduced motion and forced colors are planned and tested |
 | §8 Performance | `next/image` everywhere, priority on the first-paint images, Lighthouse ≥ 90 on the public address against a fresh reference |
 | §9 English everywhere | All text, code and documentation in English |
+
+**Known tensions, accepted and recorded** (none changes the plan):
+- §5: the end-to-end specs use the live TMDB API and do not run in the CI gate
+  (as in the previous spec), so a regression of a requirement verified only there
+  would not block a merge; a later spec could run them against a simulated TMDB.
+  The four-aspect exception is declared in the spec.
+- §8: Lighthouse is measured on the home and the About page; the detail page
+  (also a key page) is measured in the audit spec, by the maintainer's decision.
+  Because the header and the background are shared, the contrast of the detail
+  page's text over the new background is checked by hand.
+- §3: the hero lives in a client component because it reacts to typing; it is
+  still rendered by the server on the first paint.
+- §7: the search field keeps its accessible name through a visually hidden label,
+  and its visible hint is the placeholder; `design.md` allows an accessible name
+  without a visible label.
+- `AGENTS.md`: `hooks/` is described as TanStack Query hooks, and the folder
+  already holds non-Query hooks (`useDebouncedValue`), as `useBackToTopVisibility`
+  will; `HeroCurtain` holds focus and animation state although `components/` is
+  described as presentation-only. The wording is left as is.
 
 ## Requirements not covered
 

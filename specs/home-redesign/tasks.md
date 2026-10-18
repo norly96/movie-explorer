@@ -18,6 +18,11 @@ Rules that apply to every task and are not repeated below:
   the task stops and asks.
 - Only tokens from `design.md` (after T01); no arbitrary values; no dependency
   added.
+- Every task that changes what the visitor sees ends by passing the spec's audit
+  checklist for that change (contrast in every state and over images, accessible
+  names, keyboard order, reserved space, motion and reduced motion, 320 px); the
+  answers are written in the commit message. T55 is the final pass, not the only
+  one.
 - A phase ends with a pull request that references the spec (`⚠️ approval`); the
   next phase starts from the merged result.
 
@@ -27,7 +32,7 @@ Dependencies at a glance:
 |---|---|---|
 | 0 Before any code | T01–T05 | T05 ← T01, T03, T04 |
 | 1 Foundations (no visible change) | T06–T23 | T06 ← T01 · icons T07–T09 ← T01 · T10 → T11 → T12 → T13 · T18, T19 ← T07 · T20 ← T07, T17 · T21 ← T20 · T22 independent · T23 ← all of the phase |
-| 2 Shell | T24–T35 | T25 ← T22, T24 · T26 ← T06, T25 · T28 ← T09, T16, T27 · T29 ← T25, T26, T28 · T32 ← T22, T29, T31 · T34 ← T29, T32 · T35 ← all of the phase |
+| 2 Shell | T24–T35 | T25 ← T22, T24 · T26 ← T06, T25 · T29 ← T09, T16, T27, T28 · T30 ← T25, T26, T29 · T32 ← T22, T30, T31 · T34 ← T30, T32 · T35 ← all of the phase |
 | 3 Explorer composition | T36–T47 | T38 ← T08 · T39 ← T36–T38 · T41 ← T15, T39, T40 · T43 ← T08, T42 · T44 ← T41, T43 · T45 ← T20, T21, T06 · T46 ← T34, T44, T45, T17 · T47 ← all of the phase |
 | 4 Hero | T48–T54 | T48 ← T06 · T49 ← T10, T08, T14, T18, T48 · T50 ← T06 · T51 ← T13, T14, T41, T49, T50 · T52 ← T51 · T53 ← T46, T52 · T54 ← all of the phase |
 | 5 Verification and close | T55–T58 | T55–T57 ← T54 · T58 ← T55–T57 |
@@ -88,13 +93,13 @@ Dependencies at a glance:
   - Depends on: T01
   - Files: `components/icons/AuthorLogoIcon.tsx`, `LinkedInIcon.tsx`, `GitHubIcon.tsx`, `components/icons/brand-icons.test.tsx`
   - RF: RF-3
-  - Done when: a test (written first) renders each icon with the same checks as T07; they pass. The glyphs are the canvas's stand-ins and are replaced in T30.
+  - Done when: a test (written first) renders each icon with the same checks as T07; they pass. The glyphs are the canvas's stand-ins and are replaced in T28.
 
 - [ ] **T10 — Featured-movie schema and mapper**
   - Depends on: —
-  - Files: `services/schemas/movie-schema.ts`, `services/schemas/movie-schema.test.ts` (new cases)
+  - Files: `services/schemas/movie-schema.ts`, `services/schemas/movie-schema.test.ts` (new cases), `services/schemas/tmdb-mappers.ts`, `services/schemas/tmdb-mappers.test.ts` (new cases)
   - RF: RF-6, 7, 16, 33
-  - Done when: new tests (written first) show that the raw movie accepts `backdrop_path`, `overview` and `genre_ids` as optional (a raw movie without them still parses), that `pickFeatured` returns the first movie with a backdrop in order and `undefined` when none has one, that the backdrop URL uses TMDB's `original` size, and that an empty overview stays empty; `Movie` and `toMovie` are unchanged and every existing test of the file passes untouched.
+  - Done when: new tests (written first) show that the raw movie accepts `backdrop_path`, `overview` and `genre_ids` as optional (a raw movie without them still parses), that `pickFeatured` returns the first movie with a backdrop in order and `undefined` when none has one, that the backdrop URL helper in `tmdb-mappers.ts` builds an address under TMDB's `original` size from a constant (no change to the shared image configuration), and that an empty overview stays empty; `Movie` and `toMovie` are unchanged and every existing test of both files passes untouched.
 
 - [ ] **T11 — Service: `featured` on popular page 1**
   - Depends on: T10
@@ -130,7 +135,7 @@ Dependencies at a glance:
   - Depends on: —
   - Files: `app/site-config.ts`, `app/site-config.test.ts`
   - RF: RF-3
-  - Done when: tests (written first) show that `visibleLinks` keeps only complete `https` addresses, hides empty ones, malformed ones and other schemes (`http`, `javascript:`), and returns the three links in a fixed order; the committed configuration has empty addresses until T30.
+  - Done when: tests (written first) show that `visibleLinks` keeps only complete `https` addresses, hides empty ones, malformed ones and other schemes (`http`, `javascript:`), and returns the three links in a fixed order; the committed configuration has empty addresses until T28.
 
 - [ ] **T17 [P] — Skeletons stop with reduced motion**
   - Depends on: —
@@ -153,7 +158,7 @@ Dependencies at a glance:
 - [ ] **T20 — Card fallback poster and reserved border**
   - Depends on: T07, T17
   - Files: `components/MovieCard.tsx`, `components/MovieCardSkeleton.tsx`, `components/MovieCard.test.tsx` (new cases)
-  - RF: RF-23 (the border at rest), 35, 36 (the skeleton's footprint)
+  - RF: RF-23, 35, 36
   - Done when: new tests (written first) show that a card without poster shows a surface with a decorative film icon of the same proportions, that every card has a transparent 2 px border at rest and the skeleton has the same, and the existing case "no `img` role without a poster" passes untouched.
 
 - [ ] **T21 — Priority for the first posters**
@@ -172,7 +177,7 @@ Dependencies at a glance:
   - Depends on: T06–T22
   - Files: — (no repository files)
   - RF: —
-  - Done when: the branch is pushed and a pull request referencing the spec is open; its four checks are green; the maintainer merges it; the production deployment is verified healthy; nothing looks different on the deployed pages except the new states' icons and titles.
+  - Done when: the branch is pushed and a pull request referencing the spec is open; its four checks are green; the maintainer merges it; the production deployment is verified healthy; nothing looks different on the deployed pages except the new icons in the states, the film icon of the missing-poster fallback, the 2 px border that makes each card 4 px larger, and the page titles.
 
 ## Phase 2 — Shell
 
@@ -200,23 +205,23 @@ Dependencies at a glance:
   - RF: RF-2
   - Done when: tests (written first, with a mocked pathname) show that "Home" is the current page on `/` and with query strings, "About" on `/about`, none on `/movie/1`, that the current link is marked for assistive technology and is also underlined and bolder (not color only); they pass.
 
-- [ ] **T28 — Site header**
-  - Depends on: T09, T16, T27
+- [ ] **T28 — The maintainer's addresses and icons** `[manual]`
+  - Depends on: T09, T16
+  - Files: `app/site-config.ts`, `components/icons/AuthorLogoIcon.tsx`, `LinkedInIcon.tsx`, `GitHubIcon.tsx`
+  - RF: RF-3
+  - Done when: the maintainer's three `https` addresses are in the configuration and the three icons are the maintainer's own, **before** the header is implemented (or the maintainer explicitly approves shipping with an empty configuration, in which case the header shows no external link and the placeholders stay); none of the addresses is this app's production address (deploy-ci RF-18); `visibleLinks` returns the filled ones; the T16 and T09 tests still pass.
+
+- [ ] **T29 — Site header**
+  - Depends on: T09, T16, T27, T28
   - Files: `components/SiteHeader.tsx`, `components/SiteHeader.test.tsx`
   - RF: RF-1, 3, 4
   - Done when: tests (written first) show that the brand links to the home with an accessible name, that "Home" and "About" appear, that the external links are only the visible ones, open in a new tab and say so in their accessible name, that there are two variants whose element order is brand, links, icons (wide) and brand, icons, links (narrow), and that the brand's text is hidden visually at the smallest width while its name remains; they pass.
 
-- [ ] **T29 — Header in the layout**
-  - Depends on: T25, T26, T28
+- [ ] **T30 — Header in the layout**
+  - Depends on: T25, T26, T29
   - Files: `app/layout.tsx`, `app/landmark.test.ts` (new case)
   - RF: RF-1
   - Done when: a new test (written first) asserts that the layout renders the skip link, the header and the single main area in that order; it passes; `pnpm build` passes and the header shows on `/`.
-
-- [ ] **T30 — The maintainer's addresses and icons** `[manual]`
-  - Depends on: T28
-  - Files: `app/site-config.ts`, `components/icons/AuthorLogoIcon.tsx`, `LinkedInIcon.tsx`, `GitHubIcon.tsx`
-  - RF: RF-3
-  - Done when: the maintainer's three `https` addresses are in the configuration and the three icons are the maintainer's own (or the maintainer explicitly approves shipping with an empty configuration); `visibleLinks` returns the filled ones; the T16 and T09 tests still pass.
 
 - [ ] **T31 — TMDB logo** `[manual]`
   - Depends on: —
@@ -225,7 +230,7 @@ Dependencies at a glance:
   - Done when: the maintainer adds the official TMDB logo from TMDB's logo page, the variant and the usage guidelines (less prominent than the application's own name, no implied endorsement) are read and noted in the task's description, and the file is in the repository.
 
 - [ ] **T32 — About page**
-  - Depends on: T22, T29, T31
+  - Depends on: T22, T30, T31
   - Files: `app/about/page.tsx`, `components/TmdbAttribution.tsx`, `components/TmdbAttribution.test.tsx`
   - RF: RF-30, 34
   - Done when: tests (written first) show that the attribution shows the exact statement "This product uses the TMDB API but is not endorsed or certified by TMDB." and the logo with a text alternative, that the page has one level-one heading, and that its metadata is the About entry of T22; they pass; the page is reachable from the header.
@@ -237,10 +242,10 @@ Dependencies at a glance:
   - Done when: a root-level text test (written first, failing) asserts the exact statement and the logo reference in `README.md`; it passes along with the existing README and `no-secret-leak` tests.
 
 - [ ] **T34 — End-to-end: the shell**
-  - Depends on: T29, T32
+  - Depends on: T30, T32
   - Files: `e2e/home-redesign.spec.ts` (new)
   - RF: RF-1, 2, 4, 5, 15, 30, 34
-  - Done when: the new spec passes locally: the header and the skip link on `/`, `/about`, a movie and a not-found page; exactly one `main` on each; the first Tab focuses the skip link and Enter moves focus to the main area; the current page is marked; the tab order equals the visual order at 390 and 1280 px; no horizontal scroll at 320 px with the brand's text hidden; each page's title; a run with JavaScript disabled still shows the header and the About page; the result is noted.
+  - Done when: the new spec passes locally: the header and the skip link on `/`, `/about`, a movie and a not-found page; exactly one `main` on each; the first Tab focuses the skip link and Enter moves focus to the main area; the current page is marked; the tab order equals the visual order at 390 and 1280 px; no horizontal scroll at 320 px with the brand's text hidden; each page's title; a run with JavaScript disabled still shows the header, the skip link and the About page; the result is noted.
 
 - [ ] **T35 — Pull request of phase 2** `⚠️ approval`
   - Depends on: T24–T34
@@ -258,9 +263,9 @@ Dependencies at a glance:
 
 - [ ] **T37 [P] — Search field restyle**
   - Depends on: T35
-  - Files: `components/SearchInput.tsx`, `components/SearchInput.test.tsx` (new case)
-  - RF: RF-18, 20
-  - Done when: a new test (written first) shows that the label is visually hidden yet still names the field; the existing cases pass untouched.
+  - Files: `components/SearchInput.tsx`, `components/SearchInput.test.tsx` (new cases)
+  - RF: RF-13, 18, 20
+  - Done when: new tests (written first) show that the label is visually hidden yet still names the field and that the field accepts a reference to its input (so the hero can send focus to it); the existing cases pass untouched.
 
 - [ ] **T38 [P] — Selectors restyle**
   - Depends on: T08, T35
@@ -272,7 +277,7 @@ Dependencies at a glance:
   - Depends on: T36, T37, T38
   - Files: `components/SearchFiltersBar.tsx`, `components/SearchFiltersBar.test.tsx`
   - RF: RF-18
-  - Done when: tests (written first) show that the bar renders the search field, then genre, year, sort and the clear control in that DOM order, forwards every prop, and exposes the anchor the back-to-top button needs; they pass.
+  - Done when: tests (written first) show that the bar renders the search field, then genre, year, sort and the clear control in that DOM order, forwards every prop (including the reference to the search input), and exposes the anchor the back-to-top button needs; they pass.
 
 - [ ] **T40 [P] — Results announcer**
   - Depends on: T15, T35
@@ -333,26 +338,26 @@ Dependencies at a glance:
 - [ ] **T49 — Featured hero**
   - Depends on: T10, T08, T14, T18, T48
   - Files: `components/FeaturedHero.tsx`, `components/FeaturedHero.test.tsx`
-  - RF: RF-6, 10, 14, 15, 16, 17, 32, 33
-  - Done when: tests (written first) show the title, first genre, year, rating out of 10, a three-line synopsis and a "Details" link whose accessible name includes the title and whose target is the movie's page; that a missing genre, an empty synopsis and a missing rating are simply omitted or shown as "No rating"; that the title keeps its written text and is capitalized by style only; that the image has an empty description, high priority, full-width `sizes`, and that an image error keeps all the text on a plain background; the hero is a `section`, not an `article`; they pass.
+  - RF: RF-6, 10, 14, 15, 16, 17, 28, 32, 33
+  - Done when: tests (written first) show the title, first genre, year, rating out of 10, a three-line synopsis and a "Details" link whose accessible name includes the title and whose target is the movie's page; that a missing genre, an empty synopsis and a missing rating are simply omitted or shown as "No rating"; that the title keeps its written text and is capitalized by style only; that the image has an empty description, high priority, full-width `sizes`, and that an image error keeps all the text on a plain background; the hero is a `section`, not an `article`; that the image sits in a container with the vertical fade of RF-28; they pass.
 
 - [ ] **T50 [P] — Hero curtain**
   - Depends on: T06, T47
   - Files: `components/HeroCurtain.tsx`, `components/HeroCurtain.test.tsx`
   - RF: RF-9, 12, 13
-  - Done when: tests (written first) show that closed content is `inert` and hidden from assistive technology, that focus inside it moves to the search field when it closes, that data arriving late mounts collapsed and opens, that the settle callback fires when the curtain ends or at once without animation, and that nothing is rendered when there is no content; they pass.
+  - Done when: tests (written first) show that closed content is `inert` and hidden from assistive technology, that focus inside it moves to the element given by its `focusOnClose` reference (the search field) when it closes, that data arriving late mounts collapsed and opens, that the settle callback fires when the curtain ends or at once without animation, and that nothing is rendered when there is no content; they pass.
 
 - [ ] **T51 — Hero in the explorer**
   - Depends on: T13, T14, T41, T49, T50
   - Files: `app/ExplorerClient.tsx`, `app/ExplorerClient.test.tsx` (new cases)
-  - RF: RF-6, 7, 9, 11, 15
-  - Done when: new tests (written first) show that the hero is open on the popular list with an empty field; that the first typed character closes it before the debounce; that any filter closes it; that clearing reopens it; that a start with filters has no hero and clearing makes **one** popular request and opens it with no other request; that without `featured` nothing is reserved; and that the home has a single level-one heading with the hero's title below it; the existing cases pass untouched.
+  - RF: RF-6, 7, 8, 9, 11, 15
+  - Done when: new tests (written first) show that the hero is open on the popular list with an empty field, and that the featured movie is still a card in the grid; that the first typed character closes it before the debounce; that any filter closes it; that clearing reopens it; that a start with filters has no hero and clearing makes **one** popular request and opens it with no other request; that without `featured` nothing is reserved; and that the home has a single level-one heading with the hero's title below it; the existing cases pass untouched.
 
 - [ ] **T52 — Scroll settling after the curtain**
   - Depends on: T51
   - Files: `app/ExplorerClient.tsx`, `app/ExplorerClient.test.tsx` (new cases)
   - RF: RF-12
-  - Done when: new tests (written first) show that a filter change with the hero open scrolls the results anchor once at once (the existing call) and once more when the curtain settles, that with no hero it scrolls once, and that with reduced motion it settles immediately; the existing RF-19 test passes untouched.
+  - Done when: new tests (written first) show that a filter change with the hero open scrolls the results anchor once at once (the existing call) and once more when the curtain settles; that a search typed with the hero open, whose navigation arrives after the debounce and possibly before the curtain ends, ends with exactly one extra call after both the navigation and the curtain have finished, whichever is later; that with no hero it scrolls once; and that with reduced motion it settles immediately; the existing RF-19 test passes untouched.
 
 - [ ] **T53 — End-to-end: the hero**
   - Depends on: T46, T52
@@ -377,14 +382,14 @@ Dependencies at a glance:
 - [ ] **T56 — Real-device checks and recorded demonstrations** `[manual]`
   - Depends on: T54
   - Files: — (the results go in the pull request description)
-  - RF: RF-12 (smoothness), 26, 27, 29
+  - RF: RF-12, 26, 27, 29
   - Done when: on a real phone and in iOS Safari the curtain with the keyboard open, the back-to-top button against the browser bar and the safe area, the fixed background and the image fade, and the contrast of the hero text over several real backdrops are each recorded as a demonstration, along with the card's hover on a mouse and its absence on touch.
 
 - [ ] **T57 — Final Lighthouse measurement** `[manual]`
   - Depends on: T54
   - Files: — (the figures go in the private notes and the README if the maintainer wants them)
   - RF: non-functional (performance); RF-32, 33
-  - Done when: Lighthouse is measured on the public address with T02's method (mobile and desktop, median of five) for the home and the About page; every category is at least 90 and no score is below the reference of T02; the figures are noted and compared.
+  - Done when: Lighthouse is measured on the public address with T02's method (mobile and desktop, median of five) for the home and the About page; every category is at least 90 on both, and no home score is below the reference of T02 (the About page is new and has no earlier reference); the figures are noted and compared.
 
 - [ ] **T58 — Record and close**
   - Depends on: T55, T56, T57
@@ -396,36 +401,36 @@ Dependencies at a glance:
 
 | RF | Tasks |
 |---|---|
-| RF-1 | T25, T28, T29, T34 |
+| RF-1 | T25, T29, T30, T34 |
 | RF-2 | T27, T34 |
-| RF-3 | T09, T16, T28, T30 |
-| RF-4 | T08, T28, T34, T55 |
-| RF-5 | T24, T25, T34 |
-| RF-6 | T10, T11, T14, T49, T51, T53 |
+| RF-3 | T09, T16, T28, T29 |
+| RF-4 | T08, T29, T34, T55 |
+| RF-5 | T24, T25, T34, T55 |
+| RF-6 | T08, T10, T11, T14, T49, T51, T53 |
 | RF-7 | T10, T11, T12, T13, T51 |
 | RF-8 | T51, T53 |
 | RF-9 | T11, T50, T51, T53 |
 | RF-10 | T49 |
 | RF-11 | T13, T51, T53 |
-| RF-12 | T06, T50, T52, T53, T56 |
-| RF-13 | T50, T53, T55 |
-| RF-14 | T49, T53 |
-| RF-15 | T34, T51, T53, T55 |
+| RF-12 | T01, T06, T50, T52, T53, T56 |
+| RF-13 | T37, T50, T53, T55 |
+| RF-14 | T01, T49, T53 |
+| RF-15 | T34, T49, T51, T53, T55 |
 | RF-16 | T10, T14, T49, T53 |
-| RF-17 | T48, T49, T53, T56 |
-| RF-18 | T36, T37, T38, T39, T41, T46 |
+| RF-17 | T01, T06, T48, T49, T53 |
+| RF-18 | T08, T36, T37, T38, T39, T41, T46 |
 | RF-19 | T36, T46 |
-| RF-20 | T37, T38, T46 |
+| RF-20 | T01, T06, T37, T38, T46 |
 | RF-21 | T15, T41 |
 | RF-22 | T15, T40, T41, T46 |
-| RF-23 | T20, T45, T46 |
-| RF-24 | T42, T43, T44, T46 |
-| RF-25 | T44, T46 |
-| RF-26 | T43, T46, T56 |
-| RF-27 | T26, T56 |
-| RF-28 | T26, T46 |
-| RF-29 | T26, T48, T56 |
-| RF-30 | T32, T34 |
+| RF-23 | T01, T06, T20, T45, T46 |
+| RF-24 | T01, T08, T42, T43, T44, T46 |
+| RF-25 | T01, T44, T46 |
+| RF-26 | T01, T43, T46, T56 |
+| RF-27 | T01, T06, T26, T56 |
+| RF-28 | T01, T06, T26, T46, T49 |
+| RF-29 | T01, T26, T48, T56 |
+| RF-30 | T31, T32, T34 |
 | RF-31 | T33 |
 | RF-32 | T21, T49, T57 |
 | RF-33 | T10, T49, T57 |
@@ -434,5 +439,5 @@ Dependencies at a glance:
 | RF-36 | T17, T20, T46 |
 
 **Requirements without a task: none.** Housekeeping is T03 and T04. Tasks that
-need the maintainer: T01 (approval), T02, T30, T31 (material), T55, T56, T57
+need the maintainer: T01 (approval), T02, T28, T31 (material), T55, T56, T57
 (measurements and devices), and the pull requests T05, T23, T35, T47, T54.

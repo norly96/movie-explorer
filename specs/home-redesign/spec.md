@@ -137,9 +137,10 @@ Requirement numbers are stable identifiers, grouped by topic.
   an exception to the rule of animating only transform and opacity, accepted
   because it only happens after the visitor's action, never while the page loads,
   lasts under half a second and is disabled with reduced motion. WHEN a filter is
-  changed while the hero is visible, THE SYSTEM leaves the results heading at the
-  top edge of the visible area once the curtain has finished (immediately when
-  there is no animation).
+  changed, or a search becomes active, while the hero is visible, THE SYSTEM
+  leaves the results heading at the top edge of the visible area once the curtain
+  has finished and the change has been applied, whichever comes later
+  (immediately when there is no animation).
 - RF-13: WHILE the hero is hidden, THE SYSTEM makes it unreachable by keyboard
   and by assistive technology. IF the keyboard focus is inside the hero when it
   becomes hidden, THEN THE SYSTEM moves it to the search field.
@@ -295,7 +296,8 @@ Requirement numbers are stable identifiers, grouped by topic.
   the same method is used afterwards. Aim for 95 to 100 in accessibility, best
   practices and SEO. The detail page's own Lighthouse measurement belongs to the
   audit spec, but the contrast of its text over the new background is checked by
-  hand. The redesign must not lower any reference score, must not increase the unused
+  hand. The redesign must not lower any reference score of the home (the About
+  page is new and only has the floor of 90), must not increase the unused
   JavaScript the baseline reported for the home, and adds no blocking work to the
   first paint. The image that determines the first paint is content (a poster or
   the featured movie), never decoration, and no text or image waits for an entry
@@ -478,9 +480,10 @@ Requirement numbers are stable identifiers, grouped by topic.
   home, and a clean console.
 - The checks of the CI pass and the production deployment of the merged result is
   verified healthy.
-- Lighthouse is measured again on the public address with the baseline's method,
-  on mobile and desktop for the home and the About page, all categories ≥ 90 with
-  no score below the reference; the figures are recorded.
+- Lighthouse is measured again on the public address with the method of the
+  reference measurement, on mobile and desktop for the home and the About page,
+  all categories ≥ 90 and, for the home, no score below the reference (the About
+  page is new and only has the floor); the figures are recorded.
 - Manual checks on real devices are done and noted: the hero's animation with the
   keyboard open on a phone, the back-to-top button against the browser bar and the
   safe area, the fixed background and the image fade on iOS Safari, the card's
