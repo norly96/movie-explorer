@@ -501,9 +501,11 @@ Requirement numbers are stable identifiers, grouped by topic.
   the spec).
 - The exact files and formats of the site configuration (the three links and the
   logo) are decisions for the plan.
-- Icons (decided): the generic icons (star, alert, film, arrows, chevron, search,
-  clapperboard) are taken from the design canvas, as inline SVG components. The
-  maintainer provides the three header icons (their own logo, LinkedIn and
+- Icons (decided): the star, the arrows, the chevron, the search icon and the
+  clapperboard are taken from the design canvas, as inline SVG components. The
+  alert and film icons are not in the canvas, so they are drawn in the same style
+  (`design.md`: 24 px grid, 1.5 stroke, rounded) during the implementation, unless
+  the maintainer provides their own. The maintainer provides the three header icons (their own logo, LinkedIn and
   GitHub) when the plan reaches the header task; until then the canvas glyphs
   stand in and are replaced.
 

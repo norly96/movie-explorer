@@ -63,7 +63,8 @@ changed; where the plan touches it, it only adds.
 | `components/RatingBadge.tsx`, `ErrorState.tsx`, `EmptyState.tsx` (modified) | Components | Star, alert and film icons (decorative, hidden from assistive technology); texts and roles unchanged | RF-35 |
 
 ### Icons (`components/icons/`, one file each, `design.md` format)
-`StarIcon`, `AlertIcon`, `FilmIcon` (design system) · `ArrowUpIcon`,
+`StarIcon` (from the canvas), `AlertIcon` and `FilmIcon` (design system; **not**
+in the canvas, drawn in the same style) · `ArrowUpIcon`,
 `ArrowRightIcon`, `ChevronDownIcon`, `ClapperboardIcon` (redesign; SVG taken from
 the canvas) · `AuthorLogoIcon`, `LinkedInIcon`, `GitHubIcon` (placeholders from
 the canvas until the maintainer provides the final ones) · the TMDB logo as an
@@ -316,8 +317,11 @@ have no backdrop, so the shapes they expect stay exactly the same.
     break that test; *rejected*: trusting the global reduced-motion rule — it only
     shortens the duration, and an infinite animation keeps repeating. (RF-36)
 21. **New icons follow `design.md`** (one component per icon, 24 × 24, stroke
-    1.5, `currentColor`, decorative ones hidden), taken from the canvas; the three
-    header icons are replaced by the maintainer's own when supplied. *Rejected*: an
+    1.5, `currentColor`, decorative ones hidden). Those that exist in the canvas
+    (star, arrows, chevron, clapperboard and the three header glyphs) are taken
+    from it; the alert and film icons are not in the canvas and are drawn in the
+    same style. The three header icons are replaced by the maintainer's own when
+    supplied. *Rejected*: an
     icon library — constitution §1. (RF-3, 35)
 22. **Metadata uses a title template and a default in the layout**, with the
     home's and the About page's own entries. The detail page inherits the site
