@@ -39,7 +39,7 @@ Dependencies at a glance:
 
 ## Phase 0 — Before any code
 
-- [ ] **T01 — Update `design.md`** `⚠️ approval`
+- [x] **T01 — Update `design.md`** `⚠️ approval`
   - Depends on: —
   - Files: `docs/design.md` (modified)
   - RF: RF-12, 14, 17, 20, 23, 24–29 (their visual rules)
