@@ -36,11 +36,15 @@
   --size-icon-button: 2.75rem;
   --size-brand-icon: 1.75rem;
   --size-header: 4rem;
+  --size-header-narrow: 3.5rem;
   --size-hero: 20rem;
   --size-back-to-top: 3rem;
   --duration-appear: 200ms;
   --duration-curtain: 400ms;
   --scale-card-hover: 1.03;
+
+  /* Below this width the header hides its brand's text visually (RF-4) */
+  --breakpoint-xs: 22.5rem;
 }
 
 @theme inline {

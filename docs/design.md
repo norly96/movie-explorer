@@ -147,7 +147,8 @@ Added by the home redesign; use these names, never arbitrary values.
 | `size-control-touch` | 48px | Same controls on phones (and the full-width "Details" button) |
 | `size-icon-button` | 44px | Square hit area of the header's external links |
 | `size-brand-icon` | 28px | Header logo |
-| `size-header` | 64px | Header height on wide screens (narrow: a 56px row and a 44px row) |
+| `size-header` | 64px | Header height on wide screens |
+| `size-header-narrow` | 56px | First row of the header on narrow screens (the second row is `size-control`, 44px) |
 | `size-hero` | 320px | Minimum height of the hero on wide screens; it grows with the text, never a fixed height |
 | `size-back-to-top` | 48px | Back-to-top button |
 
@@ -164,6 +165,10 @@ No other radius values. No fully rounded pills.
 
 ### Breakpoints
 Tailwind defaults: `sm` 640 · `md` 768 · `lg` 1024 · `xl` 1280. Mobile first.
+
+**Extra small:** `xs` is 360px, used only by the header: below it the brand's text is
+hidden visually (its logo and accessible name remain), because the brand and the
+three external links no longer fit side by side.
 
 **Wide and narrow:** "wide" is `lg` (1024px) and up, "narrow" is below it. The
 header, the hero, the search and filters bar and the back-to-top offsets switch
@@ -424,11 +429,13 @@ All: `radius-md`, `text-sm`, weight 600, `px-4 py-2`, icon 20px with `gap-2`.
   --size-icon-button: 2.75rem;
   --size-brand-icon: 1.75rem;
   --size-header: 4rem;
+  --size-header-narrow: 3.5rem;
   --size-hero: 20rem;
   --size-back-to-top: 3rem;
   --duration-appear: 200ms;
   --duration-curtain: 400ms;
   --scale-card-hover: 1.03;
+  --breakpoint-xs: 22.5rem;
 }
 
 @theme inline {

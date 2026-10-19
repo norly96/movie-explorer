@@ -67,6 +67,10 @@ describe("app/globals.css home redesign tokens", () => {
     ["--size-hero", "20rem"],
     ["--size-back-to-top", "3rem"],
     // Durations of the two new transitions, and the card's enlargement.
+    // The header's narrow first row, and the width below which its brand's text
+    // is hidden visually (docs/design.md → SiteHeader).
+    ["--size-header-narrow", "3.5rem"],
+    ["--breakpoint-xs", "22.5rem"],
     ["--duration-appear", "200ms"],
     ["--duration-curtain", "400ms"],
     ["--scale-card-hover", "1.03"],
