@@ -217,7 +217,7 @@ Dependencies at a glance:
   - RF: RF-1, 3, 4
   - Done when: tests (written first) show that the brand links to the home with an accessible name, that "Home" and "About" appear, that the external links are only the visible ones, open in a new tab and say so in their accessible name, that there are two variants whose element order is brand, links, icons (wide) and brand, icons, links (narrow), and that the brand's text is hidden visually at the smallest width while its name remains; they pass.
 
-- [ ] **T30 — Header in the layout**
+- [x] **T30 — Header in the layout**
   - Depends on: T25, T26, T29
   - Files: `app/layout.tsx`, `app/landmark.test.ts` (new case)
   - RF: RF-1
