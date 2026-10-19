@@ -12,8 +12,8 @@ export default async function Home({ searchParams }: PageProps<"/">) {
   const { genres, initial } = await resolveExplorePage(await searchParams);
 
   return (
-    <main className="mx-auto w-full max-w-7xl px-4 py-8 lg:px-8">
+    <div className="mx-auto w-full max-w-7xl px-4 py-8 lg:px-8">
       <ExplorerClient genres={genres} initial={initial} />
-    </main>
+    </div>
   );
 }
