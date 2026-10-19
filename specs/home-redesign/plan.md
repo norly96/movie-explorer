@@ -58,9 +58,9 @@ changed; where the plan touches it, it only adds.
 | `components/ResultsAnnouncer.tsx` (new) | Component | A visually hidden polite live region with the heading's text once results load | RF-22 |
 | `components/BackToTopButton.tsx` (new) | Component | Icon-only fixed button, hidden and unfocusable until shown | RF-24, 25, 26 |
 | `hooks/useBackToTopVisibility.ts` (new) | Hook | `IntersectionObserver` on a sentinel 300 px below the bar (no scroll listener) | RF-24 |
-| `components/MovieCard.tsx` (modified) | Component | Transparent 2 px border at rest; gold border, accent title and 3 % enlargement on hover; the missing-poster fallback with the film icon; `priority` for the first posters | RF-23, 32, 35 |
+| `components/MovieCard.tsx` (modified) | Component | Transparent 2 px border at rest; gold border, accent title and 3 % enlargement on hover; the missing-poster fallback with the film icon; eager loading with high fetch priority for the first posters | RF-23, 32, 35 |
 | `components/MovieCardSkeleton.tsx` (modified) | Component | Same new border as the card (same footprint); `motion-reduce` switches the pulse off | RF-36 |
-| `components/MovieGrid.tsx` (modified) | Component | Passes `priority` to the first few cards | RF-32 |
+| `components/MovieGrid.tsx` (modified) | Component | Marks the first few cards as high priority (a named constant) | RF-32 |
 | `components/RatingBadge.tsx`, `ErrorState.tsx`, `EmptyState.tsx` (modified) | Components | Star, alert and film icons (decorative, hidden from assistive technology); texts and roles unchanged | RF-35 |
 
 ### Icons (`components/icons/`, one file each, `design.md` format)
@@ -304,9 +304,14 @@ have no backdrop, so the shapes they expect stay exactly the same.
     so every accessible name and test lookup is the same. *Rejected*: changing the
     button to render a hidden element — it would edit an existing test's
     expectation. (RF-18, 19, 20)
-18. **The hero image is a `next/image` with priority, `sizes` of the full width,
-    quality 85 and an empty description, built from TMDB's `original` size by a
-    pure helper** (not by changing the shared image configuration). *Rejected*: a
+18. **The hero image is a `next/image` loaded eagerly with high fetch priority,
+    `sizes` of the full width, quality 85 and an empty description, built from
+    TMDB's `original` size by a pure helper** (not by changing the shared image
+    configuration). Next 16 deprecated the `priority` prop; its documentation
+    recommends `loading="eager"` with `fetchPriority="high"` when more than one
+    image can be the largest of the first paint (the hero, or the posters when
+    there is no hero), and reserves `preload` for a single known candidate. The
+    first posters use the same pair. *Rejected*: a
     CSS background image — the browser finds it late and it cannot be prioritized
     like an image. *Rejected*: a 1280 px source — it would be stretched on wide
     screens, which the maintainer ruled out. *Rejected*: changing
@@ -352,7 +357,7 @@ have no backdrop, so the shapes they expect stay exactly the same.
    (deletion of `resolve-view-state`, the debounce test).
 2. **Foundations (no visible change):** schema and service extension with their
    tests; tokens in `globals.css`; the icons; the skeleton and card structure
-   (transparent border, motion-reduce); metadata; priority on the first posters.
+   (transparent border, motion-reduce); metadata; high fetch priority on the first posters.
 3. **Shell:** layout `main` and skip link; header (needs the maintainer's three
    addresses and icons, or explicit approval to ship with the file empty); the
    background; the About page (needs the TMDB logo); README attribution.
@@ -511,7 +516,7 @@ text and 400 % zoom, 320 px, reduced motion and forced colors.
 | RF-29 | tokens, tints, glow | contrast test over the token pairs and pure white; **demonstration** on real images; manual check of the detail page |
 | RF-30 | `/about`, `TmdbAttribution` | component; e2e |
 | RF-31 | `README.md` | root-level text test (statement and logo reference) |
-| RF-32 | `FeaturedHero`, `MovieGrid`, `MovieCard` | component (priority attributes, no lazy loading); e2e; Lighthouse |
+| RF-32 | `FeaturedHero`, `MovieGrid`, `MovieCard` | component (eager loading and high fetch priority, no lazy loading); e2e; Lighthouse |
 | RF-33 | backdrop helper, `sizes` | unit (the large size, full-width `sizes`); Lighthouse (image audits) |
 | RF-34 | layout, home and About metadata | unit on the exported metadata; e2e (page titles) |
 | RF-35 | icons, `RatingBadge`, `ErrorState`, `EmptyState`, `MovieCard` | component (icon present, decorative, fallback keeps no `img`) |
@@ -535,7 +540,7 @@ covered by `globals.test.ts` and the review of the class names against
 | §5 Tested requirements | The matrix above; the four-aspect exception is the one the spec declares, with recorded demonstrations |
 | §6 No own backend | No new server code; no store; the proxy route is unchanged |
 | §7 Accessible by default | The audit checklist per change; keyboard order, names, landmarks, reduced motion and forced colors are planned and tested |
-| §8 Performance | `next/image` everywhere, priority on the first-paint images, Lighthouse ≥ 90 on the public address against a fresh reference |
+| §8 Performance | `next/image` everywhere, high fetch priority on the first-paint images, Lighthouse ≥ 90 on the public address against a fresh reference |
 | §9 English everywhere | All text, code and documentation in English |
 
 **Known tensions, accepted and recorded** (none changes the plan):
