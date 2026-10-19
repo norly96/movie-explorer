@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import "./globals.css";
+import { SiteHeader } from "../components/SiteHeader";
 import { MAIN_CONTENT_ID, SkipLink } from "../components/SkipLink";
 import { Providers } from "./Providers";
 import { defaultMetadata } from "./site-metadata";
@@ -19,6 +20,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col font-sans antialiased">
         <Providers>
           <SkipLink />
+          <SiteHeader />
           {/* The single main area of every page (home-redesign RF-5): the skip
               link points at it and sends focus to it. It is a focus target,
               not a control, so it draws no focus ring of its own. */}

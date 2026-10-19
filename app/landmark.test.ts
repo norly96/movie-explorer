@@ -43,3 +43,29 @@ describe("the single main area (RF-5)", () => {
     expect(declaring).toEqual([]);
   });
 });
+
+// The header sits between the skip link and the main area, on every page
+// (home-redesign RF-1): skip link first, so the first Tab reaches it; header
+// next; then the single main area. Read as text, like the rest of this file.
+describe("the header in the root layout (RF-1)", () => {
+  const at = (needle: string) => layout.indexOf(needle);
+
+  it("renders the skip link, the header and the main area, in that order", () => {
+    expect(at("<SkipLink")).toBeGreaterThan(-1);
+    expect(at("<SiteHeader")).toBeGreaterThan(-1);
+    expect(at("<main")).toBeGreaterThan(-1);
+
+    expect(at("<SkipLink")).toBeLessThan(at("<SiteHeader"));
+    expect(at("<SiteHeader")).toBeLessThan(at("<main"));
+  });
+
+  it("renders the header once, outside the main area", () => {
+    expect(layout.match(/<SiteHeader\b/g)).toHaveLength(1);
+    expect(at("<SiteHeader")).toBeLessThan(at("<main"));
+    expect(layout.slice(at("<main"))).not.toContain("<SiteHeader");
+  });
+
+  it("imports it from the components", () => {
+    expect(layout).toMatch(/import \{ SiteHeader \} from "\.\.\/components\/SiteHeader"/);
+  });
+});
