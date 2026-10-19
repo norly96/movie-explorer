@@ -205,7 +205,7 @@ Dependencies at a glance:
   - RF: RF-2
   - Done when: tests (written first, with a mocked pathname) show that "Home" is the current page on `/` and with query strings, "About" on `/about`, none on `/movie/1`, that the current link is marked for assistive technology and is also underlined and bolder (not color only); they pass.
 
-- [ ] **T28 — The maintainer's addresses and icons** `[manual]`
+- [x] **T28 — The maintainer's addresses and icons** `[manual]`
   - Depends on: T09, T16
   - Files: `app/site-config.ts`, `components/icons/AuthorLogoIcon.tsx`, `LinkedInIcon.tsx`, `GitHubIcon.tsx`
   - RF: RF-3
