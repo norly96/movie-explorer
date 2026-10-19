@@ -211,7 +211,7 @@ Dependencies at a glance:
   - RF: RF-3
   - Done when: the maintainer's three `https` addresses are in the configuration and the three icons are the maintainer's own, **before** the header is implemented (or the maintainer explicitly approves shipping with an empty configuration, in which case the header shows no external link and the placeholders stay); none of the addresses is this app's production address (deploy-ci RF-18); `visibleLinks` returns the filled ones; the T16 and T09 tests still pass.
 
-- [ ] **T29 — Site header**
+- [x] **T29 — Site header**
   - Depends on: T09, T16, T27, T28
   - Files: `components/SiteHeader.tsx`, `components/SiteHeader.test.tsx`
   - RF: RF-1, 3, 4
