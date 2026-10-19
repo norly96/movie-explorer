@@ -230,7 +230,7 @@ Dependencies at a glance:
   - Done when: the maintainer adds the official TMDB logo from TMDB's logo page, the variant and the usage guidelines (less prominent than the application's own name, no implied endorsement) are read and noted in the task's description, and the file is in the repository.
   - Evidence (2026-10-19): the logo is TMDB's short blue variant (`blue_short`, a single line, 273 × 35), downloaded unmodified from TMDB's logo page into `public/tmdb-logo.svg`; it is one path with a gradient, with no script, link or embedded image. The rules come from TMDB's API terms of use, section 3: use the logo to identify the use of TMDB; keep it less prominent than the application's own logo or mark and without implying endorsement; and place the notice "This [website, program, service, application, product] uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB." prominently in the application. The notice the spec first asked for was the older wording, so RF-30 and the later tasks were updated to the current one. Also in the terms: no commercial use without a separate agreement (the project stays free), and a six-month limit on caching TMDB data.
 
-- [ ] **T32 — About page**
+- [x] **T32 — About page**
   - Depends on: T22, T30, T31
   - Files: `app/about/page.tsx`, `components/TmdbAttribution.tsx`, `components/TmdbAttribution.test.tsx`
   - RF: RF-30, 34
