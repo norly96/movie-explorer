@@ -137,19 +137,19 @@ Dependencies at a glance:
   - RF: RF-3
   - Done when: tests (written first) show that `visibleLinks` keeps only complete `https` addresses, hides empty ones, malformed ones and other schemes (`http`, `javascript:`), and returns the three links in a fixed order; the committed configuration has empty addresses until T28.
 
-- [ ] **T17 [P] — Skeletons stop with reduced motion**
+- [x] **T17 [P] — Skeletons stop with reduced motion**
   - Depends on: —
   - Files: `components/MovieCardSkeleton.tsx`, `components/MovieCardSkeleton.test.tsx` (new case)
   - RF: RF-36
   - Done when: a new test (written first) shows that every pulsing block also carries the reduced-motion switch while exactly three blocks keep the `animate-pulse` class; the existing two tests pass untouched.
 
-- [ ] **T18 — Rating star**
+- [x] **T18 — Rating star**
   - Depends on: T07
   - Files: `components/RatingBadge.tsx`, `components/RatingBadge.test.tsx` (new cases)
   - RF: RF-35
   - Done when: new tests (written first) show a decorative star next to a numeric rating, the accessible label "Rated 7.8 out of 10" unchanged, and no star for "No rating"; the existing cases pass untouched.
 
-- [ ] **T19 [P] — Alert and film icons in the states**
+- [x] **T19 [P] — Alert and film icons in the states**
   - Depends on: T07
   - Files: `components/ErrorState.tsx`, `components/EmptyState.tsx`, their tests (new cases)
   - RF: RF-35
