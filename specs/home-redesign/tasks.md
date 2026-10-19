@@ -63,7 +63,7 @@ Dependencies at a glance:
   - RF: housekeeping (explore-filters RF-6)
   - Done when: new cases (written first) show that typing is not reflected in the URL before 300 ms and is reflected at 300 ms; changing the constant in `ExplorerClient.tsx` to 100 and to 600 makes one of them fail (shown once, then restored); no existing case is edited.
 
-- [ ] **T05 — Pull request of phase 0** `⚠️ approval`
+- [x] **T05 — Pull request of phase 0** `⚠️ approval`
   - Depends on: T01, T03, T04
   - Files: — (no repository files)
   - RF: —
@@ -71,13 +71,13 @@ Dependencies at a glance:
 
 ## Phase 1 — Foundations (no visible change)
 
-- [ ] **T06 — New design tokens**
+- [x] **T06 — New design tokens**
   - Depends on: T01
   - Files: `app/globals.css`, `app/globals.test.ts` (new cases)
   - RF: RF-12, 17, 20, 23, 27, 28 (their values)
   - Done when: new tests (written first, failing) assert that `@theme` defines each token approved in T01 — type sizes, control heights, durations, the card's enlargement — and that the existing token and reduced-motion tests are unchanged; they pass.
 
-- [ ] **T07 [P] — Design-system icons** 
+- [x] **T07 [P] — Design-system icons** 
   - Depends on: T01
   - Files: `components/icons/StarIcon.tsx`, `AlertIcon.tsx`, `FilmIcon.tsx`, `components/icons/design-system-icons.test.tsx`
   - RF: RF-35
@@ -95,7 +95,7 @@ Dependencies at a glance:
   - RF: RF-3
   - Done when: a test (written first) renders each icon with the same checks as T07; they pass. The glyphs are the canvas's stand-ins and are replaced in T28.
 
-- [ ] **T10 — Featured-movie schema and mapper**
+- [x] **T10 — Featured-movie schema and mapper**
   - Depends on: —
   - Files: `services/schemas/movie-schema.ts`, `services/schemas/movie-schema.test.ts` (new cases), `services/schemas/tmdb-mappers.ts`, `services/schemas/tmdb-mappers.test.ts` (new cases)
   - RF: RF-6, 7, 16, 33
