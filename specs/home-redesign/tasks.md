@@ -242,11 +242,12 @@ Dependencies at a glance:
   - RF: RF-31
   - Done when: a root-level text test (written first, failing) asserts the exact statement and the logo reference in `README.md`; it passes along with the existing README and `no-secret-leak` tests.
 
-- [ ] **T34 — End-to-end: the shell**
+- [x] **T34 — End-to-end: the shell**
   - Depends on: T30, T32
   - Files: `e2e/home-redesign.spec.ts` (new)
   - RF: RF-1, 2, 4, 5, 15, 30, 34
   - Done when: the new spec passes locally: the header and the skip link on `/`, `/about`, a movie and a not-found page; exactly one `main` on each; the first Tab focuses the skip link and Enter moves focus to the main area; the current page is marked; the tab order equals the visual order at 390 and 1280 px; no horizontal scroll at 320 px with the brand's text hidden; each page's title; a run with JavaScript disabled still shows the header, the skip link and the About page; the result is noted.
+  - Result: `e2e/home-redesign.spec.ts` passes locally in Chromium, 18 tests. Tab order measured at 390 px (skip link, brand, the three external links, Home, About) and 1280 px (skip link, brand, Home, About, the three external links); each equals the visual order.
 
 - [ ] **T35 — Pull request of phase 2** `⚠️ approval`
   - Depends on: T24–T34
