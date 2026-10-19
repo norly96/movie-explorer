@@ -45,19 +45,19 @@ Dependencies at a glance:
   - RF: RF-12, 14, 17, 20, 23, 24–29 (their visual rules)
   - Done when: `design.md` lists as tokens the values of the spec's Appendix A (hero title sizes 40/48 and 28/36, control heights 44 and 48 px, the hero's height, the 400 ms duration, the card's enlargement of about 3 %, the background gradient and glow, the faint tints, the hero's dark layer) and records each exception with its reason — the gradient and the amber glow against "no gradients" and "amber is scarce", the capitalized hero title against "sentence case everywhere", the card's enlargement against "the poster does not move or scale" and "only color, background, border and opacity are animated", the curtain's height animation, and the header, hero, back-to-top button, About page and new icons as new parts of the component list; the maintainer approves the text in this conversation. No code is changed.
 
-- [ ] **T02 — Reference Lighthouse measurement** `[manual]`
+- [x] **T02 — Reference Lighthouse measurement** `[manual]`
   - Depends on: —
   - Files: — (the figures go in the private notes)
   - RF: non-functional (performance reference)
   - Done when: Lighthouse of the deployed home is measured on mobile and on desktop, in a private window with no extensions, the median of five runs each, and the figures and the method are written down for the final comparison; the earlier local baseline is kept as history only.
 
-- [ ] **T03 — Remove the unused list-view helper** `⚠️ approval`
+- [x] **T03 — Remove the unused list-view helper** `⚠️ approval`
   - Depends on: —
   - Files: `app/resolve-view-state.ts` (deleted), `app/resolve-view-state.test.ts` (deleted), `components/MovieGrid.tsx` (comment only)
   - RF: housekeeping (approved on 15 October 2026)
   - Done when: both files are gone in a commit of their own, no import of them remains (a search of the project returns none), the comment in `MovieGrid.tsx` no longer names the helper, and the full suite, typecheck, lint and build pass.
 
-- [ ] **T04 [P] — Fix the 300 ms search delay with a test**
+- [x] **T04 [P] — Fix the 300 ms search delay with a test**
   - Depends on: —
   - Files: `app/ExplorerClient.test.tsx` (new cases only)
   - RF: housekeeping (explore-filters RF-6)
