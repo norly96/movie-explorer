@@ -8,6 +8,18 @@ import type { ServiceResult, TmdbServiceError } from "./tmdb-service";
 // Browser-safe on purpose (plan.md D18): no server guard, no secrets. It
 // talks to our own /api/explore proxy, never to TMDB. Zod re-validates
 // the proxy's JSON instead of trusting it (constitution §4).
+// The home's hero movie (home-redesign RF-7). The proxy leaves the key out
+// when there is none, so `null` is not a valid value.
+const FeaturedMovieSchema = z.object({
+  id: z.number(),
+  title: z.string(),
+  overview: z.string(),
+  backdropUrl: z.string(),
+  genreIds: z.array(z.number()),
+  releaseYear: z.number().nullable(),
+  rating: z.number().nullable(),
+});
+
 const MoviePageSchema = z.object({
   movies: z.array(
     z.object({
@@ -20,6 +32,7 @@ const MoviePageSchema = z.object({
   ),
   page: z.number(),
   totalPages: z.number(),
+  featured: FeaturedMovieSchema.optional(),
 });
 
 export type ExploreMoviePage = z.infer<typeof MoviePageSchema>;
