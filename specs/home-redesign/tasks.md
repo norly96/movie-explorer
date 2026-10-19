@@ -83,13 +83,13 @@ Dependencies at a glance:
   - RF: RF-35
   - Done when: a test (written first) renders each icon and checks the default size of 20 and the sizes 16, 20 and 24, the `viewBox`, `currentColor`, the 1.5 stroke and `aria-hidden="true"`; they pass. `StarIcon` follows the canvas; `AlertIcon` and `FilmIcon` are **not** in the canvas, so they are drawn in the same style, until the maintainer provides their own.
 
-- [ ] **T08 [P] — Redesign icons**
+- [x] **T08 [P] — Redesign icons**
   - Depends on: T01
   - Files: `components/icons/ArrowUpIcon.tsx`, `ArrowRightIcon.tsx`, `ChevronDownIcon.tsx`, `ClapperboardIcon.tsx`, `components/icons/redesign-icons.test.tsx`
   - RF: RF-4, 6, 18, 24 (the controls that use them)
   - Done when: a test (written first) renders each icon with the same checks as T07; they pass. The paths come from the design canvas.
 
-- [ ] **T09 [P] — Header icons (temporary)**
+- [x] **T09 [P] — Header icons (temporary)**
   - Depends on: T01
   - Files: `components/icons/AuthorLogoIcon.tsx`, `LinkedInIcon.tsx`, `GitHubIcon.tsx`, `components/icons/brand-icons.test.tsx`
   - RF: RF-3
@@ -155,19 +155,19 @@ Dependencies at a glance:
   - RF: RF-35
   - Done when: new tests (written first) show a decorative alert icon in the error state and a decorative film icon in the empty state, with texts, roles and the retry control unchanged; the existing cases pass untouched.
 
-- [ ] **T20 — Card fallback poster and reserved border**
+- [x] **T20 — Card fallback poster and reserved border**
   - Depends on: T07, T17
   - Files: `components/MovieCard.tsx`, `components/MovieCardSkeleton.tsx`, `components/MovieCard.test.tsx` (new cases)
   - RF: RF-23, 35, 36
   - Done when: new tests (written first) show that a card without poster shows a surface with a decorative film icon of the same proportions, that every card has a transparent 2 px border at rest and the skeleton has the same, and the existing case "no `img` role without a poster" passes untouched.
 
-- [ ] **T21 — Priority for the first posters**
+- [x] **T21 — Priority for the first posters**
   - Depends on: T20
   - Files: `components/MovieCard.tsx`, `components/MovieGrid.tsx`, their tests (new cases)
   - RF: RF-32
   - Done when: new tests (written first) show that the first few cards' images have high fetch priority and are not lazy, and the rest are lazy; the number is one named constant; the existing cases pass untouched.
 
-- [ ] **T22 [P] — Page titles and descriptions**
+- [x] **T22 [P] — Page titles and descriptions**
   - Depends on: —
   - Files: `app/site-metadata.ts`, `app/site-metadata.test.ts`, `app/layout.tsx` (metadata only), `app/page.tsx` (metadata only)
   - RF: RF-34
