@@ -71,7 +71,7 @@ fixed`. Colors come from the tokens above; only the amounts below are new.
 | Token | Wide (≥ `lg`) | Narrow | Use |
 |---|---|---|---|
 | `page-gradient-height` | 520px | 540px | Height over which `surface` fades into `background`, from the top |
-| `glow-opacity` | 30% (adjustable 0–50%) | same | `accent` at this opacity |
+| `glow-opacity` | 9% | same | `accent` at this opacity. The design canvas used 30%, but at that value `muted` text falls to 3.95:1 and `subtle` to 2.96:1 at the glow's center, below the 4.5:1 that WCAG AA needs. At 9% they keep 6.70:1 and 5.02:1, and `subtle` still keeps 4.56:1 where the bar's tint overlaps the glow (at 10% that case gives 4.46:1). Any increase must be re-checked by the contrast test |
 | `glow-size` | 760 × 300px | 340 × 260px | Ellipse of the glow |
 | `glow-y` | 620px | 640px | Distance from the top; centered on the left edge |
 | `tint-header` | 5% | 5% | `foreground` at the top of the header, fading to 0 |
@@ -147,7 +147,8 @@ Added by the home redesign; use these names, never arbitrary values.
 | `size-control-touch` | 48px | Same controls on phones (and the full-width "Details" button) |
 | `size-icon-button` | 44px | Square hit area of the header's external links |
 | `size-brand-icon` | 28px | Header logo |
-| `size-header` | 64px | Header height on wide screens (narrow: a 56px row and a 44px row) |
+| `size-header` | 64px | Header height on wide screens |
+| `size-header-narrow` | 56px | First row of the header on narrow screens (the second row is `size-control`, 44px) |
 | `size-hero` | 320px | Minimum height of the hero on wide screens; it grows with the text, never a fixed height |
 | `size-back-to-top` | 48px | Back-to-top button |
 
@@ -164,6 +165,10 @@ No other radius values. No fully rounded pills.
 
 ### Breakpoints
 Tailwind defaults: `sm` 640 · `md` 768 · `lg` 1024 · `xl` 1280. Mobile first.
+
+**Extra small:** `xs` is 360px, used only by the header: below it the brand's text is
+hidden visually (its logo and accessible name remain), because the brand and the
+three external links no longer fit side by side.
 
 **Wide and narrow:** "wide" is `lg` (1024px) and up, "narrow" is below it. The
 header, the hero, the search and filters bar and the back-to-top offsets switch
@@ -377,9 +382,11 @@ All: `radius-md`, `text-sm`, weight 600, `px-4 py-2`, icon 20px with `gap-2`.
 
 ### About page
 - Its own page heading and the shared main area. Its content is the TMDB
-  attribution: the statement "This product uses the TMDB API but is not endorsed
-  or certified by TMDB." and TMDB's logo, less prominent than the application's
-  own name, following TMDB's published guidelines.
+  attribution: the notice required by TMDB's API terms of use, "This website uses
+  TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by
+  TMDB.", and TMDB's logo (the short blue variant, unmodified, about 24px high),
+  less prominent than the application's own name and mark, with nothing implying
+  an endorsement.
 
 ## Implementation (Tailwind v4)
 
@@ -424,11 +431,13 @@ All: `radius-md`, `text-sm`, weight 600, `px-4 py-2`, icon 20px with `gap-2`.
   --size-icon-button: 2.75rem;
   --size-brand-icon: 1.75rem;
   --size-header: 4rem;
+  --size-header-narrow: 3.5rem;
   --size-hero: 20rem;
   --size-back-to-top: 3rem;
   --duration-appear: 200ms;
   --duration-curtain: 400ms;
   --scale-card-hover: 1.03;
+  --breakpoint-xs: 22.5rem;
 }
 
 @theme inline {

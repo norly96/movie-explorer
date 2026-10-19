@@ -173,7 +173,7 @@ Dependencies at a glance:
   - RF: RF-34
   - Done when: a test (written first) asserts a default title and description, a title template, the home's own title and description and the About page's entry, that none of them contains the framework's default text, and that the layout and the home use them; they pass.
 
-- [ ] **T23 — Pull request of phase 1** `⚠️ approval`
+- [x] **T23 — Pull request of phase 1** `⚠️ approval`
   - Depends on: T06–T22
   - Files: — (no repository files)
   - RF: —
@@ -181,71 +181,73 @@ Dependencies at a glance:
 
 ## Phase 2 — Shell
 
-- [ ] **T24 [P] — Skip link**
+- [x] **T24 [P] — Skip link**
   - Depends on: T23
   - Files: `components/SkipLink.tsx`, `components/SkipLink.test.tsx`
   - RF: RF-5
   - Done when: tests (written first) show a link "Skip to content" pointing at the main area's id, visually hidden until it has focus, and the first focusable element when rendered before other content; they pass.
 
-- [ ] **T25 — One main area for every page**
+- [x] **T25 — One main area for every page**
   - Depends on: T22, T24
   - Files: `app/layout.tsx`, `app/page.tsx`, `app/movie/[id]/page.tsx`, `app/landmark.test.ts`
   - RF: RF-5, 1
   - Done when: a text test (written first, failing) asserts that the layout declares exactly one `<main>` with the id the skip link targets, renders the skip link, and that neither page declares its own `<main>`; it passes; `pnpm build` passes and the pages look unchanged.
 
-- [ ] **T26 — Fixed background**
+- [x] **T26 — Fixed background**
   - Depends on: T06, T25
   - Files: `app/globals.css`, `app/layout.tsx`, `app/globals.test.ts` (new cases), `app/background-contrast.test.ts`
   - RF: RF-27, 28, 29
   - Done when: new tests (written first) assert that the layer is fixed and sized to the large viewport, built from the tokens with no literal colors, that the header and bar tints and the hero's fade are defined, that no divider border is declared between the sections, and a computed contrast test shows that the foreground, muted, subtle and accent colors keep their required ratio over the lightest point of the gradient plus glow; they pass.
 
-- [ ] **T27 [P] — Header navigation with the current page**
+- [x] **T27 [P] — Header navigation with the current page**
   - Depends on: T23
   - Files: `components/HeaderNav.tsx`, `components/HeaderNav.test.tsx`
   - RF: RF-2
   - Done when: tests (written first, with a mocked pathname) show that "Home" is the current page on `/` and with query strings, "About" on `/about`, none on `/movie/1`, that the current link is marked for assistive technology and is also underlined and bolder (not color only); they pass.
 
-- [ ] **T28 — The maintainer's addresses and icons** `[manual]`
+- [x] **T28 — The maintainer's addresses and icons** `[manual]`
   - Depends on: T09, T16
   - Files: `app/site-config.ts`, `components/icons/AuthorLogoIcon.tsx`, `LinkedInIcon.tsx`, `GitHubIcon.tsx`
   - RF: RF-3
   - Done when: the maintainer's three `https` addresses are in the configuration and the three icons are the maintainer's own, **before** the header is implemented (or the maintainer explicitly approves shipping with an empty configuration, in which case the header shows no external link and the placeholders stay); none of the addresses is this app's production address (deploy-ci RF-18); `visibleLinks` returns the filled ones; the T16 and T09 tests still pass.
 
-- [ ] **T29 — Site header**
+- [x] **T29 — Site header**
   - Depends on: T09, T16, T27, T28
   - Files: `components/SiteHeader.tsx`, `components/SiteHeader.test.tsx`
   - RF: RF-1, 3, 4
   - Done when: tests (written first) show that the brand links to the home with an accessible name, that "Home" and "About" appear, that the external links are only the visible ones, open in a new tab and say so in their accessible name, that there are two variants whose element order is brand, links, icons (wide) and brand, icons, links (narrow), and that the brand's text is hidden visually at the smallest width while its name remains; they pass.
 
-- [ ] **T30 — Header in the layout**
+- [x] **T30 — Header in the layout**
   - Depends on: T25, T26, T29
   - Files: `app/layout.tsx`, `app/landmark.test.ts` (new case)
   - RF: RF-1
   - Done when: a new test (written first) asserts that the layout renders the skip link, the header and the single main area in that order; it passes; `pnpm build` passes and the header shows on `/`.
 
-- [ ] **T31 — TMDB logo** `[manual]`
+- [x] **T31 — TMDB logo** `[manual]`
   - Depends on: —
   - Files: the logo asset under `public/`
   - RF: RF-30
   - Done when: the maintainer adds the official TMDB logo from TMDB's logo page, the variant and the usage guidelines (less prominent than the application's own name, no implied endorsement) are read and noted in the task's description, and the file is in the repository.
+  - Evidence (2026-10-19): the logo is TMDB's short blue variant (`blue_short`, a single line, 273 × 35), downloaded unmodified from TMDB's logo page into `public/tmdb-logo.svg`; it is one path with a gradient, with no script, link or embedded image. The rules come from TMDB's API terms of use, section 3: use the logo to identify the use of TMDB; keep it less prominent than the application's own logo or mark and without implying endorsement; and place the notice "This [website, program, service, application, product] uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB." prominently in the application. The notice the spec first asked for was the older wording, so RF-30 and the later tasks were updated to the current one. Also in the terms: no commercial use without a separate agreement (the project stays free), and a six-month limit on caching TMDB data.
 
-- [ ] **T32 — About page**
+- [x] **T32 — About page**
   - Depends on: T22, T30, T31
   - Files: `app/about/page.tsx`, `components/TmdbAttribution.tsx`, `components/TmdbAttribution.test.tsx`
   - RF: RF-30, 34
-  - Done when: tests (written first) show that the attribution shows the exact statement "This product uses the TMDB API but is not endorsed or certified by TMDB." and the logo with a text alternative, that the page has one level-one heading, and that its metadata is the About entry of T22; they pass; the page is reachable from the header.
+  - Done when: tests (written first) show that the attribution shows the exact notice "This website uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB." and the logo with a text alternative, that the page has one level-one heading, and that its metadata is the About entry of T22; they pass; the page is reachable from the header.
 
-- [ ] **T33 — README attribution**
+- [x] **T33 — README attribution**
   - Depends on: T31
   - Files: `README.md`, `readme-attribution.test.ts`
   - RF: RF-31
   - Done when: a root-level text test (written first, failing) asserts the exact statement and the logo reference in `README.md`; it passes along with the existing README and `no-secret-leak` tests.
 
-- [ ] **T34 — End-to-end: the shell**
+- [x] **T34 — End-to-end: the shell**
   - Depends on: T30, T32
   - Files: `e2e/home-redesign.spec.ts` (new)
   - RF: RF-1, 2, 4, 5, 15, 30, 34
   - Done when: the new spec passes locally: the header and the skip link on `/`, `/about`, a movie and a not-found page; exactly one `main` on each; the first Tab focuses the skip link and Enter moves focus to the main area; the current page is marked; the tab order equals the visual order at 390 and 1280 px; no horizontal scroll at 320 px with the brand's text hidden; each page's title; a run with JavaScript disabled still shows the header, the skip link and the About page; the result is noted.
+  - Result: `e2e/home-redesign.spec.ts` passes locally in Chromium, 18 tests. Tab order measured at 390 px (skip link, brand, the three external links, Home, About) and 1280 px (skip link, brand, Home, About, the three external links); each equals the visual order.
 
 - [ ] **T35 — Pull request of phase 2** `⚠️ approval`
   - Depends on: T24–T34

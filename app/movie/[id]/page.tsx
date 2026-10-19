@@ -34,12 +34,12 @@ export default async function MoviePage({
   const movie = result.data;
 
   return (
-    <main className="mx-auto w-full max-w-7xl space-y-12 px-4 py-8 lg:px-8">
+    <div className="mx-auto w-full max-w-7xl space-y-12 px-4 py-8 lg:px-8">
       <MovieHero movie={movie} />
       <MovieInfo movie={movie} />
       <CastList cast={movie.cast} directors={movie.directors} />
       <TrailerEmbed trailerKey={movie.trailerKey} />
       <Gallery imageUrls={movie.galleryUrls} />
-    </main>
+    </div>
   );
 }
