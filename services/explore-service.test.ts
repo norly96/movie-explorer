@@ -411,3 +411,109 @@ describe("getPopularMoviesPage", () => {
     expect(handler).not.toHaveBeenCalled();
   });
 });
+
+// The home's hero reads its movie from the popular list's first page, in the
+// same response that fills the grid (home-redesign RF-6, RF-7, RF-9).
+describe("featured movie on the popular list", () => {
+  const WITH_BACKDROP = {
+    ...RAW_MOVIE,
+    id: 7,
+    title: "Backdrop Movie",
+    backdrop_path: "/bd.jpg",
+    overview: "A story.",
+    genre_ids: [18, 53],
+  };
+
+  const FEATURED = {
+    id: 7,
+    title: "Backdrop Movie",
+    overview: "A story.",
+    backdropUrl: "https://image.tmdb.org/t/p/original/bd.jpg",
+    genreIds: [18, 53],
+    releaseYear: 1999,
+    rating: 8.4,
+  };
+
+  function countedRequests(url: string, body: ReturnType<typeof moviePage>) {
+    const requests: URL[] = [];
+    server.use(
+      http.get(url, ({ request }) => {
+        requests.push(new URL(request.url));
+        return HttpResponse.json(body);
+      })
+    );
+    return requests;
+  }
+
+  it("carries the first movie that has a backdrop, from the same single request (RF-6, RF-7)", async () => {
+    const requests = countedRequests(
+      POPULAR_URL,
+      moviePage({ results: [RAW_MOVIE, WITH_BACKDROP, RAW_MOVIE] })
+    );
+
+    const result = await getPopularMoviesPage(1);
+
+    expect(requests).toHaveLength(1);
+    expect(result.ok && result.data.featured).toEqual(FEATURED);
+  });
+
+  it("leaves the movies of the grid exactly as before (RF-8)", async () => {
+    countedRequests(POPULAR_URL, moviePage({ results: [RAW_MOVIE, WITH_BACKDROP] }));
+
+    const result = await getPopularMoviesPage(1);
+
+    expect(result.ok && result.data.movies).toHaveLength(2);
+    expect(result.ok && result.data.movies[1]).toEqual({
+      id: 7,
+      title: "Backdrop Movie",
+      posterUrl: "https://image.tmdb.org/t/p/w500/poster.jpg",
+      releaseYear: 1999,
+      rating: 8.4,
+    });
+  });
+
+  it("is absent, not null, when no movie has a backdrop (RF-9)", async () => {
+    countedRequests(POPULAR_URL, moviePage({ results: [RAW_MOVIE] }));
+
+    const result = await getPopularMoviesPage(1);
+
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.data).not.toHaveProperty("featured");
+  });
+
+  it("is absent for an empty first page (RF-9)", async () => {
+    countedRequests(POPULAR_URL, moviePage({ results: [] }));
+
+    const result = await getPopularMoviesPage(1);
+
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.data).not.toHaveProperty("featured");
+  });
+
+  it("is absent from page 2 and later, even if its movies have backdrops", async () => {
+    countedRequests(POPULAR_URL, moviePage({ page: 2, results: [WITH_BACKDROP] }));
+
+    const result = await getPopularMoviesPage(2);
+
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.data).not.toHaveProperty("featured");
+  });
+
+  it("is absent from search results (RF-6: only the popular list)", async () => {
+    countedRequests(SEARCH_URL, moviePage({ results: [WITH_BACKDROP] }));
+
+    const result = await getSearchMovies("backdrop", 1);
+
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.data).not.toHaveProperty("featured");
+  });
+
+  it("is absent from filtered results (RF-6: only the popular list)", async () => {
+    countedRequests(DISCOVER_URL, moviePage({ results: [WITH_BACKDROP] }));
+
+    const result = await getDiscoverMovies(NO_FILTERS, 1);
+
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.data).not.toHaveProperty("featured");
+  });
+});
