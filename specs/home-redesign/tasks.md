@@ -173,7 +173,7 @@ Dependencies at a glance:
   - RF: RF-34
   - Done when: a test (written first) asserts a default title and description, a title template, the home's own title and description and the About page's entry, that none of them contains the framework's default text, and that the layout and the home use them; they pass.
 
-- [ ] **T23 — Pull request of phase 1** `⚠️ approval`
+- [x] **T23 — Pull request of phase 1** `⚠️ approval`
   - Depends on: T06–T22
   - Files: — (no repository files)
   - RF: —
@@ -181,25 +181,25 @@ Dependencies at a glance:
 
 ## Phase 2 — Shell
 
-- [ ] **T24 [P] — Skip link**
+- [x] **T24 [P] — Skip link**
   - Depends on: T23
   - Files: `components/SkipLink.tsx`, `components/SkipLink.test.tsx`
   - RF: RF-5
   - Done when: tests (written first) show a link "Skip to content" pointing at the main area's id, visually hidden until it has focus, and the first focusable element when rendered before other content; they pass.
 
-- [ ] **T25 — One main area for every page**
+- [x] **T25 — One main area for every page**
   - Depends on: T22, T24
   - Files: `app/layout.tsx`, `app/page.tsx`, `app/movie/[id]/page.tsx`, `app/landmark.test.ts`
   - RF: RF-5, 1
   - Done when: a text test (written first, failing) asserts that the layout declares exactly one `<main>` with the id the skip link targets, renders the skip link, and that neither page declares its own `<main>`; it passes; `pnpm build` passes and the pages look unchanged.
 
-- [ ] **T26 — Fixed background**
+- [x] **T26 — Fixed background**
   - Depends on: T06, T25
   - Files: `app/globals.css`, `app/layout.tsx`, `app/globals.test.ts` (new cases), `app/background-contrast.test.ts`
   - RF: RF-27, 28, 29
   - Done when: new tests (written first) assert that the layer is fixed and sized to the large viewport, built from the tokens with no literal colors, that the header and bar tints and the hero's fade are defined, that no divider border is declared between the sections, and a computed contrast test shows that the foreground, muted, subtle and accent colors keep their required ratio over the lightest point of the gradient plus glow; they pass.
 
-- [ ] **T27 [P] — Header navigation with the current page**
+- [x] **T27 [P] — Header navigation with the current page**
   - Depends on: T23
   - Files: `components/HeaderNav.tsx`, `components/HeaderNav.test.tsx`
   - RF: RF-2
