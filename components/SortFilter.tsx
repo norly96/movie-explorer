@@ -8,7 +8,7 @@ export interface SortFilterProps {
 
 // Record<SortOption, …> makes a new sort option a compile error until it
 // gets a label here.
-const SORT_LABELS: Record<SortOption, string> = {
+export const SORT_LABELS: Record<SortOption, string> = {
   "popularity.desc": "Most popular",
   "popularity.asc": "Least popular",
   "vote_average.desc": "Highest rated",
