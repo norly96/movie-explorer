@@ -636,3 +636,53 @@ describe("ExplorerClient — asynchronous navigation", () => {
     expect(screen.getByLabelText("Genre")).toHaveValue("28");
   });
 });
+
+// The 300 ms search delay (explore-filters RF-6) is an exact number, so it is
+// tested with a controlled clock. Only the timers are faked, and the text goes
+// in as one change event: user-event waits on timers the fake clock would block.
+describe("ExplorerClient — search delay", () => {
+  const SEEDED: ExploreInitialPage = {
+    filters: { mode: "popular" },
+    page: {
+      movies: [
+        { id: 1, title: "popular p1", posterUrl: null, releaseYear: 2000, rating: 7 },
+      ],
+      page: 1,
+      totalPages: 1,
+    },
+  };
+
+  async function typeWithControlledClock(text: string) {
+    serve();
+    renderExplorer({ initial: SEEDED });
+    expect(screen.getByText("popular p1")).toBeInTheDocument();
+
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    const { fireEvent } = await import("@testing-library/react");
+    fireEvent.change(searchBox(), { target: { value: text } });
+  }
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("does not update the URL until 300 ms after the last keystroke (RF-6)", async () => {
+    await typeWithControlledClock("matrix");
+
+    act(() => {
+      vi.advanceTimersByTime(299);
+    });
+
+    expect(nav.replace).not.toHaveBeenCalled();
+  });
+
+  it("updates the URL once, exactly at 300 ms (RF-6)", async () => {
+    await typeWithControlledClock("matrix");
+
+    act(() => {
+      vi.advanceTimersByTime(300);
+    });
+
+    expect(urls()).toEqual(["/?q=matrix"]);
+  });
+});

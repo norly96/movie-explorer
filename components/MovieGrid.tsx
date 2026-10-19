@@ -2,7 +2,7 @@ import type { Movie } from "../services/schemas/movie-schema";
 import { MovieCard } from "./MovieCard";
 
 export interface MovieGridProps {
-  movies: Movie[]; // always non-empty when rendered — see resolve-view-state.ts
+  movies: Movie[]; // always non-empty when rendered: ExplorerClient shows EmptyState otherwise
 }
 
 export function MovieGrid({ movies }: MovieGridProps) {
