@@ -71,7 +71,7 @@ fixed`. Colors come from the tokens above; only the amounts below are new.
 | Token | Wide (≥ `lg`) | Narrow | Use |
 |---|---|---|---|
 | `page-gradient-height` | 520px | 540px | Height over which `surface` fades into `background`, from the top |
-| `glow-opacity` | 30% (adjustable 0–50%) | same | `accent` at this opacity |
+| `glow-opacity` | 9% | same | `accent` at this opacity. The design canvas used 30%, but at that value `muted` text falls to 3.95:1 and `subtle` to 2.96:1 at the glow's center, below the 4.5:1 that WCAG AA needs. At 9% they keep 6.70:1 and 5.02:1, and `subtle` still keeps 4.56:1 where the bar's tint overlaps the glow (at 10% that case gives 4.46:1). Any increase must be re-checked by the contrast test |
 | `glow-size` | 760 × 300px | 340 × 260px | Ellipse of the glow |
 | `glow-y` | 620px | 640px | Distance from the top; centered on the left edge |
 | `tint-header` | 5% | 5% | `foreground` at the top of the header, fading to 0 |
