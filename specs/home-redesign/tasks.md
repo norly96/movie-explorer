@@ -63,7 +63,7 @@ Dependencies at a glance:
   - RF: housekeeping (explore-filters RF-6)
   - Done when: new cases (written first) show that typing is not reflected in the URL before 300 ms and is reflected at 300 ms; changing the constant in `ExplorerClient.tsx` to 100 and to 600 makes one of them fail (shown once, then restored); no existing case is edited.
 
-- [ ] **T05 — Pull request of phase 0** `⚠️ approval`
+- [x] **T05 — Pull request of phase 0** `⚠️ approval`
   - Depends on: T01, T03, T04
   - Files: — (no repository files)
   - RF: —
@@ -71,103 +71,103 @@ Dependencies at a glance:
 
 ## Phase 1 — Foundations (no visible change)
 
-- [ ] **T06 — New design tokens**
+- [x] **T06 — New design tokens**
   - Depends on: T01
   - Files: `app/globals.css`, `app/globals.test.ts` (new cases)
   - RF: RF-12, 17, 20, 23, 27, 28 (their values)
   - Done when: new tests (written first, failing) assert that `@theme` defines each token approved in T01 — type sizes, control heights, durations, the card's enlargement — and that the existing token and reduced-motion tests are unchanged; they pass.
 
-- [ ] **T07 [P] — Design-system icons** 
+- [x] **T07 [P] — Design-system icons** 
   - Depends on: T01
   - Files: `components/icons/StarIcon.tsx`, `AlertIcon.tsx`, `FilmIcon.tsx`, `components/icons/design-system-icons.test.tsx`
   - RF: RF-35
   - Done when: a test (written first) renders each icon and checks the default size of 20 and the sizes 16, 20 and 24, the `viewBox`, `currentColor`, the 1.5 stroke and `aria-hidden="true"`; they pass. `StarIcon` follows the canvas; `AlertIcon` and `FilmIcon` are **not** in the canvas, so they are drawn in the same style, until the maintainer provides their own.
 
-- [ ] **T08 [P] — Redesign icons**
+- [x] **T08 [P] — Redesign icons**
   - Depends on: T01
   - Files: `components/icons/ArrowUpIcon.tsx`, `ArrowRightIcon.tsx`, `ChevronDownIcon.tsx`, `ClapperboardIcon.tsx`, `components/icons/redesign-icons.test.tsx`
   - RF: RF-4, 6, 18, 24 (the controls that use them)
   - Done when: a test (written first) renders each icon with the same checks as T07; they pass. The paths come from the design canvas.
 
-- [ ] **T09 [P] — Header icons (temporary)**
+- [x] **T09 [P] — Header icons (temporary)**
   - Depends on: T01
   - Files: `components/icons/AuthorLogoIcon.tsx`, `LinkedInIcon.tsx`, `GitHubIcon.tsx`, `components/icons/brand-icons.test.tsx`
   - RF: RF-3
   - Done when: a test (written first) renders each icon with the same checks as T07; they pass. The glyphs are the canvas's stand-ins and are replaced in T28.
 
-- [ ] **T10 — Featured-movie schema and mapper**
+- [x] **T10 — Featured-movie schema and mapper**
   - Depends on: —
   - Files: `services/schemas/movie-schema.ts`, `services/schemas/movie-schema.test.ts` (new cases), `services/schemas/tmdb-mappers.ts`, `services/schemas/tmdb-mappers.test.ts` (new cases)
   - RF: RF-6, 7, 16, 33
   - Done when: new tests (written first) show that the raw movie accepts `backdrop_path`, `overview` and `genre_ids` as optional (a raw movie without them still parses), that `pickFeatured` returns the first movie with a backdrop in order and `undefined` when none has one, that the backdrop URL helper in `tmdb-mappers.ts` builds an address under TMDB's `original` size from a constant (no change to the shared image configuration), and that an empty overview stays empty; `Movie` and `toMovie` are unchanged and every existing test of both files passes untouched.
 
-- [ ] **T11 — Service: `featured` on popular page 1**
+- [x] **T11 — Service: `featured` on popular page 1**
   - Depends on: T10
   - Files: `services/explore-service.ts`, `services/explore-service.test.ts` (new cases)
   - RF: RF-6, 7, 9
   - Done when: new tests (written first) show that popular page 1 carries `featured` computed from that same response with **one** TMDB request (a counter on the mock), that page 2, search and discover carry none, and that the key is **absent** (not `null`) when no movie has a backdrop; every existing `toEqual` case passes untouched.
 
-- [ ] **T12 — Browser schema and route accept `featured`**
+- [x] **T12 — Browser schema and route accept `featured`**
   - Depends on: T11
   - Files: `services/explore-client.ts`, `services/explore-client.test.ts`, `app/api/explore/route.test.ts` (new cases)
   - RF: RF-7
   - Done when: new tests (written first) show that the browser's schema accepts a valid `featured`, rejects a malformed one as `invalid_response`, and that the route forwards `featured` for popular page 1; the existing cases pass untouched.
 
-- [ ] **T13 — Hook returns `featured`**
+- [x] **T13 — Hook returns `featured`**
   - Depends on: T12
   - Files: `hooks/useExploreMovies.ts`, `hooks/useExploreMovies.test.ts` (new cases)
   - RF: RF-7, 11
   - Done when: new tests (written first) show that the hook returns the first page's `featured` for the popular list and `null` for other modes or when it is absent, and that moving from a filtered view back to the popular list performs one request and no more; the existing cases pass untouched.
 
-- [ ] **T14 [P] — First genre name**
+- [x] **T14 [P] — First genre name**
   - Depends on: —
   - Files: `app/featured-genre.ts`, `app/featured-genre.test.ts`
   - RF: RF-6, 16
   - Done when: tests (written first) show that `firstGenreName` returns the name of the first id that exists in the list, skips unknown ids, and returns `null` for an empty list or when no id resolves.
 
-- [ ] **T15 [P] — Results heading text**
+- [x] **T15 [P] — Results heading text**
   - Depends on: —
   - Files: `app/results-heading.ts`, `app/results-heading.test.ts`, `components/SortFilter.tsx` (export the existing sort labels, nothing else)
   - RF: RF-21, 22
   - Done when: tests (written first) cover every branch of `resultsHeading`: "Popular movies"; `Results for “<trimmed text>”`; the active filter names joined by " · " in the order genre, year, sort and only the active ones; "Filtered movies" when a filter is active but no name resolves; the existing `SortFilter` tests pass untouched.
 
-- [ ] **T16 [P] — Site configuration and link validation**
+- [x] **T16 [P] — Site configuration and link validation**
   - Depends on: —
   - Files: `app/site-config.ts`, `app/site-config.test.ts`
   - RF: RF-3
   - Done when: tests (written first) show that `visibleLinks` keeps only complete `https` addresses, hides empty ones, malformed ones and other schemes (`http`, `javascript:`), and returns the three links in a fixed order; the committed configuration has empty addresses until T28.
 
-- [ ] **T17 [P] — Skeletons stop with reduced motion**
+- [x] **T17 [P] — Skeletons stop with reduced motion**
   - Depends on: —
   - Files: `components/MovieCardSkeleton.tsx`, `components/MovieCardSkeleton.test.tsx` (new case)
   - RF: RF-36
   - Done when: a new test (written first) shows that every pulsing block also carries the reduced-motion switch while exactly three blocks keep the `animate-pulse` class; the existing two tests pass untouched.
 
-- [ ] **T18 — Rating star**
+- [x] **T18 — Rating star**
   - Depends on: T07
   - Files: `components/RatingBadge.tsx`, `components/RatingBadge.test.tsx` (new cases)
   - RF: RF-35
   - Done when: new tests (written first) show a decorative star next to a numeric rating, the accessible label "Rated 7.8 out of 10" unchanged, and no star for "No rating"; the existing cases pass untouched.
 
-- [ ] **T19 [P] — Alert and film icons in the states**
+- [x] **T19 [P] — Alert and film icons in the states**
   - Depends on: T07
   - Files: `components/ErrorState.tsx`, `components/EmptyState.tsx`, their tests (new cases)
   - RF: RF-35
   - Done when: new tests (written first) show a decorative alert icon in the error state and a decorative film icon in the empty state, with texts, roles and the retry control unchanged; the existing cases pass untouched.
 
-- [ ] **T20 — Card fallback poster and reserved border**
+- [x] **T20 — Card fallback poster and reserved border**
   - Depends on: T07, T17
   - Files: `components/MovieCard.tsx`, `components/MovieCardSkeleton.tsx`, `components/MovieCard.test.tsx` (new cases)
   - RF: RF-23, 35, 36
   - Done when: new tests (written first) show that a card without poster shows a surface with a decorative film icon of the same proportions, that every card has a transparent 2 px border at rest and the skeleton has the same, and the existing case "no `img` role without a poster" passes untouched.
 
-- [ ] **T21 — Priority for the first posters**
+- [x] **T21 — Priority for the first posters**
   - Depends on: T20
   - Files: `components/MovieCard.tsx`, `components/MovieGrid.tsx`, their tests (new cases)
   - RF: RF-32
   - Done when: new tests (written first) show that the first few cards' images have high fetch priority and are not lazy, and the rest are lazy; the number is one named constant; the existing cases pass untouched.
 
-- [ ] **T22 [P] — Page titles and descriptions**
+- [x] **T22 [P] — Page titles and descriptions**
   - Depends on: —
   - Files: `app/site-metadata.ts`, `app/site-metadata.test.ts`, `app/layout.tsx` (metadata only), `app/page.tsx` (metadata only)
   - RF: RF-34

@@ -12,6 +12,10 @@ import type { TmdbServiceErrorReason } from "../services/tmdb-service";
 
 export interface UseExploreMoviesResult {
   movies: Movie[];
+  // The home's hero movie (home-redesign RF-7): the first page's, which only
+  // the popular list carries; null otherwise. It is handed over, never fetched
+  // here: it arrives with the page the grid already needs.
+  featured: ExploreMoviePage["featured"] | null;
   isFirstLoading: boolean; // RF-16 (first page)
   firstPageError: TmdbServiceErrorReason | null; // RF-14
   isFetchingNextPage: boolean; // RF-16 (additional page)
@@ -119,6 +123,7 @@ export function useExploreMovies(
 
   return {
     movies: uniqueById(query.data?.pages.flatMap((page) => page.movies) ?? []),
+    featured: query.data?.pages[0]?.featured ?? null,
     isFirstLoading: query.isPending,
     firstPageError:
       query.isError && !query.data ? reasonOf(query.error) : null,

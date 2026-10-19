@@ -235,3 +235,75 @@ describe("GET /api/explore", () => {
     expect(response.status).toBe(502);
   });
 });
+
+// The browser gets the home's hero movie through this route, in the same
+// response as the popular list's first page (home-redesign RF-7).
+describe("GET /api/explore: featured movie", () => {
+  const RAW_WITH_BACKDROP = {
+    ...RAW_MOVIE,
+    id: 7,
+    title: "Backdrop Movie",
+    backdrop_path: "/bd.jpg",
+    overview: "A story.",
+    genre_ids: [18, 53],
+  };
+
+  const FEATURED = {
+    id: 7,
+    title: "Backdrop Movie",
+    overview: "A story.",
+    backdropUrl: "https://image.tmdb.org/t/p/original/bd.jpg",
+    genreIds: [18, 53],
+    releaseYear: 1999,
+    rating: 8.4,
+  };
+
+  it("forwards featured for popular page 1, from a single TMDB request (RF-7)", async () => {
+    let requests = 0;
+    server.use(
+      http.get(POPULAR_URL, () => {
+        requests += 1;
+        return HttpResponse.json({
+          ...tmdbPage(),
+          results: [RAW_MOVIE, RAW_WITH_BACKDROP],
+        });
+      })
+    );
+
+    const body = await (await call("")).json();
+
+    expect(requests).toBe(1);
+    expect(body.featured).toEqual(FEATURED);
+    expect(body.movies).toHaveLength(2);
+  });
+
+  it("sends no featured key when no movie has a backdrop (RF-9)", async () => {
+    server.use(http.get(POPULAR_URL, () => HttpResponse.json(tmdbPage())));
+
+    expect(await (await call("")).json()).not.toHaveProperty("featured");
+  });
+
+  it("sends no featured key for page 2", async () => {
+    server.use(
+      http.get(POPULAR_URL, () =>
+        HttpResponse.json({ ...tmdbPage(2), results: [RAW_WITH_BACKDROP] })
+      )
+    );
+
+    expect(await (await call("page=2")).json()).not.toHaveProperty("featured");
+  });
+
+  it("sends no featured key for a search or a filtered list", async () => {
+    server.use(
+      http.get(SEARCH_URL, () =>
+        HttpResponse.json({ ...tmdbPage(), results: [RAW_WITH_BACKDROP] })
+      ),
+      http.get(DISCOVER_URL, () =>
+        HttpResponse.json({ ...tmdbPage(), results: [RAW_WITH_BACKDROP] })
+      )
+    );
+
+    expect(await (await call("q=fight")).json()).not.toHaveProperty("featured");
+    expect(await (await call("genre=18")).json()).not.toHaveProperty("featured");
+  });
+});

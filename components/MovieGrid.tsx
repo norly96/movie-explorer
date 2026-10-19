@@ -1,6 +1,11 @@
 import type { Movie } from "../services/schemas/movie-schema";
 import { MovieCard } from "./MovieCard";
 
+// How many posters, from the first, load with priority (home-redesign RF-32).
+// A few: prioritizing the whole grid would compete with the image that really
+// decides the paint, and only the first row is above the fold.
+export const PRIORITY_POSTERS = 3;
+
 export interface MovieGridProps {
   movies: Movie[]; // always non-empty when rendered: ExplorerClient shows EmptyState otherwise
 }
@@ -8,8 +13,12 @@ export interface MovieGridProps {
 export function MovieGrid({ movies }: MovieGridProps) {
   return (
     <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 md:gap-6 lg:grid-cols-5 xl:grid-cols-6">
-      {movies.map((movie) => (
-        <MovieCard key={movie.id} movie={movie} />
+      {movies.map((movie, index) => (
+        <MovieCard
+          key={movie.id}
+          movie={movie}
+          priority={index < PRIORITY_POSTERS}
+        />
       ))}
     </div>
   );

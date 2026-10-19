@@ -217,3 +217,59 @@ describe("explore-client.ts source", () => {
     expect(source).not.toMatch(/from ["']\.\/(tmdb-config|explore-service)["']/);
   });
 });
+
+// The proxy sends the home's featured movie with the popular list's first page
+// (home-redesign RF-7). The browser re-validates it like the rest (§4).
+describe("fetchExplorePage: featured movie", () => {
+  const FEATURED = {
+    id: 7,
+    title: "Backdrop Movie",
+    overview: "A story.",
+    backdropUrl: "https://image.tmdb.org/t/p/original/bd.jpg",
+    genreIds: [18, 53],
+    releaseYear: 1999,
+    rating: 8.4,
+  };
+
+  it("keeps a valid featured movie in the parsed page (RF-7)", async () => {
+    captureUrl({ ...PAGE, featured: FEATURED });
+
+    expect(await fetchExplorePage({ mode: "popular" }, 1)).toEqual({
+      ok: true,
+      data: { ...PAGE, featured: FEATURED },
+    });
+  });
+
+  it("accepts a featured movie with no year and no rating", async () => {
+    const bare = { ...FEATURED, releaseYear: null, rating: null, overview: "" };
+    captureUrl({ ...PAGE, featured: bare });
+
+    const result = await fetchExplorePage({ mode: "popular" }, 1);
+
+    expect(result.ok && result.data.featured).toEqual(bare);
+  });
+
+  it("leaves the key out when the proxy sends none", async () => {
+    captureUrl();
+
+    const result = await fetchExplorePage({ mode: "popular" }, 1);
+
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.data).not.toHaveProperty("featured");
+  });
+
+  it.each([
+    ["no backdrop address", { ...FEATURED, backdropUrl: undefined }],
+    ["genre ids that are not a list", { ...FEATURED, genreIds: "18" }],
+    ["a rating that is text", { ...FEATURED, rating: "8.4" }],
+    ["a missing title", { ...FEATURED, title: undefined }],
+    ["null instead of absent", null],
+  ])("rejects a featured movie with %s as invalid_response", async (_label, bad) => {
+    captureUrl({ ...PAGE, featured: bad });
+
+    expect(await fetchExplorePage({ mode: "popular" }, 1)).toEqual({
+      ok: false,
+      error: { reason: "invalid_response" },
+    });
+  });
+});

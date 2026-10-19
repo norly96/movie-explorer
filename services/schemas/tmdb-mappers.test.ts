@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { extractReleaseYear, toRating } from "./tmdb-mappers";
+import { TMDB_BACKDROP_BASE_URL, toBackdropUrl } from "./tmdb-mappers";
 
 describe("extractReleaseYear", () => {
   it("extracts the year from a valid ISO date", () => {
@@ -26,5 +27,17 @@ describe("toRating", () => {
 
   it("returns a real 0.0 average when there are actual votes", () => {
     expect(toRating(0, 3)).toBe(0);
+  });
+});
+
+describe("toBackdropUrl", () => {
+  it("builds the address under TMDB's original size (RF-33)", () => {
+    expect(toBackdropUrl("/abc123.jpg")).toBe(
+      "https://image.tmdb.org/t/p/original/abc123.jpg"
+    );
+  });
+
+  it("keeps the base as a constant, so no shared image configuration changes", () => {
+    expect(TMDB_BACKDROP_BASE_URL).toBe("https://image.tmdb.org/t/p/original");
   });
 });

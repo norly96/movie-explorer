@@ -8,7 +8,9 @@ import {
 } from "./schemas/genre-schema";
 import {
   TmdbPopularResponseRawSchema,
+  pickFeatured,
   toMovie,
+  type FeaturedMovie,
   type Movie,
 } from "./schemas/movie-schema";
 import type { ServiceResult } from "./tmdb-service";
@@ -17,6 +19,10 @@ export interface MoviePage {
   movies: Movie[];
   page: number;
   totalPages: number;
+  // The home's hero (home-redesign RF-6, RF-7): present only on the popular
+  // list's first page, and only when one of its movies has a backdrop. The key
+  // is ABSENT otherwise, never null, so page shapes stay as they were.
+  featured?: FeaturedMovie;
 }
 
 // plan.md D8: without a floor, a handful of 10/10 votes on an obscure
@@ -74,7 +80,8 @@ async function tmdbGet<TRaw>(
 async function getMoviePage(
   path: string,
   params: Record<string, string>,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  withFeatured = false
 ): Promise<ServiceResult<MoviePage>> {
   const result = await tmdbGet(
     path,
@@ -86,12 +93,16 @@ async function getMoviePage(
   if (!result.ok) return result;
 
   const { imageBaseUrl } = getTmdbConfig();
+  // Computed from the response already in hand: the hero never costs a
+  // second request.
+  const featured = withFeatured ? pickFeatured(result.data.results) : undefined;
   return {
     ok: true,
     data: {
       movies: result.data.results.map((raw) => toMovie(raw, imageBaseUrl)),
       page: result.data.page,
       totalPages: result.data.total_pages,
+      ...(featured ? { featured } : {}),
     },
   };
 }
@@ -110,7 +121,7 @@ export function getPopularMoviesPage(
   page: number,
   signal?: AbortSignal
 ): Promise<ServiceResult<MoviePage>> {
-  return getMoviePage("/movie/popular", { page: String(page) }, signal);
+  return getMoviePage("/movie/popular", { page: String(page) }, signal, page === 1);
 }
 
 export function getDiscoverMovies(

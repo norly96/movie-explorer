@@ -25,6 +25,22 @@
   --aspect-poster: 2 / 3;
 
   --ease-out: cubic-bezier(0, 0, 0.2, 1);
+
+  /* Home redesign: named sizes, type, durations and scale (docs/design.md) */
+  --text-hero: 2.5rem;
+  --text-hero--line-height: 3rem;
+  --text-hero-sm: 1.75rem;
+  --text-hero-sm--line-height: 2.25rem;
+  --size-control: 2.75rem;
+  --size-control-touch: 3rem;
+  --size-icon-button: 2.75rem;
+  --size-brand-icon: 1.75rem;
+  --size-header: 4rem;
+  --size-hero: 20rem;
+  --size-back-to-top: 3rem;
+  --duration-appear: 200ms;
+  --duration-curtain: 400ms;
+  --scale-card-hover: 1.03;
 }
 
 @theme inline {

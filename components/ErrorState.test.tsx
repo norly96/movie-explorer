@@ -85,3 +85,33 @@ describe("ErrorState", () => {
     });
   });
 });
+
+// docs/design.md → ErrorState: an AlertIcon 24px in danger above the message.
+// It is decorative: the message already says what failed (home-redesign RF-35).
+describe("ErrorState icon (RF-35)", () => {
+  it("shows a decorative 24px alert icon in the danger color", () => {
+    render(<ErrorState />);
+    const icon = screen.getByRole("alert").querySelector("svg");
+
+    expect(icon).not.toBeNull();
+    expect(icon).toHaveAttribute("aria-hidden", "true");
+    expect(icon).toHaveAttribute("width", "24");
+    expect(icon).toHaveClass("text-danger");
+  });
+
+  it("comes before the message and keeps the alert role and the text", () => {
+    render(<ErrorState message="Couldn't load movies." />);
+    const alert = screen.getByRole("alert");
+
+    expect(alert.firstElementChild?.tagName.toLowerCase()).toBe("svg");
+    expect(alert).toHaveTextContent("Couldn't load movies.");
+  });
+
+  it("does not add anything to the keyboard order", async () => {
+    const user = userEvent.setup();
+    render(<ErrorState onRetry={vi.fn()} />);
+
+    await user.tab();
+    expect(screen.getByRole("button", { name: /try again/i })).toHaveFocus();
+  });
+});

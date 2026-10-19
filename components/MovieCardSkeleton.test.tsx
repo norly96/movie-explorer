@@ -16,3 +16,18 @@ describe("MovieCardSkeleton", () => {
     expect(container.firstElementChild).toHaveAttribute("aria-hidden", "true");
   });
 });
+
+// docs/design.md: with reduced motion the pulse is switched off entirely, not
+// merely shortened (the global reduced-motion rule only shortens durations, and
+// an infinite animation would keep repeating). Home redesign RF-36.
+describe("MovieCardSkeleton under reduced motion (RF-36)", () => {
+  it("switches off the pulse of every pulsing block", () => {
+    const { container } = render(<MovieCardSkeleton />);
+    const pulsing = container.querySelectorAll(".animate-pulse");
+
+    expect(pulsing).toHaveLength(3);
+    for (const block of pulsing) {
+      expect(block).toHaveClass("motion-reduce:animate-none");
+    }
+  });
+});

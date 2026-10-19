@@ -16,3 +16,13 @@ export function toRating(
 ): number | null {
   return voteCount > 0 ? voteAverage : null;
 }
+
+// The featured movie's backdrop is shown at full width, so it comes from
+// TMDB's largest size instead of enlarging a small one (home-redesign RF-33).
+// Kept here as a constant on purpose: the shared image configuration
+// (tmdb-config.ts) serves the cards' poster size and is left untouched.
+export const TMDB_BACKDROP_BASE_URL = "https://image.tmdb.org/t/p/original";
+
+export function toBackdropUrl(backdropPath: string): string {
+  return `${TMDB_BACKDROP_BASE_URL}${backdropPath}`;
+}

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AlertIcon } from "./icons/AlertIcon";
 
 export interface ErrorStateProps {
   message?: string;
@@ -17,8 +18,8 @@ export const DEFAULT_MESSAGE =
 // onRetry swaps it for a button, which only client callers use. Defaults to
 // "/" (Spec 1's usage); the movie detail page (Spec 2) passes its own
 // retryHref so "Try again" reloads the same movie instead of going
-// home. Icon deferred: design.md calls for an AlertIcon here, but no
-// task in tasks.md authorizes a new components/icons/ file yet.
+// home. The AlertIcon is decorative: the message says what failed
+// (design.md → ErrorState).
 export function ErrorState({
   message = DEFAULT_MESSAGE,
   retryHref = "/",
@@ -32,6 +33,7 @@ export function ErrorState({
       role="alert"
       className="flex flex-col items-center justify-center gap-4 py-16 text-center"
     >
+      <AlertIcon size={24} className="text-danger" />
       <p className="text-sm text-foreground">{message}</p>
       {onRetry ? (
         <button type="button" onClick={onRetry} className={retryClassName}>

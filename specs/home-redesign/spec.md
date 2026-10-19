@@ -241,9 +241,10 @@ Requirement numbers are stable identifiers, grouped by topic.
   README.
 
 **Performance and quality of the home**
-- RF-32: THE SYSTEM loads with priority, and never lazily, the images that
-  determine the home's first paint (the hero's image and the first posters above
-  the fold), and never hides or animates them while they first appear.
+- RF-32: THE SYSTEM loads early with high fetch priority, and never lazily, the
+  images that determine the home's first paint (the hero's image and the first
+  posters above the fold), and never hides or animates them while they first
+  appear.
 - RF-33: THE SYSTEM renders the hero's background sharp at full width on common
   screens, using a larger source image than the ones used for the cards instead
   of enlarging a small one, without making the visitor download more than their
