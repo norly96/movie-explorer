@@ -8,6 +8,16 @@ detail page. Built as a portfolio project.
 **Stack:** Next.js 16, React 19, TypeScript (strict), Tailwind CSS v4,
 TanStack Query, Zod, Vitest, Testing Library, MSW, Playwright.
 
+## TMDB attribution
+
+<img src="public/tmdb-logo.svg" alt="TMDB" height="24">
+
+This website uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB.
+
+The movie data and images come from [TMDB](https://www.themoviedb.org). This is a
+free portfolio project: TMDB's API terms of use do not allow commercial use
+without a separate agreement.
+
 ## How this project is built
 
 This project is built with **spec-driven development**, using
