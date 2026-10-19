@@ -236,7 +236,7 @@ Dependencies at a glance:
   - RF: RF-30, 34
   - Done when: tests (written first) show that the attribution shows the exact notice "This website uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB." and the logo with a text alternative, that the page has one level-one heading, and that its metadata is the About entry of T22; they pass; the page is reachable from the header.
 
-- [ ] **T33 — README attribution**
+- [x] **T33 — README attribution**
   - Depends on: T31
   - Files: `README.md`, `readme-attribution.test.ts`
   - RF: RF-31
