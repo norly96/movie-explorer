@@ -54,6 +54,60 @@
     color: var(--color-foreground);
   }
 
+  /* Page background (docs/design.md → Page background): the amounts, narrow
+     first and the wide ones from `lg`. Only these are new; every color comes
+     from the tokens above. */
+  :root {
+    --page-gradient-height: 540px;
+    --glow-opacity: 9%;
+    --glow-size: 340px 260px;
+    --glow-y: 640px;
+    --tint-header: 5%;
+    --tint-bar: 4%;
+  }
+
+  @media (min-width: 64rem) {
+    :root {
+      --page-gradient-height: 520px;
+      --glow-size: 760px 300px;
+      --glow-y: 620px;
+    }
+  }
+
+  /* The page background, on every page, as two fixed layers behind the content:
+     the surface color fades into the page color from the top, and a soft accent
+     glow sits at the lower left, never at the top. Both are sized to the large
+     viewport so a phone's browser bar does not make them jump; never
+     `background-attachment: fixed`. The glow gets its strength from the layer's
+     opacity, not from a color-mix with a variable percentage: the CSS compiler
+     cannot evaluate that and writes a fallback without the opacity. */
+  body::before,
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0 0 auto 0;
+    height: 100lvh;
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  body::before {
+    background: linear-gradient(
+      180deg,
+      var(--color-surface) 0,
+      var(--color-background) var(--page-gradient-height)
+    );
+  }
+
+  body::after {
+    background: radial-gradient(
+      ellipse var(--glow-size) at 0% var(--glow-y),
+      var(--color-accent),
+      transparent 100%
+    );
+    opacity: var(--glow-opacity);
+  }
+
   :focus-visible {
     outline: 2px solid var(--color-accent);
     outline-offset: 2px;
@@ -65,6 +119,82 @@
     *::after {
       animation-duration: 0.01ms !important;
       transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* Faint tints and the hero's fade (docs/design.md → Page background, Hero
+   layers). Nothing here draws a line: the tints and the gradient separate the
+   header, the hero, the search and filters bar and the results, so there is no
+   border on purpose. Each tint is a gradient on a pseudo-element whose opacity
+   is the token, so the section's own content is never faded. */
+@layer components {
+  .header-tint,
+  .bar-tint {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .header-tint::before,
+  .bar-tint::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  .header-tint::before {
+    background: linear-gradient(180deg, var(--color-foreground), transparent);
+    opacity: var(--tint-header);
+  }
+
+  .bar-tint::before {
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      var(--color-foreground) 40%,
+      transparent 100%
+    );
+    opacity: var(--tint-bar);
+  }
+
+  /* Melts the hero's image into the page at its top and bottom edges. Only the
+     alpha matters for a mask, so the opaque stops use a token. Narrow stops
+     first; the wide ones from `lg`. */
+  .hero-fade {
+    -webkit-mask-image: linear-gradient(
+      180deg,
+      transparent 0%,
+      var(--color-background) 14%,
+      var(--color-background) 45%,
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      180deg,
+      transparent 0%,
+      var(--color-background) 14%,
+      var(--color-background) 45%,
+      transparent 100%
+    );
+  }
+
+  @media (min-width: 64rem) {
+    .hero-fade {
+      -webkit-mask-image: linear-gradient(
+        180deg,
+        transparent 0%,
+        var(--color-background) 18%,
+        var(--color-background) 50%,
+        transparent 100%
+      );
+      mask-image: linear-gradient(
+        180deg,
+        transparent 0%,
+        var(--color-background) 18%,
+        var(--color-background) 50%,
+        transparent 100%
+      );
     }
   }
 }
