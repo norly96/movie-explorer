@@ -232,11 +232,12 @@ Requirement numbers are stable identifiers, grouped by topic.
 **About page and attribution**
 - RF-30: THE SYSTEM provides an "About" page, reachable from the header, with its
   own page heading and main content area. Its content is, at least, TMDB's
-  attribution: the statement "This product uses the TMDB API but is not endorsed
-  or certified by TMDB." and TMDB's logo, supplied by the maintainer from TMDB's
-  official logo page and used according to TMDB's published guidelines (for
-  example, less prominent than the application's own name). Any further content
-  is out of scope.
+  attribution: the notice that TMDB's API terms of use require (section 3),
+  worded "This website uses TMDB and the TMDB APIs but is not endorsed, certified,
+  or otherwise approved by TMDB.", and TMDB's logo, supplied by the maintainer
+  from TMDB's official logo page, unmodified, and used according to those terms
+  (less prominent than the application's own name and mark, and without implying
+  any endorsement). Any further content is out of scope.
 - RF-31: THE SYSTEM shows the same attribution (statement and logo) in the
   README.
 
@@ -339,6 +340,10 @@ Requirement numbers are stable identifiers, grouped by topic.
   demonstration in the pull request, as in the deploy-ci spec. The exception is
   limited to this spec and is repeated whenever a later spec changes what it
   covers.
+- **TMDB terms of use**: the project stays free. TMDB's API terms do not allow
+  commercial use (selling the application, charging for it or deriving revenue
+  from TMDB content) without a separate written agreement, and they limit how long
+  TMDB data may be cached (six months); the caches used here last hours.
 - **Minimal stack** (constitution §1): no dependency is added.
 - **Data flow** (constitution §3, §4): the hero reads its data through the
   existing service layer, and the response schema is extended and validated with

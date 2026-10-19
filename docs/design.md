@@ -382,9 +382,11 @@ All: `radius-md`, `text-sm`, weight 600, `px-4 py-2`, icon 20px with `gap-2`.
 
 ### About page
 - Its own page heading and the shared main area. Its content is the TMDB
-  attribution: the statement "This product uses the TMDB API but is not endorsed
-  or certified by TMDB." and TMDB's logo, less prominent than the application's
-  own name, following TMDB's published guidelines.
+  attribution: the notice required by TMDB's API terms of use, "This website uses
+  TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by
+  TMDB.", and TMDB's logo (the short blue variant, unmodified, about 24px high),
+  less prominent than the application's own name and mark, with nothing implying
+  an endorsement.
 
 ## Implementation (Tailwind v4)
 
