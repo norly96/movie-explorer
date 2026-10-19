@@ -101,37 +101,37 @@ Dependencies at a glance:
   - RF: RF-6, 7, 16, 33
   - Done when: new tests (written first) show that the raw movie accepts `backdrop_path`, `overview` and `genre_ids` as optional (a raw movie without them still parses), that `pickFeatured` returns the first movie with a backdrop in order and `undefined` when none has one, that the backdrop URL helper in `tmdb-mappers.ts` builds an address under TMDB's `original` size from a constant (no change to the shared image configuration), and that an empty overview stays empty; `Movie` and `toMovie` are unchanged and every existing test of both files passes untouched.
 
-- [ ] **T11 — Service: `featured` on popular page 1**
+- [x] **T11 — Service: `featured` on popular page 1**
   - Depends on: T10
   - Files: `services/explore-service.ts`, `services/explore-service.test.ts` (new cases)
   - RF: RF-6, 7, 9
   - Done when: new tests (written first) show that popular page 1 carries `featured` computed from that same response with **one** TMDB request (a counter on the mock), that page 2, search and discover carry none, and that the key is **absent** (not `null`) when no movie has a backdrop; every existing `toEqual` case passes untouched.
 
-- [ ] **T12 — Browser schema and route accept `featured`**
+- [x] **T12 — Browser schema and route accept `featured`**
   - Depends on: T11
   - Files: `services/explore-client.ts`, `services/explore-client.test.ts`, `app/api/explore/route.test.ts` (new cases)
   - RF: RF-7
   - Done when: new tests (written first) show that the browser's schema accepts a valid `featured`, rejects a malformed one as `invalid_response`, and that the route forwards `featured` for popular page 1; the existing cases pass untouched.
 
-- [ ] **T13 — Hook returns `featured`**
+- [x] **T13 — Hook returns `featured`**
   - Depends on: T12
   - Files: `hooks/useExploreMovies.ts`, `hooks/useExploreMovies.test.ts` (new cases)
   - RF: RF-7, 11
   - Done when: new tests (written first) show that the hook returns the first page's `featured` for the popular list and `null` for other modes or when it is absent, and that moving from a filtered view back to the popular list performs one request and no more; the existing cases pass untouched.
 
-- [ ] **T14 [P] — First genre name**
+- [x] **T14 [P] — First genre name**
   - Depends on: —
   - Files: `app/featured-genre.ts`, `app/featured-genre.test.ts`
   - RF: RF-6, 16
   - Done when: tests (written first) show that `firstGenreName` returns the name of the first id that exists in the list, skips unknown ids, and returns `null` for an empty list or when no id resolves.
 
-- [ ] **T15 [P] — Results heading text**
+- [x] **T15 [P] — Results heading text**
   - Depends on: —
   - Files: `app/results-heading.ts`, `app/results-heading.test.ts`, `components/SortFilter.tsx` (export the existing sort labels, nothing else)
   - RF: RF-21, 22
   - Done when: tests (written first) cover every branch of `resultsHeading`: "Popular movies"; `Results for “<trimmed text>”`; the active filter names joined by " · " in the order genre, year, sort and only the active ones; "Filtered movies" when a filter is active but no name resolves; the existing `SortFilter` tests pass untouched.
 
-- [ ] **T16 [P] — Site configuration and link validation**
+- [x] **T16 [P] — Site configuration and link validation**
   - Depends on: —
   - Files: `app/site-config.ts`, `app/site-config.test.ts`
   - RF: RF-3
