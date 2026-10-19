@@ -452,3 +452,100 @@ describe("useExploreMovies — movies repeated across pages (RF-23)", () => {
   });
 });
 
+
+// The home's hero movie rides on the popular list's first page (home-redesign
+// RF-7, RF-11): the hook only hands it over; it never requests it by itself.
+describe("useExploreMovies — featured movie", () => {
+  const FEATURED = {
+    id: 7,
+    title: "Backdrop Movie",
+    overview: "A story.",
+    backdropUrl: "https://image.tmdb.org/t/p/original/bd.jpg",
+    genreIds: [18, 53],
+    releaseYear: 1999,
+    rating: 8.4,
+  };
+
+  it("returns the first page's featured movie for the popular list (RF-7)", async () => {
+    serve((url) =>
+      HttpResponse.json({ ...standardPage(pageOf(url)), featured: FEATURED })
+    );
+
+    const { result } = setup(POPULAR);
+
+    expect(result.current.featured).toBeNull();
+    await loadFirstPage(result);
+    expect(result.current.featured).toEqual(FEATURED);
+  });
+
+  it("returns null when the response has none (RF-9)", async () => {
+    serve((url) => HttpResponse.json(standardPage(pageOf(url))));
+
+    const { result } = setup(POPULAR);
+    await loadFirstPage(result);
+
+    expect(result.current.featured).toBeNull();
+  });
+
+  it("returns null for a filtered list", async () => {
+    serve((url) => HttpResponse.json(standardPage(pageOf(url))));
+
+    const { result } = setup(DRAMA);
+    await loadFirstPage(result);
+
+    expect(result.current.featured).toBeNull();
+  });
+
+  it("keeps the first page's featured movie after later pages load", async () => {
+    serve((url) =>
+      HttpResponse.json(
+        pageOf(url) === 1
+          ? { ...standardPage(1), featured: FEATURED }
+          : standardPage(pageOf(url))
+      )
+    );
+
+    const { result } = setup(POPULAR);
+    await loadFirstPage(result);
+    act(() => result.current.fetchNextPage());
+    await waitFor(() => expect(ids(result.current.movies)).toEqual([11, 12, 21, 22]));
+
+    expect(result.current.featured).toEqual(FEATURED);
+  });
+
+  it("returns the featured movie of a page the server already rendered, with no request (RF-7)", async () => {
+    const calls = serve(() => HttpResponse.json(standardPage(1)));
+
+    const { result } = setup(POPULAR, {
+      filters: POPULAR,
+      page: { ...page(1, 3, [901, 902]), featured: FEATURED },
+    });
+
+    expect(result.current.isFirstLoading).toBe(false);
+    expect(result.current.featured).toEqual(FEATURED);
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    expect(calls).toHaveLength(0);
+  });
+
+  it("makes exactly one request when a page opened with filters goes back to the popular list (RF-7, RF-11)", async () => {
+    const calls = serve(() =>
+      HttpResponse.json({ ...standardPage(1), featured: FEATURED })
+    );
+
+    const { result, rerender } = setup(DRAMA, {
+      filters: DRAMA,
+      page: page(1, 3, [901, 902]),
+    });
+    expect(result.current.featured).toBeNull();
+    expect(calls).toHaveLength(0);
+
+    rerender({ f: POPULAR });
+
+    expect(result.current.featured).toBeNull();
+    await waitFor(() => expect(result.current.featured).toEqual(FEATURED));
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    expect(calls).toHaveLength(1);
+    expect(pageOf(calls[0])).toBe(1);
+    expect(calls[0].searchParams.has("genre")).toBe(false);
+  });
+});
