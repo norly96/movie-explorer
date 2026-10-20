@@ -249,11 +249,12 @@ Dependencies at a glance:
   - Done when: the new spec passes locally: the header and the skip link on `/`, `/about`, a movie and a not-found page; exactly one `main` on each; the first Tab focuses the skip link and Enter moves focus to the main area; the current page is marked; the tab order equals the visual order at 390 and 1280 px; no horizontal scroll at 320 px with the brand's text hidden; each page's title; a run with JavaScript disabled still shows the header, the skip link and the About page; the result is noted.
   - Result: `e2e/home-redesign.spec.ts` passes locally in Chromium, 18 tests. Tab order measured at 390 px (skip link, brand, the three external links, Home, About) and 1280 px (skip link, brand, Home, About, the three external links); each equals the visual order.
 
-- [ ] **T35 — Pull request of phase 2** `⚠️ approval`
+- [x] **T35 — Pull request of phase 2** `⚠️ approval`
   - Depends on: T24–T34
   - Files: — (no repository files)
   - RF: —
   - Done when: the branch is pushed and a pull request referencing the spec is open; its four checks are green; the maintainer merges it; the deployment verification is healthy; the header, the background and `/about` are live on the public address.
+  - Result: PR #21 merged into `main` (`b1dc095`); its four checks and CI on `main` passed, and the deployment verification ended in success. The header, the background and `/about` were checked live by the maintainer.
 
 ## Phase 3 — Explorer composition
 
