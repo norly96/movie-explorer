@@ -344,11 +344,12 @@ Dependencies at a glance:
 
 ## Phase 4 — Hero
 
-- [ ] **T48 — Hero's dark layer and its contrast**
+- [x] **T48 — Hero's dark layer and its contrast**
   - Depends on: T06, T47
   - Files: `app/globals.css`, `app/hero-contrast.test.ts`
   - RF: RF-17, 29
   - Done when: a computed test (written first) composes the layer over a pure white image at the text positions for widths 1280, 1440 and 1920 px and asserts at least 4.5:1 for the text and 3:1 for the title; if the canvas values fail it, the layer is strengthened only under the text and the test passes; the stops are CSS properties the test reads.
+  - Result: 15 new cases in `app/hero-contrast.test.ts`. With the canvas values four failed, as the spec foresaw: over a pure white image the muted data line fell to 3.35:1 at 1280 px, 3.16:1 at 1440 px and 2.81:1 at 1920 px, and the accent rating to 4.04:1 at 1920 px. The layer is strengthened only under the text, with one extra stop (86% at 46%), and all pass: 4.5:1 for the text, 3:1 for the title, at 1280, 1440 and 1920 px. The layer is the page color drawn through a mask whose stops live in the `.hero-scrim` rule of `app/globals.css`, which the test reads. It is a mask, not a gradient of `color-mix` colors, because the existing guard in `globals.test.ts` forbids `color-mix` in the stylesheet (the compiler loses a variable opacity); the compiled CSS keeps every opacity (`eb`, `db`, `59`). The test assumes a full-width image and a text column of at most 520 px at the left of the 1280 px content area; the component of T49 must build that layout. The values are recorded in `docs/design.md`.
 
 - [ ] **T49 — Featured hero**
   - Depends on: T10, T08, T14, T18, T48
