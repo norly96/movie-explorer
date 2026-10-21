@@ -125,3 +125,97 @@ describe("FilterBar", () => {
     expect(screen.getByRole("button", { name: "Clear filters" })).toHaveFocus();
   });
 });
+
+// home-redesign RF-18, RF-19: when "Clear filters" is not shown, an empty,
+// hidden placeholder keeps its room, so showing or hiding the button never moves
+// another control. The button component itself stays as it is (plan.md D17).
+describe("FilterBar reserved room (home-redesign RF-19)", () => {
+  function room(container: HTMLElement) {
+    return container.querySelector('[data-slot="clear-filters-room"]');
+  }
+
+  function renderIn(clearVisible: boolean) {
+    return render(
+      <FilterBar
+        genres={GENRES}
+        genreId={null}
+        year={null}
+        sort={null}
+        clearVisible={clearVisible}
+        onGenreChange={vi.fn()}
+        onYearChange={vi.fn()}
+        onSortChange={vi.fn()}
+        onClear={vi.fn()}
+      />
+    );
+  }
+
+  it("keeps an empty, hidden placeholder where the button would be when it is not shown", () => {
+    const { container } = renderIn(false);
+
+    const placeholder = room(container);
+    expect(placeholder).toBeInTheDocument();
+    expect(placeholder).toBeEmptyDOMElement();
+    expect(placeholder).toHaveAttribute("aria-hidden", "true");
+    expect(
+      screen.queryByRole("button", { name: "Clear filters" })
+    ).not.toBeInTheDocument();
+  });
+
+  it("puts the placeholder in the same place, after the selectors, as the button", () => {
+    const hidden = renderIn(false);
+    const hiddenChildren = hidden.container.firstElementChild!.children;
+    const placeholder = room(hidden.container);
+    expect(hiddenChildren).toHaveLength(4);
+    expect(hiddenChildren[3]).toBe(placeholder);
+    hidden.unmount();
+
+    const shown = renderIn(true);
+    const shownChildren = shown.container.firstElementChild!.children;
+    expect(shownChildren).toHaveLength(4);
+    expect(shownChildren[3]).toBe(
+      screen.getByRole("button", { name: "Clear filters" })
+    );
+  });
+
+  it("has no placeholder while the button is shown", () => {
+    const { container } = renderIn(true);
+
+    expect(room(container)).not.toBeInTheDocument();
+  });
+
+  it("keeps the three selectors in the same order whether the button is shown or not", () => {
+    const order = (container: HTMLElement) =>
+      [...container.querySelectorAll("select")].map((select) => select.labels?.[0]?.textContent);
+
+    const hidden = renderIn(false);
+    const withoutButton = order(hidden.container);
+    hidden.unmount();
+    const shown = renderIn(true);
+
+    expect(withoutButton).toEqual(["Genre", "Year", "Sort by"]);
+    expect(order(shown.container)).toEqual(withoutButton);
+  });
+
+  it("does not add the placeholder to the tab order", async () => {
+    const user = userEvent.setup();
+    renderIn(false);
+
+    await user.tab();
+    await user.tab();
+    await user.tab();
+    await user.tab();
+
+    expect(document.body).toHaveFocus();
+  });
+
+  it("sizes the room from tokens, never from fixed pixel values", () => {
+    const { container } = renderIn(false);
+
+    const classes = room(container)!.className;
+    expect(classes).toContain("h-(--size-control-touch)");
+    expect(classes).toContain("lg:h-(--size-control)");
+    expect(classes).toContain("lg:w-(--size-clear-filters)");
+    expect(classes).not.toMatch(/\[\d/);
+  });
+});

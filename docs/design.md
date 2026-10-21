@@ -151,6 +151,7 @@ Added by the home redesign; use these names, never arbitrary values.
 | `size-header-narrow` | 56px | First row of the header on narrow screens (the second row is `size-control`, 44px) |
 | `size-hero` | 320px | Minimum height of the hero on wide screens; it grows with the text, never a fixed height |
 | `size-back-to-top` | 48px | Back-to-top button |
+| `size-clear-filters` | 132px | Width of "Clear filters" on wide screens, and of the empty placeholder that keeps its room while it is hidden |
 
 ## Radius
 
@@ -434,6 +435,7 @@ All: `radius-md`, `text-sm`, weight 600, `px-4 py-2`, icon 20px with `gap-2`.
   --size-header-narrow: 3.5rem;
   --size-hero: 20rem;
   --size-back-to-top: 3rem;
+  --size-clear-filters: 8.25rem;
   --duration-appear: 200ms;
   --duration-curtain: 400ms;
   --scale-card-hover: 1.03;

@@ -214,3 +214,9 @@ describe("app/globals.css page background", () => {
     expect(rules).not.toMatch(/\b(?:rgb|rgba|hsl|hsla)\(/);
   });
 });
+
+describe("home-redesign: the room of Clear filters (RF-19)", () => {
+  it("defines --size-clear-filters as the 132px width of the button on wide screens", () => {
+    expect(css).toMatch(/--size-clear-filters:\s*8\.25rem;/);
+  });
+});
