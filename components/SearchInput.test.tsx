@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import { createRef } from "react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { SearchInput } from "./SearchInput";
@@ -48,5 +49,46 @@ describe("SearchInput", () => {
     await user.tab();
 
     expect(screen.getByLabelText("Search movies")).toHaveFocus();
+  });
+});
+
+// home-redesign RF-13, RF-18, RF-20: in the redesigned bar the label is visually
+// hidden but stays a real <label> that names the field; the field can be reached
+// through a reference (so the hero can send focus to it); its height follows the
+// control sizes and its text is 16px.
+describe("SearchInput in the redesigned bar", () => {
+  it("hides the label visually and still names the field with it (RF-18)", () => {
+    render(<SearchInput value="" onChange={() => {}} />);
+
+    const label = screen.getByText("Search movies");
+    expect(label.tagName).toBe("LABEL");
+    expect(label).toHaveClass("sr-only");
+    expect(screen.getByLabelText("Search movies").tagName).toBe("INPUT");
+    expect(screen.getByRole("textbox", { name: "Search movies" })).toBeInTheDocument();
+  });
+
+  it("gives the reference it receives the input element (RF-13)", () => {
+    const inputRef = createRef<HTMLInputElement>();
+    render(<SearchInput value="" onChange={() => {}} inputRef={inputRef} />);
+
+    expect(inputRef.current).toBe(screen.getByLabelText("Search movies"));
+  });
+
+  it("lets the owner of the reference move focus to the field (RF-13)", () => {
+    const inputRef = createRef<HTMLInputElement>();
+    render(<SearchInput value="" onChange={() => {}} inputRef={inputRef} />);
+
+    inputRef.current?.focus();
+
+    expect(screen.getByLabelText("Search movies")).toHaveFocus();
+  });
+
+  it("is 48px high on phones, 44px from lg, with 16px text (RF-20)", () => {
+    render(<SearchInput value="" onChange={() => {}} />);
+
+    const input = screen.getByLabelText("Search movies");
+    expect(input).toHaveClass("h-(--size-control-touch)");
+    expect(input).toHaveClass("lg:h-(--size-control)");
+    expect(input).toHaveClass("text-base");
   });
 });
