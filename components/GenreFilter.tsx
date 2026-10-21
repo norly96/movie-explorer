@@ -1,5 +1,6 @@
 import { useId } from "react";
 import type { Genre } from "../services/schemas/genre-schema";
+import { ChevronDownIcon } from "./icons/ChevronDownIcon";
 
 export interface GenreFilterProps {
   genres: Genre[]; // [] → renders nothing (RF-21, plan.md D14)
@@ -10,14 +11,17 @@ export interface GenreFilterProps {
 // Controlled and presentation only. Hidden entirely when the genre list
 // is unavailable instead of shown disabled (D14); the other filters and
 // the search stay usable.
+// Home redesign (RF-18, RF-20): the label is visually hidden but still a real
+// <label>; a decorative chevron replaces the native arrow; the control is 48px
+// high (44px from `lg`) with 16px text.
 export function GenreFilter({ genres, value, onChange }: GenreFilterProps) {
   const id = useId();
 
   if (genres.length === 0) return null;
 
   return (
-    <div className="flex flex-col gap-1">
-      <label htmlFor={id} className="text-sm text-muted">
+    <div className="relative">
+      <label htmlFor={id} className="sr-only">
         Genre
       </label>
       <select
@@ -26,7 +30,7 @@ export function GenreFilter({ genres, value, onChange }: GenreFilterProps) {
         onChange={(event) =>
           onChange(event.target.value === "" ? null : Number(event.target.value))
         }
-        className="rounded-sm border border-border-strong bg-surface px-4 py-2 text-base text-foreground"
+        className="h-(--size-control-touch) w-full appearance-none rounded-sm border border-border-strong bg-background py-2 pl-4 pr-12 text-base text-foreground lg:h-(--size-control)"
       >
         <option value="">All genres</option>
         {genres.map((genre) => (
@@ -35,6 +39,7 @@ export function GenreFilter({ genres, value, onChange }: GenreFilterProps) {
           </option>
         ))}
       </select>
+      <ChevronDownIcon className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted" />
     </div>
   );
 }

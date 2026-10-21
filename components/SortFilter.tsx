@@ -1,5 +1,6 @@
 import { useId } from "react";
 import { SORT_OPTIONS, type SortOption } from "../app/explore-params";
+import { ChevronDownIcon } from "./icons/ChevronDownIcon";
 
 export interface SortFilterProps {
   value: SortOption | null;
@@ -16,13 +17,15 @@ export const SORT_LABELS: Record<SortOption, string> = {
   "primary_release_date.asc": "Oldest first",
 };
 
-// Controlled and presentation only.
+// Controlled and presentation only. Home redesign (RF-18, RF-20): the label is
+// visually hidden but still a real <label>; the native arrow is replaced by a
+// decorative chevron; the control is 48px high (44px from `lg`) with 16px text.
 export function SortFilter({ value, onChange }: SortFilterProps) {
   const id = useId();
 
   return (
-    <div className="flex flex-col gap-1">
-      <label htmlFor={id} className="text-sm text-muted">
+    <div className="relative">
+      <label htmlFor={id} className="sr-only">
         Sort by
       </label>
       <select
@@ -34,7 +37,7 @@ export function SortFilter({ value, onChange }: SortFilterProps) {
             SORT_OPTIONS.find((option) => option === event.target.value) ?? null
           )
         }
-        className="rounded-sm border border-border-strong bg-surface px-4 py-2 text-base text-foreground"
+        className="h-(--size-control-touch) w-full appearance-none rounded-sm border border-border-strong bg-background py-2 pl-4 pr-12 text-base text-foreground lg:h-(--size-control)"
       >
         <option value="">Default order</option>
         {SORT_OPTIONS.map((option) => (
@@ -43,6 +46,7 @@ export function SortFilter({ value, onChange }: SortFilterProps) {
           </option>
         ))}
       </select>
+      <ChevronDownIcon className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted" />
     </div>
   );
 }

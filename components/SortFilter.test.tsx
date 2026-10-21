@@ -95,3 +95,35 @@ describe("SortFilter", () => {
     expect(screen.getByLabelText("Sort by")).toHaveFocus();
   });
 });
+
+// home-redesign RF-18, RF-20: in the redesigned bar the label is visually hidden
+// but stays a real <label> that names the selector, the chevron is decorative,
+// and the control is as high as the rest of the bar with 16px text.
+describe("SortFilter in the redesigned bar", () => {
+  it("hides the label visually and still names the selector with it (RF-18)", () => {
+    render(<SortFilter value={null} onChange={() => {}} />);
+
+    const label = screen.getByText("Sort by");
+    expect(label.tagName).toBe("LABEL");
+    expect(label).toHaveClass("sr-only");
+    expect(screen.getByRole("combobox", { name: "Sort by" })).toBeInTheDocument();
+  });
+
+  it("shows a decorative chevron and drops the native arrow (RF-18)", () => {
+    const { container } = render(<SortFilter value={null} onChange={() => {}} />);
+
+    const icon = container.querySelector("svg");
+    expect(icon).not.toBeNull();
+    expect(icon).toHaveAttribute("aria-hidden", "true");
+    expect(screen.getByLabelText("Sort by")).toHaveClass("appearance-none");
+  });
+
+  it("is 48px high on phones, 44px from lg, with 16px text (RF-20)", () => {
+    render(<SortFilter value={null} onChange={() => {}} />);
+
+    const select = screen.getByLabelText("Sort by");
+    expect(select).toHaveClass("h-(--size-control-touch)");
+    expect(select).toHaveClass("lg:h-(--size-control)");
+    expect(select).toHaveClass("text-base");
+  });
+});
