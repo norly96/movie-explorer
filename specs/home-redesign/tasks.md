@@ -299,11 +299,12 @@ Dependencies at a glance:
   - RF: RF-18, 21, 22
   - Done when: new tests (written first) show the results heading's text in each state (popular, search, filters, unresolved filter), that the announcer says the heading's text once the first page has loaded with results and says nothing for an empty result (the existing empty state is the only announcement), and that the `results-anchor` test id and the Tab order are unchanged; the existing cases pass untouched.
 
-- [ ] **T42 [P] — Back-to-top visibility hook**
+- [x] **T42 [P] — Back-to-top visibility hook**
   - Depends on: T35
   - Files: `hooks/useBackToTopVisibility.ts`, `hooks/useBackToTopVisibility.test.ts`
   - RF: RF-24
   - Done when: tests (written first, with the existing `MockIntersectionObserver`) show that the hook is false at first, becomes true when the sentinel is above the viewport, returns to false when it comes back, and disconnects on unmount.
+  - Result: 6 new cases failed first (module missing) and now pass, using the existing `MockIntersectionObserver` unchanged. "Above the viewport" is read as not intersecting and the sentinel's top edge above 0, so a sentinel still below the viewport keeps the button hidden.
 
 - [ ] **T43 — Back-to-top button**
   - Depends on: T08, T42
