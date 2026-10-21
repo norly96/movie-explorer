@@ -63,6 +63,7 @@
     color-scheme: dark;
     background-color: var(--color-background);
     color: var(--color-foreground);
+    scroll-padding-bottom: var(--back-to-top-reserve);
   }
 
   /* Page background (docs/design.md → Page background): the amounts, narrow
@@ -75,6 +76,13 @@
     --glow-y: 640px;
     --tint-header: 5%;
     --tint-bar: 4%;
+    /* Room for the back-to-top button (RF-26): its size, its margin and a gap,
+       plus the device's bottom inset on phones. It is the scroll padding at the
+       bottom (so focus never scrolls an element under the button) and the
+       padding at the end of the home page (so the last row can scroll clear). */
+    --back-to-top-reserve: calc(
+      var(--size-back-to-top) + var(--spacing) * 10 + env(safe-area-inset-bottom)
+    );
   }
 
   @media (min-width: 64rem) {

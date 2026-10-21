@@ -243,3 +243,26 @@ describe("home-redesign: the duration of the card's hover (RF-23)", () => {
     expect(css).toContain("--duration-fast: 150ms;");
   });
 });
+
+// RF-26: the back-to-top button is fixed at the bottom right; when the keyboard
+// moves focus to something near the bottom edge, the browser scrolls it just into
+// view, which would leave it under the button. Reserving room at the bottom of the
+// scrollport (scroll padding) makes the browser scroll further, and the same room
+// at the end of the home page lets the last row scroll clear of the button. The
+// room is made of the button's size, a margin and a gap, plus the device's bottom
+// inset on phones.
+describe("home-redesign: room for the back-to-top button (RF-26)", () => {
+  it("defines the reserve from the button's size and the device's inset", () => {
+    const reserve = css.match(/--back-to-top-reserve:[^;]*;/)?.[0] ?? "";
+
+    expect(reserve).toContain("var(--size-back-to-top)");
+    expect(reserve).toContain("env(safe-area-inset-bottom)");
+    expect(reserve).not.toMatch(/\d+px/);
+  });
+
+  it("uses it as the scroll padding at the bottom of the page", () => {
+    const rule = css.match(/html\s*\{[^}]*scroll-padding-bottom:[^;]*;/)?.[0] ?? "";
+
+    expect(rule).toContain("var(--back-to-top-reserve)");
+  });
+});
