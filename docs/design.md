@@ -87,11 +87,16 @@ sits lower left and never at the top.
 |---|---|---|
 | `hero-fade-wide` | transparent at 0%, opaque from 18% to 50%, transparent at 100% (vertical) | Mask that melts the image into the page |
 | `hero-fade-narrow` | transparent at 0%, opaque from 14% to 45%, transparent at 100% (vertical) | Same, stacked layout |
-| `hero-scrim` | `background` at 100% opacity at 0%, 92% at 34%, 35% at 62%, 0% at 100% (horizontal, from the left, wide layout) | Keeps the text readable over any image |
+| `hero-scrim` | `background` at 100% opacity at 0%, 92% at 34%, **86% at 46%**, 35% at 62%, 0% at 100% (horizontal, from the left, wide layout) | Keeps the text readable over any image |
 
-The scrim stops are the starting values: they stand only if the contrast test
-passes (4.5:1 for text, 3:1 for the large title, against a pure white image, at
-1280, 1440 and 1920 px); otherwise they are strengthened under the text only.
+The scrim stops were the canvas values; the canvas had no stop at 46%. Over a pure
+white image the canvas layer left the muted data line at 2.8:1 at 1920 px (and
+3.2–3.4:1 at 1280 and 1440 px) and the accent rating at 4.04:1 at 1920 px, so the
+layer is held at 86% under the text, up to 46% of the width, and only then falls
+away. With it every pair passes at 1280, 1440 and 1920 px (4.5:1 for text, 3:1 for
+the large title), as `app/hero-contrast.test.ts` computes from the `.hero-scrim`
+rule in `app/globals.css` (the page color drawn through a mask). The text column is at most 520 px wide, aligned to the
+left of the 1280 px content area; the image spans the page's width.
 
 ## Typography
 
@@ -150,8 +155,9 @@ Added by the home redesign; use these names, never arbitrary values.
 | `size-header` | 64px | Header height on wide screens |
 | `size-header-narrow` | 56px | First row of the header on narrow screens (the second row is `size-control`, 44px) |
 | `size-hero` | 320px | Minimum height of the hero on wide screens; it grows with the text, never a fixed height |
+| `size-hero-text` | 520px | Maximum width of the hero's text column on wide screens |
 | `size-back-to-top` | 48px | Back-to-top button |
-| `offset-back-to-top` | 300px | How far below the top of the search and filters bar the back-to-top button's marker sits |
+| `offset-back-to-top` | 300px | How far below the search and filters bar the back-to-top button's marker extends (the marker covers the top of the page down to there) |
 | `back-to-top-reserve` | button 48px + 40px + the device's bottom inset | Scroll padding at the bottom of every page, and the padding at the end of the home page, so focus never leaves an element under the back-to-top button |
 | `size-clear-filters` | 132px | Width of "Clear filters" on wide screens, and of the empty placeholder that keeps its room while it is hidden |
 | `size-search` | 420px | Maximum width of the search field on wide screens; it shrinks to fit |
@@ -438,6 +444,7 @@ All: `radius-md`, `text-sm`, weight 600, `px-4 py-2`, icon 20px with `gap-2`.
   --size-header: 4rem;
   --size-header-narrow: 3.5rem;
   --size-hero: 20rem;
+  --size-hero-text: 32.5rem;
   --size-back-to-top: 3rem;
   --size-clear-filters: 8.25rem;
   --size-search: 26.25rem;

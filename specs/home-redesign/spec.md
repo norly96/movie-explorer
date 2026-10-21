@@ -138,9 +138,11 @@ Requirement numbers are stable identifiers, grouped by topic.
   because it only happens after the visitor's action, never while the page loads,
   lasts under half a second and is disabled with reduced motion. WHEN a filter is
   changed, or a search becomes active, while the hero is visible, THE SYSTEM
-  leaves the results heading at the top edge of the visible area once the curtain
-  has finished and the change has been applied, whichever comes later
-  (immediately when there is no animation).
+  leaves the search and filters bar at the top edge of the visible area, with the
+  results right below it, once the curtain has finished and the change has been
+  applied, whichever comes later (immediately when there is no animation), so the
+  visitor never loses sight of the field they are typing in or the control they
+  have just changed.
 - RF-13: WHILE the hero is hidden, THE SYSTEM makes it unreachable by keyboard
   and by assistive technology. IF the keyboard focus is inside the hero when it
   becomes hidden, THEN THE SYSTEM moves it to the search field.
