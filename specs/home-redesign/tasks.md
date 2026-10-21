@@ -306,11 +306,12 @@ Dependencies at a glance:
   - Done when: tests (written first, with the existing `MockIntersectionObserver`) show that the hook is false at first, becomes true when the sentinel is above the viewport, returns to false when it comes back, and disconnects on unmount.
   - Result: 6 new cases failed first (module missing) and now pass, using the existing `MockIntersectionObserver` unchanged. "Above the viewport" is read as not intersecting and the sentinel's top edge above 0, so a sentinel still below the viewport keeps the button hidden.
 
-- [ ] **T43 — Back-to-top button**
+- [x] **T43 — Back-to-top button**
   - Depends on: T08, T42
   - Files: `components/BackToTopButton.tsx`, `components/BackToTopButton.test.tsx`
   - RF: RF-24, 26
   - Done when: tests (written first) show an icon-only button named "Back to top of results", unreachable by keyboard and hidden from assistive technology while not visible, focusable when visible, calling its handler on activation; they pass.
+  - Result: 14 new cases failed first (module missing) and now pass. While hidden the button has `aria-hidden`, `inert`, `tabindex=-1` and `invisible`; it fades and rises 8px over `duration-appear`, with no transition under reduced motion. Left for T44/T47: keeping it clear of the device's reserved areas (safe-area insets, RF-26), which needs a real-device check.
 
 - [ ] **T44 — Back-to-top in the explorer**
   - Depends on: T41, T43
