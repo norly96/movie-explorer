@@ -314,11 +314,12 @@ Dependencies at a glance:
   - Done when: tests (written first) show an icon-only button named "Back to top of results", unreachable by keyboard and hidden from assistive technology while not visible, focusable when visible, calling its handler on activation; they pass.
   - Result: 14 new cases failed first (module missing) and now pass. While hidden the button has `aria-hidden`, `inert`, `tabindex=-1` and `invisible`; it fades and rises 8px over `duration-appear`, with no transition under reduced motion. Left for T44/T47: keeping it clear of the device's reserved areas (safe-area insets, RF-26), which needs a real-device check.
 
-- [ ] **T44 — Back-to-top in the explorer**
+- [x] **T44 — Back-to-top in the explorer**
   - Depends on: T41, T43
   - Files: `app/ExplorerClient.tsx`, `app/ExplorerClient.test.tsx` (new cases)
   - RF: RF-24, 25
   - Done when: new tests (written first) show that the button is absent from the tab order at first, appears when the sentinel 300 px below the bar has passed, and on activation scrolls to the bar (smoothly unless reduced motion is preferred) and moves focus to the results heading; the existing cases, including the RF-19 scroll test, pass untouched.
+  - Result: 6 new cases in `ExplorerClient.test.tsx` and 1 token case in `globals.test.ts` failed first and now pass; the existing cases, including the RF-19 scroll test, pass untouched. Approved addition outside the file list: the token `--offset-back-to-top` (300px) in `app/globals.css` and `docs/design.md`; the sentinel sits that far below the top of the bar. Checked in a real browser at 1280 and 390 px: hidden (invisible, inert) at the top and at 200px, shown at 1200px, and a click scrolls to the bar and focuses the "Popular movies" heading, after which the button hides again. Not yet checked: safe-area clearance on a real phone (RF-26).
 
 - [ ] **T45 — Card hover**
   - Depends on: T06, T20, T21
