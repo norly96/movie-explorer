@@ -38,6 +38,7 @@
   --size-header: 4rem;
   --size-header-narrow: 3.5rem;
   --size-hero: 20rem;
+  --size-hero-text: 32.5rem;
   --size-back-to-top: 3rem;
   --size-clear-filters: 8.25rem;
   --size-search: 26.25rem;
@@ -47,6 +48,7 @@
   --offset-back-to-top: 18.75rem;
   --duration-fast: 150ms;
   --duration-appear: 200ms;
+  --duration-base: 250ms;
   --duration-curtain: 400ms;
   --scale-card-hover: 1.03;
 
@@ -204,6 +206,29 @@
       rgb(0 0 0 / 35%) 62%,
       transparent 100%
     );
+  }
+
+  /* The hero's curtain (docs/design.md → Motion): the height rolls up over the
+     curtain duration while the content fades over the base duration and moves up
+     inside its clipped box. Only after a visitor's action, and not at all with
+     reduced motion. */
+  .hero-curtain {
+    transition-property: grid-template-rows, opacity;
+    transition-duration: var(--duration-curtain), var(--duration-base);
+    transition-timing-function: var(--ease-out);
+  }
+
+  .hero-curtain > div {
+    transition-property: translate;
+    transition-duration: var(--duration-curtain);
+    transition-timing-function: var(--ease-out);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-curtain,
+    .hero-curtain > div {
+      transition: none;
+    }
   }
 
   /* Melts the hero's image into the page at its top and bottom edges. Only the

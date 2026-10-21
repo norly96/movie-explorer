@@ -266,3 +266,45 @@ describe("home-redesign: room for the back-to-top button (RF-26)", () => {
     expect(rule).toContain("var(--back-to-top-reserve)");
   });
 });
+
+describe("home-redesign: the hero's text column (RF-6)", () => {
+  it("defines --size-hero-text as 520px", () => {
+    expect(css).toContain("--size-hero-text: 32.5rem;");
+  });
+});
+
+// RF-12: the hero's curtain. Height rolls up over the curtain duration while the
+// content fades over the base duration and moves up; with reduced motion nothing
+// animates at all (not merely shorter).
+describe("home-redesign: the hero curtain (RF-12)", () => {
+  const withoutComments = css.replace(/\/\*[\s\S]*?\*\//g, "");
+  const rule = (selector: string) =>
+    withoutComments.match(new RegExp(`${selector}\\s*\\{([^}]*)\\}`))?.[1] ?? "";
+
+  it("defines --duration-base as 250ms, as design.md documents", () => {
+    expect(css).toContain("--duration-base: 250ms;");
+  });
+
+  it("animates the height over the curtain duration and the fade over the base duration", () => {
+    const body = rule("\\.hero-curtain");
+
+    expect(body).toMatch(/transition-property:\s*grid-template-rows,\s*opacity/);
+    expect(body).toMatch(
+      /transition-duration:\s*var\(--duration-curtain\),\s*var\(--duration-base\)/
+    );
+    expect(body).toContain("var(--ease-out)");
+  });
+
+  it("moves the content up over the curtain duration", () => {
+    const body = rule("\\.hero-curtain > div");
+
+    expect(body).toMatch(/transition-property:\s*translate/);
+    expect(body).toContain("var(--duration-curtain)");
+  });
+
+  it("does not animate at all with reduced motion", () => {
+    expect(withoutComments).toMatch(
+      /@media \(prefers-reduced-motion: reduce\)\s*\{\s*\.hero-curtain,\s*\.hero-curtain > div\s*\{\s*transition:\s*none/
+    );
+  });
+});
