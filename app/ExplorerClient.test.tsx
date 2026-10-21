@@ -874,3 +874,137 @@ describe("ExplorerClient — the redesigned bar (RF-18)", () => {
     ).not.toBeInTheDocument();
   });
 });
+
+// home-redesign RF-24, RF-25: the back-to-top button appears once a sentinel
+// placed below the bar has scrolled past; activating it scrolls to the bar and
+// sends focus to the results heading.
+const BUTTON_NAME = "Back to top of results";
+
+function backToTopSentinel() {
+  const element = document.querySelector('[data-slot="back-to-top-sentinel"]');
+  if (!element) throw new Error("no back-to-top sentinel in the page");
+  return element;
+}
+
+function reportSentinel(where: "above" | "below" | "inside") {
+  const element = backToTopSentinel();
+  element.getBoundingClientRect = () =>
+    ({ top: where === "above" ? -120 : where === "below" ? 900 : 100 }) as DOMRect;
+  act(() => {
+    MockIntersectionObserver.instances
+      .filter((observer) => observer.observed.has(element))
+      .forEach((observer) => observer.trigger(where === "inside"));
+  });
+}
+
+const theBar = () =>
+  searchBox().closest('[data-slot="search-field"]')!.parentElement as HTMLElement;
+
+describe("ExplorerClient — back to top (RF-24, RF-25)", () => {
+  it("has no button in the tab order at first", async () => {
+    const user = userEvent.setup();
+    serve();
+    renderExplorer();
+    await screen.findByText("popular p1");
+
+    expect(
+      screen.queryByRole("button", { name: BUTTON_NAME })
+    ).not.toBeInTheDocument();
+    for (let i = 0; i < 4; i++) await user.tab();
+    expect(screen.getByLabelText(BUTTON_NAME)).not.toHaveFocus();
+  });
+
+  it("puts the sentinel inside the bar's block, not in the results", async () => {
+    serve();
+    renderExplorer();
+    await screen.findByText("popular p1");
+
+    const sentinel = backToTopSentinel();
+    expect(sentinel).toHaveAttribute("aria-hidden", "true");
+    expect(screen.getByTestId("results-anchor")).not.toContainElement(
+      sentinel as HTMLElement
+    );
+    expect(sentinel.className).toContain("top-(--offset-back-to-top)");
+  });
+
+  it("appears when the sentinel has passed and goes away when it comes back", async () => {
+    serve();
+    renderExplorer();
+    await screen.findByText("popular p1");
+
+    reportSentinel("below");
+    expect(
+      screen.queryByRole("button", { name: BUTTON_NAME })
+    ).not.toBeInTheDocument();
+
+    reportSentinel("above");
+    expect(screen.getByRole("button", { name: BUTTON_NAME })).toBeInTheDocument();
+
+    reportSentinel("inside");
+    expect(
+      screen.queryByRole("button", { name: BUTTON_NAME })
+    ).not.toBeInTheDocument();
+  });
+
+  it("scrolls smoothly to the bar and moves focus to the results heading", async () => {
+    const user = userEvent.setup();
+    serve();
+    renderExplorer();
+    await screen.findByText("popular p1");
+    reportSentinel("above");
+    scrollIntoView.mockClear();
+
+    await user.click(screen.getByRole("button", { name: BUTTON_NAME }));
+
+    expect(scrollIntoView).toHaveBeenCalledTimes(1);
+    expect(scrollIntoView.mock.contexts[0]).toBe(theBar());
+    expect(scrollIntoView).toHaveBeenCalledWith({
+      block: "start",
+      behavior: "smooth",
+    });
+    expect(resultsHeading()).toHaveFocus();
+  });
+
+  it("scrolls without animation when the visitor prefers reduced motion", async () => {
+    const user = userEvent.setup();
+    vi.stubGlobal("matchMedia", (query: string) => ({
+      matches: query === "(prefers-reduced-motion: reduce)",
+      media: query,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    }));
+    try {
+      serve();
+      renderExplorer();
+      await screen.findByText("popular p1");
+      reportSentinel("above");
+      scrollIntoView.mockClear();
+
+      await user.click(screen.getByRole("button", { name: BUTTON_NAME }));
+
+      expect(scrollIntoView).toHaveBeenCalledWith({
+        block: "start",
+        behavior: "auto",
+      });
+      expect(resultsHeading()).toHaveFocus();
+    } finally {
+      vi.unstubAllGlobals();
+      vi.stubGlobal("IntersectionObserver", MockIntersectionObserver);
+    }
+  });
+
+  it("does not take over the scroll of a filter change (RF-19 stays as it is)", async () => {
+    const user = userEvent.setup();
+    serve();
+    renderExplorer();
+    await screen.findByText("popular p1");
+    scrollIntoView.mockClear();
+
+    await user.selectOptions(screen.getByLabelText("Genre"), "Drama");
+
+    expect(scrollIntoView).toHaveBeenCalledTimes(1);
+    expect(scrollIntoView.mock.contexts[0]).toBe(
+      screen.getByTestId("results-anchor")
+    );
+  });
+});

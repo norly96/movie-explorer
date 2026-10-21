@@ -231,3 +231,9 @@ describe("home-redesign: the widths of the search and filters bar (RF-18)", () =
     expect(css).toContain(`${token}: ${value};`);
   });
 });
+
+describe("home-redesign: where the back-to-top button appears (RF-24)", () => {
+  it("defines --offset-back-to-top as 300px", () => {
+    expect(css).toContain("--offset-back-to-top: 18.75rem;");
+  });
+});
