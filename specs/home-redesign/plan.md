@@ -251,7 +251,12 @@ have no backdrop, so the shapes they expect stay exactly the same.
    once with reduced motion). A search needs this most: the hero closes on the
    first character, and the debounced scroll arrives while the curtain still
    moves. It is the same call, so the existing test is untouched, and with no hero
-   the extra call never happens. *Rejected*: relying on the
+   the extra call never happens. The element it scrolls to, the results anchor,
+   holds the bar as well as the results, so the scroll leaves the bar at the top
+   edge and the results right below it (the bar used to end up above the visible
+   area, and the visitor lost sight of the field being typed in). *Rejected*:
+   scrolling to the bar instead — it would change which element the existing
+   RF-19 test expects. *Rejected*: relying on the
    browser's scroll anchoring alone — unreliable during a height animation.
    *Rejected*: replacing the original call — it would alter RF-19's test. (RF-12)
 8. **One `<main>` in the layout; the pages drop theirs.** The skip link then
