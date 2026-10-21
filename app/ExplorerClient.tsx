@@ -4,11 +4,11 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
-import { FilterBar } from "../components/FilterBar";
 import { InlinePageError } from "../components/InlinePageError";
 import { MovieCardSkeleton } from "../components/MovieCardSkeleton";
 import { MovieGrid } from "../components/MovieGrid";
-import { SearchInput } from "../components/SearchInput";
+import { ResultsAnnouncer } from "../components/ResultsAnnouncer";
+import { SearchFiltersBar } from "../components/SearchFiltersBar";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import {
   useExploreMovies,
@@ -23,6 +23,7 @@ import {
   type ExploreFilters,
   type SortOption,
 } from "./explore-params";
+import { resultsHeading } from "./results-heading";
 
 export interface ExplorerClientProps {
   genres: Genre[]; // [] hides the genre control (RF-21)
@@ -153,28 +154,43 @@ export function ExplorerClient({ genres, initial }: ExplorerClientProps) {
 
   const discover = filters.mode === "discover" ? filters : null;
 
+  // RF-21, RF-22: the heading says what is shown, and the same text is announced
+  // once a search or filter selection has loaded with results. The empty state
+  // already announces itself, and the plain popular list is not a selection.
+  const heading = resultsHeading(filters, genres);
+  const announcement =
+    filters.mode !== "popular" &&
+    !explore.isFirstLoading &&
+    !explore.firstPageError &&
+    explore.movies.length > 0
+      ? heading
+      : "";
+
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex flex-col gap-4">
-        <SearchInput value={searchText} onChange={setSearchText} />
-        <FilterBar
-          genres={genres}
-          genreId={discover?.genreId ?? null}
-          year={discover?.year ?? null}
-          sort={discover?.sort ?? null}
-          clearVisible={filters.mode !== "popular"}
-          onGenreChange={(genreId) => updateDiscover({ genreId })}
-          onYearChange={(year) => updateDiscover({ year })}
-          onSortChange={(sort: SortOption | null) => updateDiscover({ sort })}
-          onClear={clearAll}
-        />
-      </div>
+      <SearchFiltersBar
+        searchText={searchText}
+        onSearchChange={setSearchText}
+        genres={genres}
+        genreId={discover?.genreId ?? null}
+        year={discover?.year ?? null}
+        sort={discover?.sort ?? null}
+        clearVisible={filters.mode !== "popular"}
+        onGenreChange={(genreId) => updateDiscover({ genreId })}
+        onYearChange={(year) => updateDiscover({ year })}
+        onSortChange={(sort: SortOption | null) => updateDiscover({ sort })}
+        onClear={clearAll}
+      />
 
       <div
         ref={resultsRef}
         data-testid="results-anchor"
         className="scroll-mt-4"
       >
+        <h2 tabIndex={-1} className="mb-4 truncate text-lg font-semibold text-foreground">
+          {heading}
+        </h2>
+        <ResultsAnnouncer text={announcement} />
         {explore.isFirstLoading ? (
           <div
             role="status"

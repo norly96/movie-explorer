@@ -24,6 +24,7 @@ export interface FilterBarProps {
 // "Clear filters" is not shown, an empty hidden placeholder of its size stays in
 // its place, so showing or hiding the button moves nothing. The room lives here,
 // not in ClearFiltersButton, which still renders nothing when hidden (plan.md D17).
+// For the same reason the bar sizes the button it contains, to the room's size.
 export function FilterBar({
   genres,
   genreId,
@@ -36,7 +37,7 @@ export function FilterBar({
   onClear,
 }: FilterBarProps) {
   return (
-    <div className="grid grid-cols-2 gap-3 lg:flex lg:items-end">
+    <div className="grid grid-cols-2 gap-3 lg:flex lg:items-end [&>button]:h-(--size-control-touch) [&>button]:w-full lg:[&>button]:h-(--size-control) lg:[&>button]:w-(--size-clear-filters)">
       <GenreFilter genres={genres} value={genreId} onChange={onGenreChange} />
       <YearFilter value={year} onChange={onYearChange} />
       <SortFilter value={sort} onChange={onSortChange} />

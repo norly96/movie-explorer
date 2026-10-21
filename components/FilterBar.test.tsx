@@ -219,3 +219,32 @@ describe("FilterBar reserved room (home-redesign RF-19)", () => {
     expect(classes).not.toMatch(/\[\d/);
   });
 });
+
+// Found in a real browser after T36: the button is only 38px high and 113px wide,
+// so it did not fill the room reserved for it and was shorter than the other
+// controls (RF-20). ClearFiltersButton stays untouched; the bar sizes the button
+// it contains.
+describe("FilterBar sizes the Clear filters button like its room (RF-19, RF-20)", () => {
+  it("gives the button the height of the other controls and the width of the room", () => {
+    const { container } = render(
+      <FilterBar
+        genres={GENRES}
+        genreId={null}
+        year={null}
+        sort={null}
+        clearVisible
+        onGenreChange={vi.fn()}
+        onYearChange={vi.fn()}
+        onSortChange={vi.fn()}
+        onClear={vi.fn()}
+      />
+    );
+
+    const classes = (container.firstElementChild as HTMLElement).className;
+    expect(classes).toContain("[&>button]:h-(--size-control-touch)");
+    expect(classes).toContain("lg:[&>button]:h-(--size-control)");
+    expect(classes).toContain("[&>button]:w-full");
+    expect(classes).toContain("lg:[&>button]:w-(--size-clear-filters)");
+    expect(classes).not.toMatch(/\[\d/);
+  });
+});
