@@ -258,11 +258,12 @@ Dependencies at a glance:
 
 ## Phase 3 — Explorer composition
 
-- [ ] **T36 — Filter bar layout and the reserved room**
+- [x] **T36 — Filter bar layout and the reserved room**
   - Depends on: T35
   - Files: `components/FilterBar.tsx`, `components/FilterBar.test.tsx` (new cases)
   - RF: RF-18, 19
   - Done when: new tests (written first) show that with the clear control hidden an empty, hidden placeholder keeps its room (no button, same element order) and that the bar keeps the three selectors in the same order; the existing `FilterBar` cases pass untouched and `ClearFiltersButton.tsx` has no change.
+  - Result: 7 new cases (6 in `FilterBar.test.tsx`, 1 in `globals.test.ts`) failed first and now pass; the existing cases pass untouched and `ClearFiltersButton.tsx` is unchanged. Approved addition outside the file list: the token `--size-clear-filters` (132px) in `app/globals.css` and `docs/design.md`, because the reserved room needs a width that no token covered.
 
 - [ ] **T37 [P] — Search field restyle**
   - Depends on: T35
