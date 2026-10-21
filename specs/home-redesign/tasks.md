@@ -321,11 +321,12 @@ Dependencies at a glance:
   - Done when: new tests (written first) show that the button is absent from the tab order at first, appears when the sentinel 300 px below the bar has passed, and on activation scrolls to the bar (smoothly unless reduced motion is preferred) and moves focus to the results heading; the existing cases, including the RF-19 scroll test, pass untouched.
   - Result: 6 new cases in `ExplorerClient.test.tsx` and 1 token case in `globals.test.ts` failed first and now pass; the existing cases, including the RF-19 scroll test, pass untouched. Approved addition outside the file list: the token `--offset-back-to-top` (300px) in `app/globals.css` and `docs/design.md`; the sentinel sits that far below the top of the bar. Checked in a real browser at 1280 and 390 px: hidden (invisible, inert) at the top and at 200px, shown at 1200px, and a click scrolls to the bar and focuses the "Popular movies" heading, after which the button hides again. Not yet checked: safe-area clearance on a real phone (RF-26).
 
-- [ ] **T45 — Card hover**
+- [x] **T45 — Card hover**
   - Depends on: T06, T20, T21
   - Files: `components/MovieCard.tsx`, `components/MovieCard.test.tsx` (new cases)
   - RF: RF-23
   - Done when: new tests (written first) show the accent border and the accent title on hover, the enlargement only under the motion-safe variant, a raised stacking order while hovered, and no enlargement on focus; the keyboard focus indicator is untouched; the existing cases pass untouched.
+  - Result: 8 new cases in `MovieCard.test.tsx` and 1 token case in `globals.test.ts` failed first and now pass; the existing cases pass untouched. The card's link is a `group`; the article has `hover:border-accent`, `motion-safe:hover:scale-(--scale-card-hover)`, `relative hover:z-10` and a `border-color, scale` transition over `duration-fast`; the title has `group-hover:text-accent`. Tailwind v4 enlarges with the `scale` property, not `transform`, so that is what the transition names. Approved addition outside the file list: `--duration-fast` (150ms, already documented in design.md) in `app/globals.css`. Checked in a real browser at 1280 px: on hover the border and title are accent, the card goes to scale 1.03 and stacks at z-index 10 with both corners the topmost element, and the neighbors do not move; with reduced motion emulated the border and title still change but the scale stays `none`.
 
 - [ ] **T46 — End-to-end: bar, results, back-to-top, cards**
   - Depends on: T34, T44, T45, T17
