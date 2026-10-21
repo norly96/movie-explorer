@@ -279,11 +279,12 @@ Dependencies at a glance:
   - Done when: new tests (written first) show that each label is visually hidden yet still names its selector and that the chevron icon is decorative; options, values and behavior are unchanged and the existing cases pass untouched.
   - Result: 9 new cases (3 per selector) failed first and now pass; the existing cases pass untouched. Widths (190 / 130 / 210px on wide screens) are left to T39, which lays out the bar.
 
-- [ ] **T39 — Search and filters bar**
+- [x] **T39 — Search and filters bar**
   - Depends on: T36, T37, T38
   - Files: `components/SearchFiltersBar.tsx`, `components/SearchFiltersBar.test.tsx`
   - RF: RF-18
   - Done when: tests (written first) show that the bar renders the search field, then genre, year, sort and the clear control in that DOM order, forwards every prop (including the reference to the search input), and exposes the anchor the back-to-top button needs; they pass.
+  - Result: 10 new cases in `SearchFiltersBar.test.tsx`, plus 3 width cases (one per selector) and 4 token cases, failed first and now pass. `SearchFiltersBar` takes `searchInputRef` and `barRef` (the anchor). Approved additions outside the file list: the width tokens `--size-search`, `--size-genre`, `--size-year`, `--size-sort` in `app/globals.css` and `docs/design.md`, and a `lg:w-(--size-…)` class on the root of each selector.
 
 - [ ] **T40 [P] — Results announcer**
   - Depends on: T15, T35
