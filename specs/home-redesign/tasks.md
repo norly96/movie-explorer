@@ -293,11 +293,12 @@ Dependencies at a glance:
   - Done when: tests (written first) show a visually hidden polite live region that carries the given text and renders nothing for an empty text; they pass.
   - Result: 6 new cases failed first (module missing) and now pass. The announcer is `role="status"` with `aria-live="polite"` and `aria-atomic`, `sr-only`; deciding when to give it text is T41's job.
 
-- [ ] **T41 — Heading, announcer and bar in the explorer**
+- [x] **T41 — Heading, announcer and bar in the explorer**
   - Depends on: T15, T39, T40
   - Files: `app/ExplorerClient.tsx`, `app/ExplorerClient.test.tsx` (new cases)
   - RF: RF-18, 21, 22
   - Done when: new tests (written first) show the results heading's text in each state (popular, search, filters, unresolved filter), that the announcer says the heading's text once the first page has loaded with results and says nothing for an empty result (the existing empty state is the only announcement), and that the `results-anchor` test id and the Tab order are unchanged; the existing cases pass untouched.
+  - Result: 15 new cases in `ExplorerClient.test.tsx` failed first and now pass; the existing cases pass untouched (only `within` was added to the testing-library import). The explorer renders `SearchFiltersBar`, an `h2` (`tabIndex=-1`, one line, `truncate`) as the first child of the results anchor, and the announcer, which speaks only for a search or filter selection that has loaded with results. A real-browser check at 1280 and 390 px found that the Clear filters button was 38px high and 113px wide, smaller than its reserved room and the other controls, so `FilterBar` now sizes the button it contains (new case in `FilterBar.test.tsx`; `ClearFiltersButton.tsx` is still unchanged). Measured afterwards: 1280 px, search 420, selectors 190 / 130 / 210, button 132, all 44px high; 390 px, controls 48px high in two columns; no horizontal scroll at either width.
 
 - [x] **T42 [P] — Back-to-top visibility hook**
   - Depends on: T35
