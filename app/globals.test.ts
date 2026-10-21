@@ -220,3 +220,14 @@ describe("home-redesign: the room of Clear filters (RF-19)", () => {
     expect(css).toMatch(/--size-clear-filters:\s*8\.25rem;/);
   });
 });
+
+describe("home-redesign: the widths of the search and filters bar (RF-18)", () => {
+  it.each([
+    ["--size-search", "26.25rem"],
+    ["--size-genre", "11.875rem"],
+    ["--size-year", "8.125rem"],
+    ["--size-sort", "13.125rem"],
+  ])("defines %s as %s", (token, value) => {
+    expect(css).toContain(`${token}: ${value};`);
+  });
+});

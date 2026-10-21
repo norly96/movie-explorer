@@ -121,3 +121,11 @@ describe("YearFilter in the redesigned bar", () => {
     expect(select).toHaveClass("text-base");
   });
 });
+
+describe("YearFilter width on wide screens (home-redesign RF-18)", () => {
+  it("takes its width from the --size-year token from lg", () => {
+    const { container } = render(<YearFilter value={null} onChange={() => {}} />);
+
+    expect(container.firstElementChild).toHaveClass("lg:w-(--size-year)");
+  });
+});

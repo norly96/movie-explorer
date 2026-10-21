@@ -22,7 +22,7 @@ export function YearFilter({ value, onChange }: YearFilterProps) {
   );
 
   return (
-    <div className="relative">
+    <div className="relative lg:w-(--size-year)">
       <label htmlFor={id} className="sr-only">
         Year
       </label>

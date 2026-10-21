@@ -24,7 +24,7 @@ export function SortFilter({ value, onChange }: SortFilterProps) {
   const id = useId();
 
   return (
-    <div className="relative">
+    <div className="relative lg:w-(--size-sort)">
       <label htmlFor={id} className="sr-only">
         Sort by
       </label>

@@ -152,6 +152,8 @@ Added by the home redesign; use these names, never arbitrary values.
 | `size-hero` | 320px | Minimum height of the hero on wide screens; it grows with the text, never a fixed height |
 | `size-back-to-top` | 48px | Back-to-top button |
 | `size-clear-filters` | 132px | Width of "Clear filters" on wide screens, and of the empty placeholder that keeps its room while it is hidden |
+| `size-search` | 420px | Maximum width of the search field on wide screens; it shrinks to fit |
+| `size-genre` · `size-year` · `size-sort` | 190 · 130 · 210px | Width of each selector on wide screens |
 
 ## Radius
 
@@ -436,6 +438,10 @@ All: `radius-md`, `text-sm`, weight 600, `px-4 py-2`, icon 20px with `gap-2`.
   --size-hero: 20rem;
   --size-back-to-top: 3rem;
   --size-clear-filters: 8.25rem;
+  --size-search: 26.25rem;
+  --size-genre: 11.875rem;
+  --size-year: 8.125rem;
+  --size-sort: 13.125rem;
   --duration-appear: 200ms;
   --duration-curtain: 400ms;
   --scale-card-hover: 1.03;

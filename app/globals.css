@@ -40,6 +40,10 @@
   --size-hero: 20rem;
   --size-back-to-top: 3rem;
   --size-clear-filters: 8.25rem;
+  --size-search: 26.25rem;
+  --size-genre: 11.875rem;
+  --size-year: 8.125rem;
+  --size-sort: 13.125rem;
   --duration-appear: 200ms;
   --duration-curtain: 400ms;
   --scale-card-hover: 1.03;

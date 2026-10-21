@@ -20,7 +20,7 @@ export function GenreFilter({ genres, value, onChange }: GenreFilterProps) {
   if (genres.length === 0) return null;
 
   return (
-    <div className="relative">
+    <div className="relative lg:w-(--size-genre)">
       <label htmlFor={id} className="sr-only">
         Genre
       </label>

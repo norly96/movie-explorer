@@ -127,3 +127,11 @@ describe("SortFilter in the redesigned bar", () => {
     expect(select).toHaveClass("text-base");
   });
 });
+
+describe("SortFilter width on wide screens (home-redesign RF-18)", () => {
+  it("takes its width from the --size-sort token from lg", () => {
+    const { container } = render(<SortFilter value={null} onChange={() => {}} />);
+
+    expect(container.firstElementChild).toHaveClass("lg:w-(--size-sort)");
+  });
+});

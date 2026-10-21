@@ -115,3 +115,11 @@ describe("GenreFilter in the redesigned bar", () => {
     expect(select).toHaveClass("text-base");
   });
 });
+
+describe("GenreFilter width on wide screens (home-redesign RF-18)", () => {
+  it("takes its width from the --size-genre token from lg", () => {
+    const { container } = render(<GenreFilter genres={[{ id: 28, name: "Action" }]} value={null} onChange={() => {}} />);
+
+    expect(container.firstElementChild).toHaveClass("lg:w-(--size-genre)");
+  });
+});
