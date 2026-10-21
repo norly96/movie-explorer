@@ -286,11 +286,12 @@ Dependencies at a glance:
   - Done when: tests (written first) show that the bar renders the search field, then genre, year, sort and the clear control in that DOM order, forwards every prop (including the reference to the search input), and exposes the anchor the back-to-top button needs; they pass.
   - Result: 10 new cases in `SearchFiltersBar.test.tsx`, plus 3 width cases (one per selector) and 4 token cases, failed first and now pass. `SearchFiltersBar` takes `searchInputRef` and `barRef` (the anchor). Approved additions outside the file list: the width tokens `--size-search`, `--size-genre`, `--size-year`, `--size-sort` in `app/globals.css` and `docs/design.md`, and a `lg:w-(--size-…)` class on the root of each selector.
 
-- [ ] **T40 [P] — Results announcer**
+- [x] **T40 [P] — Results announcer**
   - Depends on: T15, T35
   - Files: `components/ResultsAnnouncer.tsx`, `components/ResultsAnnouncer.test.tsx`
   - RF: RF-22
   - Done when: tests (written first) show a visually hidden polite live region that carries the given text and renders nothing for an empty text; they pass.
+  - Result: 6 new cases failed first (module missing) and now pass. The announcer is `role="status"` with `aria-live="polite"` and `aria-atomic`, `sr-only`; deciding when to give it text is T41's job.
 
 - [ ] **T41 — Heading, announcer and bar in the explorer**
   - Depends on: T15, T39, T40
