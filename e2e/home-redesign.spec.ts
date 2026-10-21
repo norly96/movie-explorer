@@ -168,8 +168,9 @@ const selectors = (page: Page) => [
   page.getByLabel("Year"),
   page.getByLabel("Sort by"),
 ];
+// The results heading, told apart from the hero's title (also a level-two one).
 const resultsHeading = (page: Page) =>
-  page.getByTestId("results-anchor").getByRole("heading", { level: 2 });
+  page.locator('[data-slot="results-heading"]');
 
 // Picks "Drama" and waits for Clear filters to show. The server renders the page
 // before React takes over, so a choice made in that gap is lost: try again until
@@ -188,6 +189,13 @@ async function openWithFilter(page: Page) {
   await page.getByRole("article").first().waitFor();
   await chooseDrama(page);
   await expect(resultsHeading(page)).toHaveText("Drama");
+  // The hero above rolls up over 400 ms; measure once it is gone.
+  await expect
+    .poll(async () => {
+      const hero = page.locator('[data-slot="hero-curtain"]');
+      return (await hero.count()) === 0 ? 0 : (await hero.boundingBox())?.height ?? 0;
+    })
+    .toBe(0);
 }
 
 for (const { width, minHeight } of [
@@ -219,26 +227,34 @@ for (const { width, minHeight } of [
     }) => {
       await page.goto("/");
       await page.getByRole("article").first().waitFor();
-      // Positions in the document, not the viewport: choosing a filter scrolls
-      // the results to the top of the grid (explore-filters RF-19) on purpose.
-      const inDocument = async (locator: ReturnType<Page["locator"]>) => {
-        const b = await box(locator);
+      // Positions inside the bar and below it, measured from the search field: the
+      // hero above rolls up when a filter is chosen (a curtain of 400 ms), which
+      // moves the whole bar and is not what is being checked here.
+      const measure = async () => {
+        const origin = await box(searchField(page));
         const scrollY = await page.evaluate(() => window.scrollY);
-        return { ...b, y: b.y + scrollY };
+        const relative = async (locator: ReturnType<Page["locator"]>) => {
+          const b = await box(locator);
+          return { x: b.x - origin.x, y: b.y - origin.y, w: b.width, h: b.height };
+        };
+        return {
+          search: await relative(searchField(page)),
+          selects: await Promise.all(selectors(page).map((s) => relative(s))),
+          heading: await relative(resultsHeading(page)),
+          scrolled: scrollY >= 0,
+        };
       };
-      const measure = async () => ({
-        search: await inDocument(searchField(page)),
-        selects: await Promise.all(selectors(page).map((s) => inDocument(s))),
-        heading: await inDocument(resultsHeading(page)),
-      });
 
+      await page.waitForTimeout(600);
       const before = await measure();
       await chooseDrama(page);
+      await page.waitForTimeout(700);
       const withButton = await measure();
       await page.getByRole("button", { name: "Clear filters" }).click();
       await expect(
         page.getByRole("button", { name: "Clear filters" })
       ).toHaveCount(0);
+      await page.waitForTimeout(700);
       const after = await measure();
 
       expect(withButton).toEqual(before);
@@ -308,10 +324,12 @@ test("announces a search once it has loaded, politely (RF-22)", async ({ page })
   await page.goto("/");
   await page.getByRole("article").first().waitFor();
 
-  await searchField(page).fill("matrix");
-
   const live = page.locator('[role="status"][aria-live="polite"]');
-  await expect(live).toHaveText("Results for “matrix”");
+  // Typed before React has taken over, the text is lost: try again until it takes.
+  await expect(async () => {
+    await searchField(page).fill("matrix");
+    await expect(live).toHaveText("Results for “matrix”", { timeout: 2000 });
+  }).toPass();
   await expect(resultsHeading(page)).toHaveText("Results for “matrix”");
   await expect(searchField(page)).toBeFocused();
 });
@@ -398,11 +416,15 @@ test.describe("cards", () => {
     await page.goto("/");
     await page.getByRole("article").first().waitFor();
     const cards = page.getByRole("article");
+    // The cards start below the hero: bring the first row into the window, and
+    // measure in the document so that the page's own scroll is not a movement.
+    await page.evaluate(() => window.scrollTo(0, 450));
     const boxes = () =>
       page.evaluate(() =>
-        [...document.querySelectorAll("article")]
-          .slice(0, 6)
-          .map((a) => JSON.stringify(a.getBoundingClientRect().toJSON()))
+        [...document.querySelectorAll("article")].slice(0, 6).map((a) => {
+          const r = a.getBoundingClientRect();
+          return JSON.stringify([r.left, r.top + window.scrollY, r.width, r.height]);
+        })
       );
 
     const before = await boxes();

@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { act, render, screen, waitFor, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { HttpResponse, delay, http } from "msw";
 import type { ReactNode } from "react";
@@ -758,13 +758,20 @@ describe("ExplorerClient — results heading (RF-21)", () => {
     expect(resultsHeading()).toHaveAttribute("tabindex", "-1");
   });
 
-  it("stays above the results, inside the results anchor, and keeps the anchor's test id", async () => {
+  it("sits below the bar, and both are inside the results anchor, which keeps its test id", async () => {
     serve();
     renderExplorer();
     await screen.findByText("popular p1");
 
+    // A scroll to the anchor leaves the bar at the top edge with the results right
+    // below it, so the visitor keeps the field they are typing in in sight.
     const anchor = screen.getByTestId("results-anchor");
-    expect(anchor.firstElementChild).toBe(resultsHeading());
+    expect(anchor).toContainElement(searchBox());
+    expect(anchor).toContainElement(resultsHeading());
+    expect(
+      searchBox().compareDocumentPosition(resultsHeading()) &
+        Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
   });
 
   it("is shortened to one line visually and stays complete in the text", async () => {
@@ -849,15 +856,16 @@ describe("ExplorerClient — the redesigned bar (RF-18)", () => {
     renderExplorer();
     await screen.findByText("popular p1");
 
-    const anchor = screen.getByTestId("results-anchor");
     for (const control of [
       searchBox(),
       screen.getByLabelText("Genre"),
       screen.getByLabelText("Year"),
       screen.getByLabelText("Sort by"),
     ]) {
+      expect(screen.getByTestId("results-anchor")).toContainElement(control);
       expect(
-        control.compareDocumentPosition(anchor) & Node.DOCUMENT_POSITION_FOLLOWING
+        control.compareDocumentPosition(resultsHeading()) &
+          Node.DOCUMENT_POSITION_FOLLOWING
       ).toBeTruthy();
     }
   });
@@ -914,17 +922,20 @@ describe("ExplorerClient — back to top (RF-24, RF-25)", () => {
     expect(screen.getByLabelText(BUTTON_NAME)).not.toHaveFocus();
   });
 
-  it("puts the sentinel inside the bar's block, not in the results", async () => {
+  it("puts the sentinel over the top of the page up to below the bar, not among the results", async () => {
     serve();
     renderExplorer();
     await screen.findByText("popular p1");
 
-    const sentinel = backToTopSentinel();
+    const sentinel = backToTopSentinel() as HTMLElement;
     expect(sentinel).toHaveAttribute("aria-hidden", "true");
-    expect(screen.getByTestId("results-anchor")).not.toContainElement(
-      sentinel as HTMLElement
-    );
-    expect(sentinel.className).toContain("top-(--offset-back-to-top)");
+    // It starts at the top of the page's top region and goes on for the token's
+    // distance below the bar, so a jump past it is noticed (a 1px marker can be
+    // skipped between two frames).
+    expect(sentinel.className).toContain("top-0");
+    expect(sentinel.className).toContain("-bottom-(--offset-back-to-top)");
+    expect(sentinel.parentElement).toContainElement(searchBox());
+    expect(sentinel.parentElement).not.toContainElement(resultsHeading());
   });
 
   it("appears when the sentinel has passed and goes away when it comes back", async () => {
@@ -1006,5 +1017,410 @@ describe("ExplorerClient — back to top (RF-24, RF-25)", () => {
     expect(scrollIntoView.mock.contexts[0]).toBe(
       screen.getByTestId("results-anchor")
     );
+  });
+});
+
+// home-redesign RF-6, 7, 8, 9, 11, 15: the featured hero in the explorer. It is
+// open on the popular list with an empty search field, closes with the first
+// typed character or any filter, and comes back when everything is cleared.
+const FEATURED = {
+  id: 7,
+  title: "Featured One",
+  overview: "A synopsis for the featured movie.",
+  backdropUrl: "https://image.tmdb.org/t/p/original/backdrop.jpg",
+  genreIds: [18],
+  releaseYear: 1999,
+  rating: 8.4,
+};
+
+// The popular list's first page carries `featured`, as the real proxy does; no
+// other page or mode does.
+function serveWithFeatured(options: { withFeatured?: boolean } = {}) {
+  const { withFeatured = true } = options;
+  return serve({
+    respond: (url, page) => {
+      const popular = [...url.searchParams].every(([key]) => key === "page");
+      return HttpResponse.json({
+        movies: [
+          {
+            id: page === 1 ? 7 : 100 + page,
+            title: page === 1 ? "Featured One" : `${labelOf(url)} p${page}`,
+            posterUrl: null,
+            releaseYear: 1999,
+            rating: 8.4,
+          },
+        ],
+        page,
+        totalPages: 3,
+        ...(popular && page === 1 && withFeatured ? { featured: FEATURED } : {}),
+      });
+    },
+  });
+}
+
+const curtain = () =>
+  document.querySelector('[data-slot="hero-curtain"]') as HTMLElement | null;
+const heroSection = () => screen.queryByRole("region", { name: "Featured One" });
+const isHeroOpen = () => curtain() !== null && !curtain()!.hasAttribute("inert");
+
+const POPULAR_SEED: ExploreInitialPage = {
+  filters: { mode: "popular" },
+  page: {
+    movies: [
+      { id: 7, title: "Featured One", posterUrl: null, releaseYear: 1999, rating: 8.4 },
+    ],
+    page: 1,
+    totalPages: 1,
+    featured: FEATURED,
+  },
+};
+
+describe("ExplorerClient — the hero is open (RF-6, RF-8)", () => {
+  it("shows the featured movie on the popular list with an empty field, without waiting for a request", () => {
+    const calls = serveWithFeatured();
+    renderExplorer({ initial: POPULAR_SEED });
+
+    expect(heroSection()).toBeInTheDocument();
+    expect(isHeroOpen()).toBe(true);
+    expect(screen.getByRole("link", { name: "Details of Featured One" })).toHaveAttribute(
+      "href",
+      "/movie/7"
+    );
+    expect(calls).toHaveLength(0);
+  });
+
+  it("names the movie's first genre from the genre list", () => {
+    renderExplorer({ initial: POPULAR_SEED });
+
+    expect(within(heroSection()!).getByText("Drama")).toBeInTheDocument();
+  });
+
+  it("keeps the featured movie as a card in the grid too (RF-8)", () => {
+    renderExplorer({ initial: POPULAR_SEED });
+
+    const cards = screen.getAllByRole("article");
+    expect(cards).toHaveLength(1);
+    expect(within(cards[0]).getByRole("heading", { name: "Featured One" })).toBeInTheDocument();
+  });
+
+  it("shows it once the first page loads when nothing was rendered by the server", async () => {
+    serveWithFeatured();
+    renderExplorer();
+
+    expect(await screen.findByRole("region", { name: "Featured One" })).toBeInTheDocument();
+  });
+});
+
+describe("ExplorerClient — the hero closes and returns (RF-11)", () => {
+  it("closes with the first typed character, before the search delay", async () => {
+    const user = userEvent.setup();
+    serveWithFeatured();
+    renderExplorer({ initial: POPULAR_SEED });
+
+    expect(isHeroOpen()).toBe(true);
+
+    await user.type(searchBox(), "m");
+
+    expect(isHeroOpen()).toBe(false);
+    expect(heroSection()).not.toBeInTheDocument();
+    expect(nav.replace).not.toHaveBeenCalled();
+  });
+
+  it("closes with a single space: any text in the field counts", async () => {
+    const user = userEvent.setup();
+    serveWithFeatured();
+    renderExplorer({ initial: POPULAR_SEED });
+
+    expect(isHeroOpen()).toBe(true);
+
+    await user.type(searchBox(), " ");
+
+    expect(isHeroOpen()).toBe(false);
+  });
+
+  it("closes with any filter", async () => {
+    const user = userEvent.setup();
+    serveWithFeatured();
+    renderExplorer({ initial: POPULAR_SEED });
+
+    expect(isHeroOpen()).toBe(true);
+
+    await user.selectOptions(screen.getByLabelText("Year"), "1999");
+
+    expect(isHeroOpen()).toBe(false);
+  });
+
+  it("returns when the search text is erased", async () => {
+    const user = userEvent.setup();
+    serveWithFeatured();
+    renderExplorer({ initial: POPULAR_SEED });
+
+    await user.type(searchBox(), "m");
+    expect(isHeroOpen()).toBe(false);
+    await user.clear(searchBox());
+
+    expect(isHeroOpen()).toBe(true);
+    expect(heroSection()).toBeInTheDocument();
+  });
+
+  it("returns when the filters are cleared", async () => {
+    const user = userEvent.setup();
+    serveWithFeatured();
+    renderExplorer({ initial: POPULAR_SEED });
+
+    await user.selectOptions(screen.getByLabelText("Genre"), "Drama");
+    expect(isHeroOpen()).toBe(false);
+    await user.click(screen.getByRole("button", { name: "Clear filters" }));
+
+    await waitFor(() => expect(isHeroOpen()).toBe(true));
+  });
+
+  it("sends focus to the search field when it closes with focus inside", () => {
+    serveWithFeatured();
+    renderExplorer({ initial: POPULAR_SEED });
+    const details = screen.getByRole("link", { name: "Details of Featured One" });
+    details.focus();
+    expect(details).toHaveFocus();
+
+    // The text arrives without a click on the field (as the browser's back button
+    // or a script would), so focus is still inside the hero when it closes.
+    fireEvent.change(searchBox(), { target: { value: "m" } });
+
+    expect(isHeroOpen()).toBe(false);
+    expect(searchBox()).toHaveFocus();
+  });
+});
+
+describe("ExplorerClient — a start with filters (RF-7, RF-9)", () => {
+  it("has no hero, and reserves nothing, when the page opens with filters", async () => {
+    serveWithFeatured();
+    nav.set("genre=18");
+    renderExplorer();
+    await screen.findByText("Featured One");
+
+    expect(curtain()).toBeNull();
+    expect(heroSection()).not.toBeInTheDocument();
+  });
+
+  it("makes one popular request when cleared, and opens the hero with no other request", async () => {
+    const user = userEvent.setup();
+    const calls = serveWithFeatured();
+    nav.set("genre=18");
+    renderExplorer();
+    await screen.findByText("Featured One");
+    expect(calls).toHaveLength(1);
+
+    await user.click(screen.getByRole("button", { name: "Clear filters" }));
+
+    expect(await screen.findByRole("region", { name: "Featured One" })).toBeInTheDocument();
+    await waitFor(() => expect(isHeroOpen()).toBe(true));
+    expect(calls).toHaveLength(2);
+    expect(
+      [...calls[1].searchParams].filter(([key]) => key !== "page")
+    ).toEqual([]);
+  });
+});
+
+describe("ExplorerClient — no featured movie (RF-9)", () => {
+  it("reserves and draws nothing when the response has none", async () => {
+    serveWithFeatured({ withFeatured: false });
+    renderExplorer();
+    await screen.findByText("Featured One");
+
+    expect(curtain()).toBeNull();
+    expect(screen.queryByRole("region")).not.toBeInTheDocument();
+    expect(screen.getByTestId("results-anchor")).toBeInTheDocument();
+  });
+
+  it("still shows the results heading and the grid when the list is unavailable", async () => {
+    serve({ respond: () => HttpResponse.json({ reason: "network" }, { status: 502 }) });
+    renderExplorer();
+
+    expect(
+      await screen.findByText("Couldn't load movies. Check your connection and try again.")
+    ).toBeInTheDocument();
+    expect(curtain()).toBeNull();
+  });
+});
+
+describe("ExplorerClient — headings (RF-15)", () => {
+  it("has a single level-one heading, with the hero's title below it", () => {
+    renderExplorer({ initial: POPULAR_SEED });
+
+    const headings = screen.getAllByRole("heading", { level: 1 });
+    expect(headings).toHaveLength(1);
+    const title = within(heroSection()!).getByRole("heading", { level: 2, name: "Featured One" });
+    expect(
+      headings[0].compareDocumentPosition(title) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+  });
+
+  it("keeps the level-one heading when there is no hero, and when it is closed", async () => {
+    const user = userEvent.setup();
+    serveWithFeatured({ withFeatured: false });
+    renderExplorer();
+    await screen.findByText("Featured One");
+    expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
+
+    await user.selectOptions(screen.getByLabelText("Year"), "1999");
+    expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
+  });
+
+  it("hides the level-one heading visually", () => {
+    renderExplorer({ initial: POPULAR_SEED });
+
+    expect(screen.getByRole("heading", { level: 1 })).toHaveClass("sr-only");
+  });
+
+  it("goes from the level-one heading to the hero's and then to the results heading, skipping none", () => {
+    renderExplorer({ initial: POPULAR_SEED });
+
+    const levels = screen
+      .getAllByRole("heading")
+      .filter((heading) => !heading.closest("article"))
+      .map((heading) => heading.tagName);
+    expect(levels).toEqual(["H1", "H2", "H2"]);
+  });
+});
+
+// home-redesign RF-12: after the curtain, the results are scrolled to the top of
+// the visible area once more. The existing call of explore-filters RF-19 stays as
+// it is (it runs when the navigation is made); a second one follows when both the
+// navigation and the curtain have finished, whichever is later.
+describe("ExplorerClient — scroll settling after the curtain (RF-12)", () => {
+  const resultsAnchor = () => screen.getByTestId("results-anchor");
+  const scrolledToResults = () =>
+    scrollIntoView.mock.contexts.filter((context) => context === resultsAnchor()).length;
+  const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  // Lets the curtain's frame pass and then reports the end of its transition, as
+  // the browser would.
+  async function endCurtain() {
+    const element = curtain()!;
+    await waitFor(() => expect(element.style.gridTemplateRows).toBe("0fr"));
+    fireEvent.transitionEnd(element, { propertyName: "grid-template-rows" });
+  }
+
+  it("scrolls once at once and once more when the curtain settles, for a filter", async () => {
+    const user = userEvent.setup();
+    serveWithFeatured();
+    renderExplorer({ initial: POPULAR_SEED });
+    scrollIntoView.mockClear();
+
+    await user.selectOptions(screen.getByLabelText("Year"), "1999");
+    expect(scrollIntoView).toHaveBeenCalledTimes(1);
+
+    await endCurtain();
+
+    expect(scrollIntoView).toHaveBeenCalledTimes(2);
+    expect(scrolledToResults()).toBe(2);
+    expect(scrollIntoView).toHaveBeenLastCalledWith({ block: "start" });
+    await pause(100);
+    expect(scrollIntoView).toHaveBeenCalledTimes(2);
+  });
+
+  it("waits for the curtain when the search arrives first, and adds exactly one call", async () => {
+    const user = userEvent.setup();
+    serveWithFeatured();
+    renderExplorer({ initial: POPULAR_SEED });
+    scrollIntoView.mockClear();
+
+    await user.type(searchBox(), "matrix");
+    // The search delay passes, the navigation is made and scrolls once.
+    await waitFor(() => expect(scrollIntoView).toHaveBeenCalledTimes(1), {
+      timeout: 1500,
+    });
+    expect(lastUrl()).toBe("/?q=matrix");
+
+    await endCurtain();
+
+    expect(scrollIntoView).toHaveBeenCalledTimes(2);
+    await pause(100);
+    expect(scrollIntoView).toHaveBeenCalledTimes(2);
+  });
+
+  it("waits for the navigation when the curtain settles first, and adds exactly one call", async () => {
+    serveWithFeatured();
+    renderExplorer({ initial: POPULAR_SEED });
+    scrollIntoView.mockClear();
+
+    // One character closes the hero but is under the search minimum: no
+    // navigation yet, so nothing to settle.
+    fireEvent.change(searchBox(), { target: { value: "m" } });
+    await endCurtain();
+    expect(scrollIntoView).not.toHaveBeenCalled();
+
+    fireEvent.change(searchBox(), { target: { value: "matrix" } });
+
+    await waitFor(() => expect(scrollIntoView).toHaveBeenCalledTimes(2), {
+      timeout: 1500,
+    });
+    await pause(100);
+    expect(scrollIntoView).toHaveBeenCalledTimes(2);
+    expect(scrolledToResults()).toBe(2);
+  });
+
+  it("scrolls once only when there is no hero", async () => {
+    const user = userEvent.setup();
+    serveWithFeatured({ withFeatured: false });
+    renderExplorer();
+    await screen.findByText("Featured One");
+    scrollIntoView.mockClear();
+
+    await user.selectOptions(screen.getByLabelText("Year"), "1999");
+    await pause(800);
+
+    expect(scrollIntoView).toHaveBeenCalledTimes(1);
+  });
+
+  it("scrolls once only when the hero was already closed", async () => {
+    const user = userEvent.setup();
+    serveWithFeatured();
+    nav.set("genre=18");
+    renderExplorer();
+    await screen.findByText("Featured One");
+    scrollIntoView.mockClear();
+
+    await user.selectOptions(screen.getByLabelText("Year"), "1999");
+    await pause(800);
+
+    expect(scrollIntoView).toHaveBeenCalledTimes(1);
+  });
+
+  it("settles at once when the visitor prefers reduced motion", async () => {
+    const user = userEvent.setup();
+    vi.stubGlobal("matchMedia", (query: string) => ({
+      matches: query === "(prefers-reduced-motion: reduce)",
+      media: query,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    }));
+    try {
+      serveWithFeatured();
+      renderExplorer({ initial: POPULAR_SEED });
+      scrollIntoView.mockClear();
+
+      await user.selectOptions(screen.getByLabelText("Year"), "1999");
+
+      await waitFor(() => expect(scrollIntoView).toHaveBeenCalledTimes(2), {
+        timeout: 400,
+      });
+    } finally {
+      vi.unstubAllGlobals();
+      vi.stubGlobal("IntersectionObserver", MockIntersectionObserver);
+    }
+  });
+
+  it("does not scroll again when the visitor erases the text and the hero comes back", async () => {
+    serveWithFeatured();
+    renderExplorer({ initial: POPULAR_SEED });
+    scrollIntoView.mockClear();
+
+    fireEvent.change(searchBox(), { target: { value: "m" } });
+    fireEvent.change(searchBox(), { target: { value: "" } });
+    await pause(800);
+
+    expect(isHeroOpen()).toBe(true);
+    expect(scrollIntoView).not.toHaveBeenCalled();
   });
 });
