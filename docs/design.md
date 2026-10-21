@@ -87,11 +87,16 @@ sits lower left and never at the top.
 |---|---|---|
 | `hero-fade-wide` | transparent at 0%, opaque from 18% to 50%, transparent at 100% (vertical) | Mask that melts the image into the page |
 | `hero-fade-narrow` | transparent at 0%, opaque from 14% to 45%, transparent at 100% (vertical) | Same, stacked layout |
-| `hero-scrim` | `background` at 100% opacity at 0%, 92% at 34%, 35% at 62%, 0% at 100% (horizontal, from the left, wide layout) | Keeps the text readable over any image |
+| `hero-scrim` | `background` at 100% opacity at 0%, 92% at 34%, **86% at 46%**, 35% at 62%, 0% at 100% (horizontal, from the left, wide layout) | Keeps the text readable over any image |
 
-The scrim stops are the starting values: they stand only if the contrast test
-passes (4.5:1 for text, 3:1 for the large title, against a pure white image, at
-1280, 1440 and 1920 px); otherwise they are strengthened under the text only.
+The scrim stops were the canvas values; the canvas had no stop at 46%. Over a pure
+white image the canvas layer left the muted data line at 2.8:1 at 1920 px (and
+3.2–3.4:1 at 1280 and 1440 px) and the accent rating at 4.04:1 at 1920 px, so the
+layer is held at 86% under the text, up to 46% of the width, and only then falls
+away. With it every pair passes at 1280, 1440 and 1920 px (4.5:1 for text, 3:1 for
+the large title), as `app/hero-contrast.test.ts` computes from the `.hero-scrim`
+rule in `app/globals.css` (the page color drawn through a mask). The text column is at most 520 px wide, aligned to the
+left of the 1280 px content area; the image spans the page's width.
 
 ## Typography
 

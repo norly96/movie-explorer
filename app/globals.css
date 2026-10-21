@@ -178,6 +178,34 @@
     opacity: var(--tint-bar);
   }
 
+  /* The hero's dark layer (docs/design.md → Hero layers): the page color from
+     the left, so the text over any image stays readable. It is a layer of the
+     page color whose opacity falls from the left, drawn as a mask, because the
+     opacities are what matter (only the alpha of a mask counts) and a color-mix
+     with them is lost by the CSS compiler. The stops are what
+     app/hero-contrast.test.ts reads. The canvas had no stop at 46%: over a pure
+     white image its muted text fell to 2.8:1 at 1920 px, so the layer is held at
+     86% under the text (to 46%) and only then falls away. */
+  .hero-scrim {
+    background: var(--color-background);
+    -webkit-mask-image: linear-gradient(
+      90deg,
+      black 0%,
+      rgb(0 0 0 / 92%) 34%,
+      rgb(0 0 0 / 86%) 46%,
+      rgb(0 0 0 / 35%) 62%,
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      90deg,
+      black 0%,
+      rgb(0 0 0 / 92%) 34%,
+      rgb(0 0 0 / 86%) 46%,
+      rgb(0 0 0 / 35%) 62%,
+      transparent 100%
+    );
+  }
+
   /* Melts the hero's image into the page at its top and bottom edges. Only the
      alpha matters for a mask, so the opaque stops use a token. Narrow stops
      first; the wide ones from `lg`. */
