@@ -249,79 +249,91 @@ Dependencies at a glance:
   - Done when: the new spec passes locally: the header and the skip link on `/`, `/about`, a movie and a not-found page; exactly one `main` on each; the first Tab focuses the skip link and Enter moves focus to the main area; the current page is marked; the tab order equals the visual order at 390 and 1280 px; no horizontal scroll at 320 px with the brand's text hidden; each page's title; a run with JavaScript disabled still shows the header, the skip link and the About page; the result is noted.
   - Result: `e2e/home-redesign.spec.ts` passes locally in Chromium, 18 tests. Tab order measured at 390 px (skip link, brand, the three external links, Home, About) and 1280 px (skip link, brand, Home, About, the three external links); each equals the visual order.
 
-- [ ] **T35 — Pull request of phase 2** `⚠️ approval`
+- [x] **T35 — Pull request of phase 2** `⚠️ approval`
   - Depends on: T24–T34
   - Files: — (no repository files)
   - RF: —
   - Done when: the branch is pushed and a pull request referencing the spec is open; its four checks are green; the maintainer merges it; the deployment verification is healthy; the header, the background and `/about` are live on the public address.
+  - Result: PR #21 merged into `main` (`b1dc095`); its four checks and CI on `main` passed, and the deployment verification ended in success. The header, the background and `/about` were checked live by the maintainer.
 
 ## Phase 3 — Explorer composition
 
-- [ ] **T36 — Filter bar layout and the reserved room**
+- [x] **T36 — Filter bar layout and the reserved room**
   - Depends on: T35
   - Files: `components/FilterBar.tsx`, `components/FilterBar.test.tsx` (new cases)
   - RF: RF-18, 19
   - Done when: new tests (written first) show that with the clear control hidden an empty, hidden placeholder keeps its room (no button, same element order) and that the bar keeps the three selectors in the same order; the existing `FilterBar` cases pass untouched and `ClearFiltersButton.tsx` has no change.
+  - Result: 7 new cases (6 in `FilterBar.test.tsx`, 1 in `globals.test.ts`) failed first and now pass; the existing cases pass untouched and `ClearFiltersButton.tsx` is unchanged. Approved addition outside the file list: the token `--size-clear-filters` (132px) in `app/globals.css` and `docs/design.md`, because the reserved room needs a width that no token covered.
 
-- [ ] **T37 [P] — Search field restyle**
+- [x] **T37 [P] — Search field restyle**
   - Depends on: T35
   - Files: `components/SearchInput.tsx`, `components/SearchInput.test.tsx` (new cases)
   - RF: RF-13, 18, 20
   - Done when: new tests (written first) show that the label is visually hidden yet still names the field and that the field accepts a reference to its input (so the hero can send focus to it); the existing cases pass untouched.
+  - Result: 4 new cases failed first and now pass; the existing cases pass untouched (only an `import { createRef }` line was added to the test file). The field takes an `inputRef` prop, and is 48px high (44px from `lg`) with 16px text.
 
-- [ ] **T38 [P] — Selectors restyle**
+- [x] **T38 [P] — Selectors restyle**
   - Depends on: T08, T35
   - Files: `components/GenreFilter.tsx`, `components/YearFilter.tsx`, `components/SortFilter.tsx`, their tests (new cases)
   - RF: RF-18, 20
   - Done when: new tests (written first) show that each label is visually hidden yet still names its selector and that the chevron icon is decorative; options, values and behavior are unchanged and the existing cases pass untouched.
+  - Result: 9 new cases (3 per selector) failed first and now pass; the existing cases pass untouched. Widths (190 / 130 / 210px on wide screens) are left to T39, which lays out the bar.
 
-- [ ] **T39 — Search and filters bar**
+- [x] **T39 — Search and filters bar**
   - Depends on: T36, T37, T38
   - Files: `components/SearchFiltersBar.tsx`, `components/SearchFiltersBar.test.tsx`
   - RF: RF-18
   - Done when: tests (written first) show that the bar renders the search field, then genre, year, sort and the clear control in that DOM order, forwards every prop (including the reference to the search input), and exposes the anchor the back-to-top button needs; they pass.
+  - Result: 10 new cases in `SearchFiltersBar.test.tsx`, plus 3 width cases (one per selector) and 4 token cases, failed first and now pass. `SearchFiltersBar` takes `searchInputRef` and `barRef` (the anchor). Approved additions outside the file list: the width tokens `--size-search`, `--size-genre`, `--size-year`, `--size-sort` in `app/globals.css` and `docs/design.md`, and a `lg:w-(--size-…)` class on the root of each selector.
 
-- [ ] **T40 [P] — Results announcer**
+- [x] **T40 [P] — Results announcer**
   - Depends on: T15, T35
   - Files: `components/ResultsAnnouncer.tsx`, `components/ResultsAnnouncer.test.tsx`
   - RF: RF-22
   - Done when: tests (written first) show a visually hidden polite live region that carries the given text and renders nothing for an empty text; they pass.
+  - Result: 6 new cases failed first (module missing) and now pass. The announcer is `role="status"` with `aria-live="polite"` and `aria-atomic`, `sr-only`; deciding when to give it text is T41's job.
 
-- [ ] **T41 — Heading, announcer and bar in the explorer**
+- [x] **T41 — Heading, announcer and bar in the explorer**
   - Depends on: T15, T39, T40
   - Files: `app/ExplorerClient.tsx`, `app/ExplorerClient.test.tsx` (new cases)
   - RF: RF-18, 21, 22
   - Done when: new tests (written first) show the results heading's text in each state (popular, search, filters, unresolved filter), that the announcer says the heading's text once the first page has loaded with results and says nothing for an empty result (the existing empty state is the only announcement), and that the `results-anchor` test id and the Tab order are unchanged; the existing cases pass untouched.
+  - Result: 15 new cases in `ExplorerClient.test.tsx` failed first and now pass; the existing cases pass untouched (only `within` was added to the testing-library import). The explorer renders `SearchFiltersBar`, an `h2` (`tabIndex=-1`, one line, `truncate`) as the first child of the results anchor, and the announcer, which speaks only for a search or filter selection that has loaded with results. A real-browser check at 1280 and 390 px found that the Clear filters button was 38px high and 113px wide, smaller than its reserved room and the other controls, so `FilterBar` now sizes the button it contains (new case in `FilterBar.test.tsx`; `ClearFiltersButton.tsx` is still unchanged). Measured afterwards: 1280 px, search 420, selectors 190 / 130 / 210, button 132, all 44px high; 390 px, controls 48px high in two columns; no horizontal scroll at either width.
 
-- [ ] **T42 [P] — Back-to-top visibility hook**
+- [x] **T42 [P] — Back-to-top visibility hook**
   - Depends on: T35
   - Files: `hooks/useBackToTopVisibility.ts`, `hooks/useBackToTopVisibility.test.ts`
   - RF: RF-24
   - Done when: tests (written first, with the existing `MockIntersectionObserver`) show that the hook is false at first, becomes true when the sentinel is above the viewport, returns to false when it comes back, and disconnects on unmount.
+  - Result: 6 new cases failed first (module missing) and now pass, using the existing `MockIntersectionObserver` unchanged. "Above the viewport" is read as not intersecting and the sentinel's top edge above 0, so a sentinel still below the viewport keeps the button hidden.
 
-- [ ] **T43 — Back-to-top button**
+- [x] **T43 — Back-to-top button**
   - Depends on: T08, T42
   - Files: `components/BackToTopButton.tsx`, `components/BackToTopButton.test.tsx`
   - RF: RF-24, 26
   - Done when: tests (written first) show an icon-only button named "Back to top of results", unreachable by keyboard and hidden from assistive technology while not visible, focusable when visible, calling its handler on activation; they pass.
+  - Result: 14 new cases failed first (module missing) and now pass. While hidden the button has `aria-hidden`, `inert`, `tabindex=-1` and `invisible`; it fades and rises 8px over `duration-appear`, with no transition under reduced motion. Left for T44/T47: keeping it clear of the device's reserved areas (safe-area insets, RF-26), which needs a real-device check.
 
-- [ ] **T44 — Back-to-top in the explorer**
+- [x] **T44 — Back-to-top in the explorer**
   - Depends on: T41, T43
   - Files: `app/ExplorerClient.tsx`, `app/ExplorerClient.test.tsx` (new cases)
   - RF: RF-24, 25
   - Done when: new tests (written first) show that the button is absent from the tab order at first, appears when the sentinel 300 px below the bar has passed, and on activation scrolls to the bar (smoothly unless reduced motion is preferred) and moves focus to the results heading; the existing cases, including the RF-19 scroll test, pass untouched.
+  - Result: 6 new cases in `ExplorerClient.test.tsx` and 1 token case in `globals.test.ts` failed first and now pass; the existing cases, including the RF-19 scroll test, pass untouched. Approved addition outside the file list: the token `--offset-back-to-top` (300px) in `app/globals.css` and `docs/design.md`; the sentinel sits that far below the top of the bar. Checked in a real browser at 1280 and 390 px: hidden (invisible, inert) at the top and at 200px, shown at 1200px, and a click scrolls to the bar and focuses the "Popular movies" heading, after which the button hides again. Not yet checked: safe-area clearance on a real phone (RF-26).
 
-- [ ] **T45 — Card hover**
+- [x] **T45 — Card hover**
   - Depends on: T06, T20, T21
   - Files: `components/MovieCard.tsx`, `components/MovieCard.test.tsx` (new cases)
   - RF: RF-23
   - Done when: new tests (written first) show the accent border and the accent title on hover, the enlargement only under the motion-safe variant, a raised stacking order while hovered, and no enlargement on focus; the keyboard focus indicator is untouched; the existing cases pass untouched.
+  - Result: 8 new cases in `MovieCard.test.tsx` and 1 token case in `globals.test.ts` failed first and now pass; the existing cases pass untouched. The card's link is a `group`; the article has `hover:border-accent`, `motion-safe:hover:scale-(--scale-card-hover)`, `relative hover:z-10` and a `border-color, scale` transition over `duration-fast`; the title has `group-hover:text-accent`. Tailwind v4 enlarges with the `scale` property, not `transform`, so that is what the transition names. Approved addition outside the file list: `--duration-fast` (150ms, already documented in design.md) in `app/globals.css`. Checked in a real browser at 1280 px: on hover the border and title are accent, the card goes to scale 1.03 and stacks at z-index 10 with both corners the topmost element, and the neighbors do not move; with reduced motion emulated the border and title still change but the scale stays `none`.
 
-- [ ] **T46 — End-to-end: bar, results, back-to-top, cards**
+- [x] **T46 — End-to-end: bar, results, back-to-top, cards**
   - Depends on: T34, T44, T45, T17
   - Files: `e2e/home-redesign.spec.ts` (new cases)
   - RF: RF-18, 19, 20, 22, 23, 24, 25, 26, 28, 36
   - Done when: the new cases pass locally: the bar's controls are at least 44 px high (48 px at 390 px) with 16 px text in the field and selectors; the bar is one row at 1280 px and two columns at 390 px; showing and hiding "Clear filters" moves nothing; no divider borders between the sections; the back-to-top button appears after scrolling, moves focus to the results heading and does not cover the focused element; a card on hover shows the gold border, the enlarged scale, unmoved neighbors and is the topmost element at its corners; with reduced motion emulated, a card does not enlarge and the skeletons have no animation; the result is noted.
+  - Result: 22 new cases in `e2e/home-redesign.spec.ts` (34 in the file) pass locally in Chromium; the whole e2e suite (46) passes. Controls are 44px high at 1280 px and 48px at 390 px with 16px text in the field and selectors (14px in Clear filters); the bar is one row at 1280 px and the search field over two columns at 390 px; showing and hiding Clear filters moves nothing (positions measured in the document, because choosing a filter scrolls the results on purpose); no borders on the header, the bar, the results anchor or the heading; the search is announced politely; the back-to-top button appears, goes to the heading and hides; cards on hover show the accent border, scale 1.03, unmoved neighbors and topmost corners, and with reduced motion do not enlarge; skeletons pulse normally, stand still with reduced motion, and are `aria-hidden`. **A real defect was found and fixed here (RF-26):** with the button visible, Tab put a card under it (at 1280 px on the 5th press, at 390 px on the 3rd), because nothing reserved room for it. The fix, which the plan listed as "scroll padding" but no task owned, is the `--back-to-top-reserve` variable (button size + 40px + the device's bottom inset) used as `scroll-padding-bottom` on `html` and as the bottom padding of the home page's wrapper, with two cases in `globals.test.ts`; after it the 24 Tab presses at both widths never leave an element under the button. The existing `explore-filters.spec.ts` once failed in 1 of 3 full runs (back navigation, RF-20) and passed 48 of 48 when repeated alone; it selects a filter right after the first card shows, before the page is interactive, the same race that `chooseDrama` works around in the new cases. It was not changed. Still to demonstrate on a real phone: the safe-area inset (RF-26).
 
 - [ ] **T47 — Pull request of phase 3** `⚠️ approval`
   - Depends on: T36–T46

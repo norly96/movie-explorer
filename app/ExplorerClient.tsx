@@ -2,13 +2,15 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { BackToTopButton } from "../components/BackToTopButton";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
-import { FilterBar } from "../components/FilterBar";
 import { InlinePageError } from "../components/InlinePageError";
 import { MovieCardSkeleton } from "../components/MovieCardSkeleton";
 import { MovieGrid } from "../components/MovieGrid";
-import { SearchInput } from "../components/SearchInput";
+import { ResultsAnnouncer } from "../components/ResultsAnnouncer";
+import { SearchFiltersBar } from "../components/SearchFiltersBar";
+import { useBackToTopVisibility } from "../hooks/useBackToTopVisibility";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import {
   useExploreMovies,
@@ -23,6 +25,7 @@ import {
   type ExploreFilters,
   type SortOption,
 } from "./explore-params";
+import { resultsHeading } from "./results-heading";
 
 export interface ExplorerClientProps {
   genres: Genre[]; // [] hides the genre control (RF-21)
@@ -73,6 +76,9 @@ export function ExplorerClient({ genres, initial }: ExplorerClientProps) {
 
   const [searchText, setSearchText] = useState(urlQuery);
   const resultsRef = useRef<HTMLDivElement>(null);
+  const barRef = useRef<HTMLDivElement>(null);
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const backToTopSentinelRef = useRef<HTMLDivElement>(null);
 
   // The param string of the last URL this component wrote itself, so a
   // URL change from outside (browser back/forward, RF-8/RF-9) can be told
@@ -153,11 +159,42 @@ export function ExplorerClient({ genres, initial }: ExplorerClientProps) {
 
   const discover = filters.mode === "discover" ? filters : null;
 
+  // RF-24, RF-25: the button shows once the sentinel below the bar has scrolled
+  // past; it scrolls back to the bar and sends focus to the results heading, so
+  // a keyboard or screen reader user lands where the results start. The scroll
+  // is smooth unless the visitor prefers reduced motion.
+  const showBackToTop = useBackToTopVisibility(backToTopSentinelRef);
+
+  function backToTop() {
+    const reduceMotion =
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    barRef.current?.scrollIntoView({
+      block: "start",
+      behavior: reduceMotion ? "auto" : "smooth",
+    });
+    headingRef.current?.focus({ preventScroll: true });
+  }
+
+  // RF-21, RF-22: the heading says what is shown, and the same text is announced
+  // once a search or filter selection has loaded with results. The empty state
+  // already announces itself, and the plain popular list is not a selection.
+  const heading = resultsHeading(filters, genres);
+  const announcement =
+    filters.mode !== "popular" &&
+    !explore.isFirstLoading &&
+    !explore.firstPageError &&
+    explore.movies.length > 0
+      ? heading
+      : "";
+
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex flex-col gap-4">
-        <SearchInput value={searchText} onChange={setSearchText} />
-        <FilterBar
+      <div className="relative">
+        <SearchFiltersBar
+          barRef={barRef}
+          searchText={searchText}
+          onSearchChange={setSearchText}
           genres={genres}
           genreId={discover?.genreId ?? null}
           year={discover?.year ?? null}
@@ -168,6 +205,13 @@ export function ExplorerClient({ genres, initial }: ExplorerClientProps) {
           onSortChange={(sort: SortOption | null) => updateDiscover({ sort })}
           onClear={clearAll}
         />
+        {/* Zero-size marker the back-to-top button watches (RF-24). */}
+        <div
+          ref={backToTopSentinelRef}
+          data-slot="back-to-top-sentinel"
+          aria-hidden="true"
+          className="pointer-events-none absolute left-0 top-(--offset-back-to-top) h-px w-px"
+        />
       </div>
 
       <div
@@ -175,6 +219,14 @@ export function ExplorerClient({ genres, initial }: ExplorerClientProps) {
         data-testid="results-anchor"
         className="scroll-mt-4"
       >
+        <h2
+          ref={headingRef}
+          tabIndex={-1}
+          className="mb-4 truncate text-lg font-semibold text-foreground"
+        >
+          {heading}
+        </h2>
+        <ResultsAnnouncer text={announcement} />
         {explore.isFirstLoading ? (
           <div
             role="status"
@@ -213,6 +265,8 @@ export function ExplorerClient({ genres, initial }: ExplorerClientProps) {
           </>
         )}
       </div>
+
+      <BackToTopButton visible={showBackToTop} onActivate={backToTop} />
     </div>
   );
 }

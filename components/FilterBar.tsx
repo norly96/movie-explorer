@@ -19,6 +19,12 @@ export interface FilterBarProps {
 
 // Presentation only: lays out the filters and forwards props. The mode
 // switching and URL writes (RF-7, RF-8, RF-20) belong to ExplorerClient.
+//
+// Home redesign (RF-18, RF-19): two columns below `lg`, one row from `lg`. While
+// "Clear filters" is not shown, an empty hidden placeholder of its size stays in
+// its place, so showing or hiding the button moves nothing. The room lives here,
+// not in ClearFiltersButton, which still renders nothing when hidden (plan.md D17).
+// For the same reason the bar sizes the button it contains, to the room's size.
 export function FilterBar({
   genres,
   genreId,
@@ -31,11 +37,19 @@ export function FilterBar({
   onClear,
 }: FilterBarProps) {
   return (
-    <div className="flex flex-wrap items-end gap-4">
+    <div className="grid grid-cols-2 gap-3 lg:flex lg:items-end [&>button]:h-(--size-control-touch) [&>button]:w-full lg:[&>button]:h-(--size-control) lg:[&>button]:w-(--size-clear-filters)">
       <GenreFilter genres={genres} value={genreId} onChange={onGenreChange} />
       <YearFilter value={year} onChange={onYearChange} />
       <SortFilter value={sort} onChange={onSortChange} />
-      <ClearFiltersButton visible={clearVisible} onClear={onClear} />
+      {clearVisible ? (
+        <ClearFiltersButton visible onClear={onClear} />
+      ) : (
+        <div
+          data-slot="clear-filters-room"
+          aria-hidden="true"
+          className="h-(--size-control-touch) self-end lg:h-(--size-control) lg:w-(--size-clear-filters)"
+        />
+      )}
     </div>
   );
 }

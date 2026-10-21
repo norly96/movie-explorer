@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { act, render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { HttpResponse, delay, http } from "msw";
 import type { ReactNode } from "react";
@@ -684,5 +684,327 @@ describe("ExplorerClient — search delay", () => {
     });
 
     expect(urls()).toEqual(["/?q=matrix"]);
+  });
+});
+
+// home-redesign RF-18, RF-21, RF-22: the redesigned bar, the heading that says
+// what is shown, and the polite announcement of a loaded selection.
+const resultsHeading = () =>
+  within(screen.getByTestId("results-anchor")).getByRole("heading", { level: 2 });
+
+// The announcer is the only polite live region: the loading skeletons and the
+// empty state are role=status without aria-live.
+const announcer = () =>
+  screen
+    .queryAllByRole("status")
+    .find((element) => element.getAttribute("aria-live") === "polite") ?? null;
+
+describe("ExplorerClient — results heading (RF-21)", () => {
+  it("reads \"Popular movies\" by default", async () => {
+    serve();
+    renderExplorer();
+    await screen.findByText("popular p1");
+
+    expect(resultsHeading()).toHaveTextContent("Popular movies");
+  });
+
+  it("reads the trimmed search text between curly quotes", async () => {
+    serve();
+    nav.set("q=matrix");
+    renderExplorer();
+    await screen.findByText("q=matrix p1");
+
+    expect(resultsHeading()).toHaveTextContent("Results for “matrix”");
+  });
+
+  it("joins the names of the active filters in the order genre, year, sort", async () => {
+    serve();
+    nav.set("genre=18&year=1999&sort=vote_average.desc");
+    renderExplorer();
+    await screen.findByText(/genre=18/);
+
+    expect(resultsHeading()).toHaveTextContent(
+      "Drama · 1999 · Highest rated"
+    );
+  });
+
+  it("reads \"Filtered movies\" when no active filter can be named", async () => {
+    serve();
+    nav.set("genre=999");
+    renderExplorer();
+    await screen.findByText(/genre=999/);
+
+    expect(resultsHeading()).toHaveTextContent("Filtered movies");
+  });
+
+  it("follows the filters as they change", async () => {
+    const user = userEvent.setup();
+    serve();
+    renderExplorer();
+    await screen.findByText("popular p1");
+
+    await user.selectOptions(screen.getByLabelText("Genre"), "Drama");
+    expect(resultsHeading()).toHaveTextContent("Drama");
+
+    await user.click(screen.getByRole("button", { name: "Clear filters" }));
+    expect(resultsHeading()).toHaveTextContent("Popular movies");
+  });
+
+  it("can receive focus from a script but is not a tab stop (RF-25)", async () => {
+    serve();
+    renderExplorer();
+    await screen.findByText("popular p1");
+
+    expect(resultsHeading()).toHaveAttribute("tabindex", "-1");
+  });
+
+  it("stays above the results, inside the results anchor, and keeps the anchor's test id", async () => {
+    serve();
+    renderExplorer();
+    await screen.findByText("popular p1");
+
+    const anchor = screen.getByTestId("results-anchor");
+    expect(anchor.firstElementChild).toBe(resultsHeading());
+  });
+
+  it("is shortened to one line visually and stays complete in the text", async () => {
+    const long = "a".repeat(120);
+    serve();
+    nav.set(`q=${long}`);
+    renderExplorer();
+    await screen.findByText(new RegExp(long.slice(0, 20)));
+
+    expect(resultsHeading()).toHaveClass("truncate");
+    expect(resultsHeading()).toHaveTextContent(`Results for “${long}”`);
+  });
+});
+
+describe("ExplorerClient — announcement of the results (RF-22)", () => {
+  it("says the heading's text once a search has loaded with results", async () => {
+    serve();
+    nav.set("q=matrix");
+    renderExplorer();
+    await screen.findByText("q=matrix p1");
+
+    expect(announcer()).toHaveTextContent("Results for “matrix”");
+  });
+
+  it("says the heading's text once a filter selection has loaded", async () => {
+    const user = userEvent.setup();
+    serve();
+    renderExplorer();
+    await screen.findByText("popular p1");
+
+    await user.selectOptions(screen.getByLabelText("Genre"), "Drama");
+    await screen.findByText("genre=18 p1");
+
+    expect(announcer()).toHaveTextContent("Drama");
+  });
+
+  it("says nothing while the first page is still loading", async () => {
+    serve({
+      respond: async () => {
+        await delay(100);
+        return HttpResponse.json({
+          movies: [
+            { id: 1, title: "late p1", posterUrl: null, releaseYear: 2000, rating: 7 },
+          ],
+          page: 1,
+          totalPages: 1,
+        });
+      },
+    });
+    nav.set("q=matrix");
+    renderExplorer();
+
+    expect(announcer()).toBeNull();
+    await screen.findByText("late p1");
+    expect(announcer()).toHaveTextContent("Results for “matrix”");
+  });
+
+  it("says nothing for an empty result: the empty state is the only announcement", async () => {
+    serve({
+      respond: () => HttpResponse.json({ movies: [], page: 1, totalPages: 0 }),
+    });
+    nav.set("q=zzz");
+    renderExplorer();
+
+    await screen.findByText('No movies match "zzz". Try a different title.');
+
+    expect(announcer()).toBeNull();
+  });
+
+  it("says nothing for the plain popular list", async () => {
+    serve();
+    renderExplorer();
+    await screen.findByText("popular p1");
+
+    expect(announcer()).toBeNull();
+  });
+});
+
+describe("ExplorerClient — the redesigned bar (RF-18)", () => {
+  it("renders the search field and the filters in the bar, before the results", async () => {
+    serve();
+    renderExplorer();
+    await screen.findByText("popular p1");
+
+    const anchor = screen.getByTestId("results-anchor");
+    for (const control of [
+      searchBox(),
+      screen.getByLabelText("Genre"),
+      screen.getByLabelText("Year"),
+      screen.getByLabelText("Sort by"),
+    ]) {
+      expect(
+        control.compareDocumentPosition(anchor) & Node.DOCUMENT_POSITION_FOLLOWING
+      ).toBeTruthy();
+    }
+  });
+
+  it("keeps the room of Clear filters while no filter is active", async () => {
+    const { container } = (serve(), renderExplorer());
+    await screen.findByText("popular p1");
+
+    expect(
+      container.querySelector('[data-slot="clear-filters-room"]')
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Clear filters" })
+    ).not.toBeInTheDocument();
+  });
+});
+
+// home-redesign RF-24, RF-25: the back-to-top button appears once a sentinel
+// placed below the bar has scrolled past; activating it scrolls to the bar and
+// sends focus to the results heading.
+const BUTTON_NAME = "Back to top of results";
+
+function backToTopSentinel() {
+  const element = document.querySelector('[data-slot="back-to-top-sentinel"]');
+  if (!element) throw new Error("no back-to-top sentinel in the page");
+  return element;
+}
+
+function reportSentinel(where: "above" | "below" | "inside") {
+  const element = backToTopSentinel();
+  element.getBoundingClientRect = () =>
+    ({ top: where === "above" ? -120 : where === "below" ? 900 : 100 }) as DOMRect;
+  act(() => {
+    MockIntersectionObserver.instances
+      .filter((observer) => observer.observed.has(element))
+      .forEach((observer) => observer.trigger(where === "inside"));
+  });
+}
+
+const theBar = () =>
+  searchBox().closest('[data-slot="search-field"]')!.parentElement as HTMLElement;
+
+describe("ExplorerClient — back to top (RF-24, RF-25)", () => {
+  it("has no button in the tab order at first", async () => {
+    const user = userEvent.setup();
+    serve();
+    renderExplorer();
+    await screen.findByText("popular p1");
+
+    expect(
+      screen.queryByRole("button", { name: BUTTON_NAME })
+    ).not.toBeInTheDocument();
+    for (let i = 0; i < 4; i++) await user.tab();
+    expect(screen.getByLabelText(BUTTON_NAME)).not.toHaveFocus();
+  });
+
+  it("puts the sentinel inside the bar's block, not in the results", async () => {
+    serve();
+    renderExplorer();
+    await screen.findByText("popular p1");
+
+    const sentinel = backToTopSentinel();
+    expect(sentinel).toHaveAttribute("aria-hidden", "true");
+    expect(screen.getByTestId("results-anchor")).not.toContainElement(
+      sentinel as HTMLElement
+    );
+    expect(sentinel.className).toContain("top-(--offset-back-to-top)");
+  });
+
+  it("appears when the sentinel has passed and goes away when it comes back", async () => {
+    serve();
+    renderExplorer();
+    await screen.findByText("popular p1");
+
+    reportSentinel("below");
+    expect(
+      screen.queryByRole("button", { name: BUTTON_NAME })
+    ).not.toBeInTheDocument();
+
+    reportSentinel("above");
+    expect(screen.getByRole("button", { name: BUTTON_NAME })).toBeInTheDocument();
+
+    reportSentinel("inside");
+    expect(
+      screen.queryByRole("button", { name: BUTTON_NAME })
+    ).not.toBeInTheDocument();
+  });
+
+  it("scrolls smoothly to the bar and moves focus to the results heading", async () => {
+    const user = userEvent.setup();
+    serve();
+    renderExplorer();
+    await screen.findByText("popular p1");
+    reportSentinel("above");
+    scrollIntoView.mockClear();
+
+    await user.click(screen.getByRole("button", { name: BUTTON_NAME }));
+
+    expect(scrollIntoView).toHaveBeenCalledTimes(1);
+    expect(scrollIntoView.mock.contexts[0]).toBe(theBar());
+    expect(scrollIntoView).toHaveBeenCalledWith({
+      block: "start",
+      behavior: "smooth",
+    });
+    expect(resultsHeading()).toHaveFocus();
+  });
+
+  it("scrolls without animation when the visitor prefers reduced motion", async () => {
+    const user = userEvent.setup();
+    vi.stubGlobal("matchMedia", (query: string) => ({
+      matches: query === "(prefers-reduced-motion: reduce)",
+      media: query,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    }));
+    try {
+      serve();
+      renderExplorer();
+      await screen.findByText("popular p1");
+      reportSentinel("above");
+      scrollIntoView.mockClear();
+
+      await user.click(screen.getByRole("button", { name: BUTTON_NAME }));
+
+      expect(scrollIntoView).toHaveBeenCalledWith({
+        block: "start",
+        behavior: "auto",
+      });
+      expect(resultsHeading()).toHaveFocus();
+    } finally {
+      vi.unstubAllGlobals();
+      vi.stubGlobal("IntersectionObserver", MockIntersectionObserver);
+    }
+  });
+
+  it("does not take over the scroll of a filter change (RF-19 stays as it is)", async () => {
+    const user = userEvent.setup();
+    serve();
+    renderExplorer();
+    await screen.findByText("popular p1");
+    scrollIntoView.mockClear();
+
+    await user.selectOptions(screen.getByLabelText("Genre"), "Drama");
+
+    expect(scrollIntoView).toHaveBeenCalledTimes(1);
+    expect(scrollIntoView.mock.contexts[0]).toBe(
+      screen.getByTestId("results-anchor")
+    );
   });
 });

@@ -39,6 +39,13 @@
   --size-header-narrow: 3.5rem;
   --size-hero: 20rem;
   --size-back-to-top: 3rem;
+  --size-clear-filters: 8.25rem;
+  --size-search: 26.25rem;
+  --size-genre: 11.875rem;
+  --size-year: 8.125rem;
+  --size-sort: 13.125rem;
+  --offset-back-to-top: 18.75rem;
+  --duration-fast: 150ms;
   --duration-appear: 200ms;
   --duration-curtain: 400ms;
   --scale-card-hover: 1.03;
@@ -56,6 +63,7 @@
     color-scheme: dark;
     background-color: var(--color-background);
     color: var(--color-foreground);
+    scroll-padding-bottom: var(--back-to-top-reserve);
   }
 
   /* Page background (docs/design.md → Page background): the amounts, narrow
@@ -68,6 +76,13 @@
     --glow-y: 640px;
     --tint-header: 5%;
     --tint-bar: 4%;
+    /* Room for the back-to-top button (RF-26): its size, its margin and a gap,
+       plus the device's bottom inset on phones. It is the scroll padding at the
+       bottom (so focus never scrolls an element under the button) and the
+       padding at the end of the home page (so the last row can scroll clear). */
+    --back-to-top-reserve: calc(
+      var(--size-back-to-top) + var(--spacing) * 10 + env(safe-area-inset-bottom)
+    );
   }
 
   @media (min-width: 64rem) {

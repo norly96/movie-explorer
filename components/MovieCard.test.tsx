@@ -113,3 +113,74 @@ describe("MovieCard poster priority (RF-32)", () => {
     expect(screen.getByText("Fight Club")).toBeInTheDocument();
   });
 });
+
+// home-redesign RF-23: on pointers that can hover the card gets an accent
+// border, an accent title and a slight enlargement, with no layout shift. The
+// classes are what the browser acts on (Tailwind's `hover:` variant only applies
+// where hovering exists), so they are what is checked here; the rendered result is
+// measured in the end-to-end spec.
+describe("MovieCard hover (RF-23)", () => {
+  const card = () => screen.getByRole("article");
+  const link = () => screen.getByRole("link");
+  const title = () => screen.getByRole("heading", { name: "Fight Club" });
+
+  it("turns the border accent on hover, over a transparent border that is already there", () => {
+    render(<MovieCard movie={movie()} />);
+
+    expect(card()).toHaveClass("border-2", "border-transparent");
+    expect(card()).toHaveClass("hover:border-accent");
+  });
+
+  it("turns the title accent when the card is hovered", () => {
+    render(<MovieCard movie={movie()} />);
+
+    expect(link()).toHaveClass("group");
+    expect(title()).toHaveClass("group-hover:text-accent");
+  });
+
+  it("enlarges the card only where motion is allowed, by the scale token", () => {
+    render(<MovieCard movie={movie()} />);
+
+    expect(card()).toHaveClass("motion-safe:hover:scale-(--scale-card-hover)");
+    expect(card()).not.toHaveClass("hover:scale-(--scale-card-hover)");
+  });
+
+  it("does not enlarge on keyboard focus", () => {
+    render(<MovieCard movie={movie()} />);
+
+    expect(link().className).not.toMatch(/focus[^ ]*scale/);
+    expect(card().className).not.toMatch(/focus[^ ]*scale/);
+  });
+
+  it("is raised above its neighbors only while hovered", () => {
+    render(<MovieCard movie={movie()} />);
+
+    expect(card()).toHaveClass("relative", "hover:z-10");
+    expect(card().className).not.toMatch(/(^| )z-/);
+  });
+
+  it("changes color, border and size over the fast duration, with ease-out", () => {
+    render(<MovieCard movie={movie()} />);
+
+    expect(card()).toHaveClass(
+      "transition-[border-color,scale]",
+      "duration-(--duration-fast)",
+      "ease-out"
+    );
+    expect(title()).toHaveClass("transition-colors", "duration-(--duration-fast)", "ease-out");
+  });
+
+  it("leaves the keyboard focus indicator alone", () => {
+    render(<MovieCard movie={movie()} />);
+
+    expect(link().className).not.toMatch(/outline|ring/);
+    expect(card().className).not.toMatch(/outline|ring/);
+  });
+
+  it("uses no arbitrary values", () => {
+    render(<MovieCard movie={movie()} />);
+
+    expect(card().className).not.toMatch(/\[\d|\[#/);
+    expect(link().className).not.toMatch(/\[\d|\[#/);
+  });
+});

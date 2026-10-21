@@ -214,3 +214,55 @@ describe("app/globals.css page background", () => {
     expect(rules).not.toMatch(/\b(?:rgb|rgba|hsl|hsla)\(/);
   });
 });
+
+describe("home-redesign: the room of Clear filters (RF-19)", () => {
+  it("defines --size-clear-filters as the 132px width of the button on wide screens", () => {
+    expect(css).toMatch(/--size-clear-filters:\s*8\.25rem;/);
+  });
+});
+
+describe("home-redesign: the widths of the search and filters bar (RF-18)", () => {
+  it.each([
+    ["--size-search", "26.25rem"],
+    ["--size-genre", "11.875rem"],
+    ["--size-year", "8.125rem"],
+    ["--size-sort", "13.125rem"],
+  ])("defines %s as %s", (token, value) => {
+    expect(css).toContain(`${token}: ${value};`);
+  });
+});
+
+describe("home-redesign: where the back-to-top button appears (RF-24)", () => {
+  it("defines --offset-back-to-top as 300px", () => {
+    expect(css).toContain("--offset-back-to-top: 18.75rem;");
+  });
+});
+
+describe("home-redesign: the duration of the card's hover (RF-23)", () => {
+  it("defines --duration-fast as 150ms, as design.md documents", () => {
+    expect(css).toContain("--duration-fast: 150ms;");
+  });
+});
+
+// RF-26: the back-to-top button is fixed at the bottom right; when the keyboard
+// moves focus to something near the bottom edge, the browser scrolls it just into
+// view, which would leave it under the button. Reserving room at the bottom of the
+// scrollport (scroll padding) makes the browser scroll further, and the same room
+// at the end of the home page lets the last row scroll clear of the button. The
+// room is made of the button's size, a margin and a gap, plus the device's bottom
+// inset on phones.
+describe("home-redesign: room for the back-to-top button (RF-26)", () => {
+  it("defines the reserve from the button's size and the device's inset", () => {
+    const reserve = css.match(/--back-to-top-reserve:[^;]*;/)?.[0] ?? "";
+
+    expect(reserve).toContain("var(--size-back-to-top)");
+    expect(reserve).toContain("env(safe-area-inset-bottom)");
+    expect(reserve).not.toMatch(/\d+px/);
+  });
+
+  it("uses it as the scroll padding at the bottom of the page", () => {
+    const rule = css.match(/html\s*\{[^}]*scroll-padding-bottom:[^;]*;/)?.[0] ?? "";
+
+    expect(rule).toContain("var(--back-to-top-reserve)");
+  });
+});

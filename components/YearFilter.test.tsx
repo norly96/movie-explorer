@@ -89,3 +89,43 @@ describe("YearFilter", () => {
     expect(screen.getByLabelText("Year")).toHaveFocus();
   });
 });
+
+// home-redesign RF-18, RF-20: in the redesigned bar the label is visually hidden
+// but stays a real <label> that names the selector, the chevron is decorative,
+// and the control is as high as the rest of the bar with 16px text.
+describe("YearFilter in the redesigned bar", () => {
+  it("hides the label visually and still names the selector with it (RF-18)", () => {
+    render(<YearFilter value={null} onChange={() => {}} />);
+
+    const label = screen.getByText("Year");
+    expect(label.tagName).toBe("LABEL");
+    expect(label).toHaveClass("sr-only");
+    expect(screen.getByRole("combobox", { name: "Year" })).toBeInTheDocument();
+  });
+
+  it("shows a decorative chevron and drops the native arrow (RF-18)", () => {
+    const { container } = render(<YearFilter value={null} onChange={() => {}} />);
+
+    const icon = container.querySelector("svg");
+    expect(icon).not.toBeNull();
+    expect(icon).toHaveAttribute("aria-hidden", "true");
+    expect(screen.getByLabelText("Year")).toHaveClass("appearance-none");
+  });
+
+  it("is 48px high on phones, 44px from lg, with 16px text (RF-20)", () => {
+    render(<YearFilter value={null} onChange={() => {}} />);
+
+    const select = screen.getByLabelText("Year");
+    expect(select).toHaveClass("h-(--size-control-touch)");
+    expect(select).toHaveClass("lg:h-(--size-control)");
+    expect(select).toHaveClass("text-base");
+  });
+});
+
+describe("YearFilter width on wide screens (home-redesign RF-18)", () => {
+  it("takes its width from the --size-year token from lg", () => {
+    const { container } = render(<YearFilter value={null} onChange={() => {}} />);
+
+    expect(container.firstElementChild).toHaveClass("lg:w-(--size-year)");
+  });
+});
