@@ -272,11 +272,12 @@ Dependencies at a glance:
   - Done when: new tests (written first) show that the label is visually hidden yet still names the field and that the field accepts a reference to its input (so the hero can send focus to it); the existing cases pass untouched.
   - Result: 4 new cases failed first and now pass; the existing cases pass untouched (only an `import { createRef }` line was added to the test file). The field takes an `inputRef` prop, and is 48px high (44px from `lg`) with 16px text.
 
-- [ ] **T38 [P] — Selectors restyle**
+- [x] **T38 [P] — Selectors restyle**
   - Depends on: T08, T35
   - Files: `components/GenreFilter.tsx`, `components/YearFilter.tsx`, `components/SortFilter.tsx`, their tests (new cases)
   - RF: RF-18, 20
   - Done when: new tests (written first) show that each label is visually hidden yet still names its selector and that the chevron icon is decorative; options, values and behavior are unchanged and the existing cases pass untouched.
+  - Result: 9 new cases (3 per selector) failed first and now pass; the existing cases pass untouched. Widths (190 / 130 / 210px on wide screens) are left to T39, which lays out the bar.
 
 - [ ] **T39 — Search and filters bar**
   - Depends on: T36, T37, T38
