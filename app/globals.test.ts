@@ -237,3 +237,9 @@ describe("home-redesign: where the back-to-top button appears (RF-24)", () => {
     expect(css).toContain("--offset-back-to-top: 18.75rem;");
   });
 });
+
+describe("home-redesign: the duration of the card's hover (RF-23)", () => {
+  it("defines --duration-fast as 150ms, as design.md documents", () => {
+    expect(css).toContain("--duration-fast: 150ms;");
+  });
+});
