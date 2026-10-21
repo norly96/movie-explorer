@@ -265,11 +265,12 @@ Dependencies at a glance:
   - Done when: new tests (written first) show that with the clear control hidden an empty, hidden placeholder keeps its room (no button, same element order) and that the bar keeps the three selectors in the same order; the existing `FilterBar` cases pass untouched and `ClearFiltersButton.tsx` has no change.
   - Result: 7 new cases (6 in `FilterBar.test.tsx`, 1 in `globals.test.ts`) failed first and now pass; the existing cases pass untouched and `ClearFiltersButton.tsx` is unchanged. Approved addition outside the file list: the token `--size-clear-filters` (132px) in `app/globals.css` and `docs/design.md`, because the reserved room needs a width that no token covered.
 
-- [ ] **T37 [P] — Search field restyle**
+- [x] **T37 [P] — Search field restyle**
   - Depends on: T35
   - Files: `components/SearchInput.tsx`, `components/SearchInput.test.tsx` (new cases)
   - RF: RF-13, 18, 20
   - Done when: new tests (written first) show that the label is visually hidden yet still names the field and that the field accepts a reference to its input (so the hero can send focus to it); the existing cases pass untouched.
+  - Result: 4 new cases failed first and now pass; the existing cases pass untouched (only an `import { createRef }` line was added to the test file). The field takes an `inputRef` prop, and is 48px high (44px from `lg`) with 16px text.
 
 - [ ] **T38 [P] — Selectors restyle**
   - Depends on: T08, T35
