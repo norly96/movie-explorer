@@ -396,11 +396,12 @@ Dependencies at a glance:
 
 ## Phase 5 — Verification and close
 
-- [ ] **T55 — Audit pass** `[manual]`
+- [x] **T55 — Audit pass** `[manual]`
   - Depends on: T54
   - Files: — (the results go in the private notes and the pull request description)
   - RF: the non-functional audit requirements; RF-4, 5, 13, 15
   - Done when: an accessibility checker has been run on every state of the home and on the About page with no serious issue left; the audit checklist of the spec is passed for each change; keyboard on the home and About, a screen reader (VoiceOver) on the home, 200 % text size and 400 % zoom, 320 px width, reduced motion and forced colors are checked; the contrast of the detail page's text over the new background is checked by hand; the browser console is clean; each result is noted.
+  - Automated part (done): `notes/audit/t55-audit.mjs` (private) ran axe-core on 9 states of the home and on About at 1280 and 390 px, the tab order and focus rings, 320 px and 400 % zoom, real 200 % text size, reduced motion, forced colors, layout shift and the console. Home and About have 0 axe violations, a clean console, no horizontal scroll and no clipped text; the findings are in `notes/audit/t55-hallazgos.md`. Fixed after the maintainer's approval, each with a test first: the header's brand link (28px high, now `min-h` of the icon buttons), the header's links ("Home" was 43px wide, now `min-w` of the icon buttons) and the hero's "Details" button (a transparent border, so that forced colors keep it a button). Not fixed: `RatingBadge`'s `aria-label` on a span with no role (axe asks to review it; it is not a violation and Lighthouse does not report it): `role="img"` fixes it but makes three existing tests fail (`MovieCard` and `MovieGrid` look for `img` roles to tell posters from the fallback), and no existing test may change without the maintainer's say. Out of scope, for the audit spec: the detail page's cast list is a scrollable region the keyboard cannot reach, it overflows by 161px at 200 % text and 390 px, all movies share one page title, the not-found movie page has no `h1`, and the YouTube iframe logs warnings. Manual part (done by the maintainer, reported as all fine): the screenshots (forced colors, 200 % text, 400 % zoom; the hero's title shows as two lines with an ellipsis at 200 % text and 390 px, accepted as the design's two-line limit, with the full title kept for assistive technology), VoiceOver on the home, the detail page's text contrast over the new background, and the browser console on the home and About.
 
 - [ ] **T56 — Real-device checks and recorded demonstrations** `[manual]`
   - Depends on: T54
