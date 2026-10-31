@@ -80,7 +80,7 @@ export function FeaturedHero({ movie, genreName }: FeaturedHeroProps) {
           <Link
             href={`/movie/${movie.id}`}
             aria-label={`Details of ${movie.title}`}
-            className="mt-2 inline-flex h-(--size-control-touch) w-full items-center justify-center gap-2 rounded-md bg-accent px-4 text-sm font-semibold text-accent-foreground transition-colors duration-(--duration-fast) ease-out hover:bg-accent-hover lg:mt-0 lg:h-(--size-control) lg:w-auto lg:self-start"
+            className="mt-2 inline-flex h-(--size-control-touch) w-full items-center justify-center gap-2 rounded-md border-2 border-transparent bg-accent px-4 text-sm font-semibold text-accent-foreground transition-colors duration-(--duration-fast) ease-out hover:bg-accent-hover lg:mt-0 lg:h-(--size-control) lg:w-auto lg:self-start"
           >
             Details
             <ArrowRightIcon />

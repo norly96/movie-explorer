@@ -78,3 +78,17 @@ describe("HeaderNav (RF-2)", () => {
     expect(link("Home")).toHaveClass("border-b-2", "border-transparent", "text-muted");
   });
 });
+
+// Found by the automated audit of T55: "Home" was 43px wide. The requirement is
+// touch targets of at least 44px, so a link is never narrower than the icon
+// buttons next to it, with its text centered.
+describe("HeaderNav touch targets", () => {
+  it("makes each link at least 44px wide, with the text centered", () => {
+    nav.pathname = "/";
+    render(<HeaderNav />);
+
+    for (const name of ["Home", "About"]) {
+      expect(link(name)).toHaveClass("min-w-(--size-icon-button)", "justify-center");
+    }
+  });
+});

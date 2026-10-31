@@ -28,7 +28,7 @@ export function HeaderNav() {
             key={href}
             href={href}
             aria-current={current ? "page" : undefined}
-            className={`flex items-center border-b-2 text-base ${
+            className={`flex min-w-(--size-icon-button) items-center justify-center border-b-2 text-base ${
               current
                 ? "border-accent font-semibold text-accent"
                 : "border-transparent text-muted hover:text-foreground"
