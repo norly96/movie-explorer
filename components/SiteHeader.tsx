@@ -27,7 +27,7 @@ function Brand({ name }: { name: string }) {
     <Link
       href="/"
       aria-label={`${name}, home`}
-      className="flex items-center gap-2 text-foreground"
+      className="flex min-h-(--size-icon-button) items-center gap-2 text-foreground"
     >
       <ClapperboardIcon size={28} />
       {/* Hidden visually below `xs` (360px), where brand and icons no longer fit

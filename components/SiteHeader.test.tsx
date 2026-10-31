@@ -159,3 +159,15 @@ describe("SiteHeader order and layouts (RF-4)", () => {
     expect(variantElement("narrow").querySelector('nav[aria-label="Main"]')).not.toBeNull();
   });
 });
+
+// Found by the automated audit of T55: the brand link was only 28px high. The
+// requirement is touch targets of at least 44px (never below 24px), so the link
+// gets the height of the header's other controls.
+describe.each(["wide", "narrow"] as const)("SiteHeader brand touch target, %s layout", (name) => {
+  it("is at least as high as the icon buttons (44px)", () => {
+    render(<SiteHeader config={FULL} />);
+
+    const brand = variant(name).getByRole("link", { name: "Movie-explorer, home" });
+    expect(brand).toHaveClass("min-h-(--size-icon-button)");
+  });
+});

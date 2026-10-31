@@ -218,3 +218,17 @@ describe("FeaturedHero image (RF-10, RF-17, RF-28, RF-32)", () => {
     expect(screen.getByRole("link", { name: /Fight Club/ })).toBeInTheDocument();
   });
 });
+
+// Found by the automated audit of T55: with forced colors the browser drops the
+// accent background and the Details button was left as loose text. A transparent
+// border, which forced colors draws, keeps it a button (the cards do the same).
+describe("FeaturedHero Details button with forced colors", () => {
+  it("keeps a transparent border that forced colors turns into an outline", () => {
+    renderHero();
+
+    expect(screen.getByRole("link", { name: /Fight Club/ })).toHaveClass(
+      "border-2",
+      "border-transparent"
+    );
+  });
+});
